@@ -1,0 +1,402 @@
+[
+  {
+    "route": "Virudhunagar-Madurai",
+    "hatchback": 120.0,
+    "sedan": 140.0,
+    "innova": 180.0,
+    "tavera": 180.0,
+    "7-Seater (Noon)": 200.0,
+    "Tempo Traveller": 250.0,
+    "Tourist Van": 300.0,
+    "Van 407": 350.0
+  },
+  {
+    "route": "Virudhunagar-Chennai",
+    "hatchback": 850.0,
+    "sedan": 1050.0,
+    "innova": 1400.0,
+    "tavera": 1400.0,
+    "7-Seater (Noon)": 1600.0,
+    "Tempo Traveller": 2000.0,
+    "Tourist Van": 2400.0,
+    "Van 407": 2800.0
+  },
+  {
+    "route": "Virudhunagar-Bangalore",
+    "hatchback": 650.0,
+    "sedan": 750.0,
+    "innova": 1100.0,
+    "tavera": 1100.0,
+    "7-Seater (Noon)": 1300.0,
+    "Tempo Traveller": 1700.0,
+    "Tourist Van": 2100.0,
+    "Van 407": 2500.0
+  },
+  {
+    "route": "Virudhunagar-Coimbatore",
+    "hatchback": 220.0,
+    "sedan": 250.0,
+    "innova": 350.0,
+    "tavera": 350.0,
+    "7-Seater (Noon)": 400.0,
+    "Tempo Traveller": 500.0,
+    "Tourist Van": 600.0,
+    "Van 407": 700.0
+  },
+  {
+    "route": "Virudhunagar-Trichy",
+    "hatchback": 180.0,
+    "sedan": 200.0,
+    "innova": 280.0,
+    "tavera": 280.0,
+    "7-Seater (Noon)": 320.0,
+    "Tempo Traveller": 400.0,
+    "Tourist Van": 480.0,
+    "Van 407": 560.0
+  },
+  {
+    "route": "Virudhunagar-Salem",
+    "hatchback": 280.0,
+    "sedan": 320.0,
+    "innova": 450.0,
+    "tavera": 450.0,
+    "7-Seater (Noon)": 500.0,
+    "Tempo Traveller": 650.0,
+    "Tourist Van": 780.0,
+    "Van 407": 900.0
+  },
+  {
+    "route": "Virudhunagar-Tirunelveli",
+    "hatchback": 150.0,
+    "sedan": 170.0,
+    "innova": 220.0,
+    "tavera": 220.0,
+    "7-Seater (Noon)": 250.0,
+    "Tempo Traveller": 300.0,
+    "Tourist Van": 360.0,
+    "Van 407": 420.0
+  },
+  {
+    "route": "Virudhunagar-Thoothukudi",
+    "hatchback": 140.0,
+    "sedan": 160.0,
+    "innova": 200.0,
+    "tavera": 200.0,
+    "7-Seater (Noon)": 230.0,
+    "Tempo Traveller": 280.0,
+    "Tourist Van": 340.0,
+    "Van 407": 400.0
+  },
+  {
+    "route": "Virudhunagar-Kanyakumari",
+    "hatchback": 320.0,
+    "sedan": 380.0,
+    "innova": 500.0,
+    "tavera": 500.0,
+    "7-Seater (Noon)": 580.0,
+    "Tempo Traveller": 720.0,
+    "Tourist Van": 860.0,
+    "Van 407": 1000.0
+  },
+  
+  {
+    "route": "Madurai-Chennai",
+    "hatchback": 950.0,
+    "sedan": 1150.0,
+    "innova": 1500.0,
+    "tavera": 1500.0,
+    "7-Seater (Noon)": 1700.0,
+    "Tempo Traveller": 2100.0,
+    "Tourist Van": 2500.0,
+    "Van 407": 2900.0
+  },
+  {
+    "route": "Madurai-Bangalore",
+    "hatchback": 750.0,
+    "sedan": 850.0,
+    "innova": 1200.0,
+    "tavera": 1200.0,
+    "7-Seater (Noon)": 1400.0,
+    "Tempo Traveller": 1800.0,
+    "Tourist Van": 2200.0,
+    "Van 407": 2600.0
+  },
+  {
+    "route": "Madurai-Coimbatore",
+    "hatchback": 180.0,
+    "sedan": 200.0,
+    "innova": 280.0,
+    "tavera": 280.0,
+    "7-Seater (Noon)": 320.0,
+    "Tempo Traveller": 400.0,
+    "Tourist Van": 480.0,
+    "Van 407": 560.0
+  },
+  {
+    "route": "Madurai-Trichy",
+    "hatchback": 120.0,
+    "sedan": 140.0,
+    "innova": 180.0,
+    "tavera": 180.0,
+    "7-Seater (Noon)": 200.0,
+    "Tempo Traveller": 250.0,
+    "Tourist Van": 300.0,
+    "Van 407": 350.0
+  },
+  {
+    "route": "Madurai-Rameswaram",
+    "hatchback": 160.0,
+    "sedan": 180.0,
+    "innova": 220.0,
+    "tavera": 220.0,
+    "7-Seater (Noon)": 250.0,
+    "Tempo Traveller": 300.0,
+    "Tourist Van": 360.0,
+    "Van 407": 420.0
+  },
+  {
+    "route": "Madurai-Kodaikanal",
+    "hatchback": 100.0,
+    "sedan": 120.0,
+    "innova": 150.0,
+    "tavera": 150.0,
+    "7-Seater (Noon)": 180.0,
+    "Tempo Traveller": 220.0,
+    "Tourist Van": 260.0,
+    "Van 407": 300.0
+  },
+  
+  {
+    "route": "Virudhunagar-Kodaikanal",
+    "hatchback": 140.0,
+    "sedan": 160.0,
+    "innova": 200.0,
+    "tavera": 200.0,
+    "7-Seater (Noon)": 230.0,
+    "Tempo Traveller": 280.0,
+    "Tourist Van": 340.0,
+    "Van 407": 400.0
+  },
+  {
+    "route": "Virudhunagar-Rameswaram",
+    "hatchback": 200.0,
+    "sedan": 230.0,
+    "innova": 280.0,
+    "tavera": 280.0,
+    "7-Seater (Noon)": 320.0,
+    "Tempo Traveller": 380.0,
+    "Tourist Van": 450.0,
+    "Van 407": 520.0
+  },
+  {
+    "route": "Virudhunagar-Courtallam",
+    "hatchback": 160.0,
+    "sedan": 180.0,
+    "innova": 220.0,
+    "tavera": 220.0,
+    "7-Seater (Noon)": 250.0,
+    "Tempo Traveller": 300.0,
+    "Tourist Van": 360.0,
+    "Van 407": 420.0
+  },
+  {
+    "route": "Virudhunagar-Ooty",
+    "hatchback": 250.0,
+    "sedan": 280.0,
+    "innova": 350.0,
+    "tavera": 350.0,
+    "7-Seater (Noon)": 400.0,
+    "Tempo Traveller": 480.0,
+    "Tourist Van": 580.0,
+    "Van 407": 680.0
+  },
+  
+  {
+    "route": "Virudhunagar-Karaikudi",
+    "hatchback": 80.0,
+    "sedan": 90.0,
+    "innova": 120.0,
+    "tavera": 120.0,
+    "7-Seater (Noon)": 140.0,
+    "Tempo Traveller": 180.0,
+    "Tourist Van": 220.0,
+    "Van 407": 260.0
+  },
+  {
+    "route": "Virudhunagar-Theni",
+    "hatchback": 100.0,
+    "sedan": 120.0,
+    "innova": 150.0,
+    "tavera": 150.0,
+    "7-Seater (Noon)": 180.0,
+    "Tempo Traveller": 220.0,
+    "Tourist Van": 260.0,
+    "Van 407": 300.0
+  },
+  {
+    "route": "Virudhunagar-Palani",
+    "hatchback": 150.0,
+    "sedan": 170.0,
+    "innova": 220.0,
+    "tavera": 220.0,
+    "7-Seater (Noon)": 250.0,
+    "Tempo Traveller": 300.0,
+    "Tourist Van": 360.0,
+    "Van 407": 420.0
+  },
+  {
+    "route": "Virudhunagar-Tenkasi",
+    "hatchback": 220.0,
+    "sedan": 250.0,
+    "innova": 320.0,
+    "tavera": 320.0,
+    "7-Seater (Noon)": 380.0,
+    "Tempo Traveller": 450.0,
+    "Tourist Van": 540.0,
+    "Van 407": 630.0
+  },
+  
+  {
+    "route": "Virudhunagar-Aruppukottai",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Virudhunagar-Sivakasi",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Virudhunagar-Sattur",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Virudhunagar-Krishnankovil",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Virudhunagar-Srivilliputhur",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Virudhunagar-Rajapalayam",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Virudhunagar-Kovilpatti",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Sivakasi-Rajapalayam",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Aruppukottai-Krishnankovil",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Sivakasi-Thiruthangal",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Rajapalayam-Srivilliputhur",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Aruppukottai-Thiruchuli",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  },
+  {
+    "route": "Virudhunagar-Kalagapatti",
+    "hatchback": 0.0,
+    "sedan": 0.0,
+    "innova": 0.0,
+    "tavera": 0.0,
+    "7-Seater (Noon)": 0.0,
+    "Tempo Traveller": 0.0,
+    "Tourist Van": 0.0,
+    "Van 407": 0.0
+  }
+]

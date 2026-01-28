@@ -1,0 +1,366 @@
+{
+  "Virudhunagar": {
+    "lat": 9.5851,
+    "lng": 77.9579
+  },
+  "Aruppukottai": {
+    "lat": 9.5139,
+    "lng": 78.0952
+  },
+  "Sivakasi": {
+    "lat": 9.4478,
+    "lng": 77.7968
+  },
+  "Rajapalayam": {
+    "lat": 9.4527,
+    "lng": 77.5531
+  },
+  "Sattur": {
+    "lat": 9.3559,
+    "lng": 77.9246
+  },
+  "Srivilliputhur": {
+    "lat": 9.5097,
+    "lng": 77.6332
+  },
+  "Krishnankovil": {
+    "lat": 9.5653,
+    "lng": 77.6891
+  },
+  "Kalasalingam University": {
+    "lat": 9.57,
+    "lng": 77.68
+  },
+  "Thiruchuli": {
+    "lat": 9.6639,
+    "lng": 78.2439
+  },
+  "Vembakottai": {
+    "lat": 9.6406,
+    "lng": 77.8891
+  },
+  "Kariapatti": {
+    "lat": 9.6921,
+    "lng": 78.1046
+  },
+  "Watrap": {
+    "lat": 9.6333,
+    "lng": 77.6333
+  },
+  "Thiruthangal": {
+    "lat": 9.48,
+    "lng": 77.81
+  },
+  "Mappilaiurani": {
+    "lat": 9.58,
+    "lng": 77.94
+  },
+  "Vathirairuppu": {
+    "lat": 9.59,
+    "lng": 77.97
+  },
+  "Narikkudi": {
+    "lat": 9.6,
+    "lng": 77.95
+  },
+  "Kallupatti": {
+    "lat": 9.61,
+    "lng": 77.93
+  },
+  "Cholapuram": {
+    "lat": 9.62,
+    "lng": 77.92
+  },
+  "Thayilpatti": {
+    "lat": 9.63,
+    "lng": 77.91
+  },
+  "Puliankulam": {
+    "lat": 9.64,
+    "lng": 77.9
+  },
+  "Madurai": {
+    "lat": 9.9252,
+    "lng": 78.1198
+  },
+  "Chennai": {
+    "lat": 13.0827,
+    "lng": 80.2707
+  },
+  "Bangalore": {
+    "lat": 12.9716,
+    "lng": 77.5946
+  },
+  "Coimbatore": {
+    "lat": 11.0168,
+    "lng": 76.9558
+  },
+  "Trichy": {
+    "lat": 10.7905,
+    "lng": 78.7047
+  },
+  "Tirunelveli": {
+    "lat": 8.7139,
+    "lng": 77.7567
+  },
+  "Thoothukudi": {
+    "lat": 8.7642,
+    "lng": 78.1348
+  },
+  "Salem": {
+    "lat": 11.6643,
+    "lng": 78.146
+  },
+  "Theni": {
+    "lat": 10.01,
+    "lng": 77.48
+  },
+  "Dindigul": {
+    "lat": 10.35,
+    "lng": 77.95
+  },
+  "Nagercoil": {
+    "lat": 8.17,
+    "lng": 77.43
+  },
+  "Tenkasi": {
+    "lat": 8.9557,
+    "lng": 77.3152
+  },
+  "Sankarankovil": {
+    "lat": 9.1814,
+    "lng": 77.5353
+  },
+  "Kovilpatti": {
+    "lat": 9.1747,
+    "lng": 77.8694
+  },
+  "Kayathar": {
+    "lat": 8.95,
+    "lng": 77.8
+  },
+  "Karaikudi": {
+    "lat": 10.0667,
+    "lng": 78.7833
+  },
+  "Devakottai": {
+    "lat": 9.95,
+    "lng": 78.8167
+  },
+  "Ilayangudi": {
+    "lat": 9.6,
+    "lng": 78.6333
+  },
+  "Ramanathapuram": {
+    "lat": 9.3833,
+    "lng": 78.8333
+  },
+  "Cumbum": {
+    "lat": 9.7333,
+    "lng": 77.2833
+  },
+  "Bodinayakkanur": {
+    "lat": 10.0167,
+    "lng": 77.35
+  },
+  "Palani": {
+    "lat": 10.45,
+    "lng": 77.5333
+  },
+  "Virudhunagar Junction": {
+    "lat": 9.586,
+    "lng": 77.9585
+  },
+  "Virudhunagar Bus Stand": {
+    "lat": 9.5845,
+    "lng": 77.959
+  },
+  "Aruppukottai Station": {
+    "lat": 9.5145,
+    "lng": 78.096
+  },
+  "Sivakasi Bus Stand": {
+    "lat": 9.4485,
+    "lng": 77.7975
+  },
+  "Madurai Airport": {
+    "lat": 9.8344,
+    "lng": 78.0933
+  },
+  "Madurai Railway Station": {
+    "lat": 9.9197,
+    "lng": 78.1194
+  },
+  "Tuticorin Port": {
+    "lat": 8.7833,
+    "lng": 78.1333
+  },
+  "Tuticorin Airport": {
+    "lat": 8.72,
+    "lng": 78.03
+  },
+  "Trichy Airport": {
+    "lat": 10.7667,
+    "lng": 78.7167
+  },
+  "Coimbatore Airport": {
+    "lat": 11.03,
+    "lng": 77.043
+  },
+  "Chennai Airport": {
+    "lat": 12.9941,
+    "lng": 80.1709
+  },
+  "Bangalore Airport": {
+    "lat": 13.1989,
+    "lng": 77.7068
+  },
+  "Kodaikanal": {
+    "lat": 10.2381,
+    "lng": 77.4892
+  },
+  "Rameswaram": {
+    "lat": 9.2881,
+    "lng": 79.3128
+  },
+  "Kanyakumari": {
+    "lat": 8.0883,
+    "lng": 77.5385
+  },
+  "Courtallam": {
+    "lat": 8.9333,
+    "lng": 77.2833
+  },
+  "Hogenakkal": {
+    "lat": 12.12,
+    "lng": 77.78
+  },
+  "Yercaud": {
+    "lat": 11.78,
+    "lng": 78.21
+  },
+  "Ooty": {
+    "lat": 11.41,
+    "lng": 76.695
+  },
+  "Thiagarajar College": {
+    "lat": 9.92,
+    "lng": 78.13
+  },
+  "Thiagarajar School": {
+    "lat": 9.925,
+    "lng": 78.125
+  },
+  "American College": {
+    "lat": 9.918,
+    "lng": 78.128
+  },
+  "Madurai Medical College": {
+    "lat": 9.915,
+    "lng": 78.122
+  },
+  "Alagappa University": {
+    "lat": 10.08,
+    "lng": 78.78
+  },
+  "Anna University": {
+    "lat": 13.01,
+    "lng": 80.235
+  },
+  "Apollo Hospital Madurai": {
+    "lat": 9.93,
+    "lng": 78.14
+  },
+  "Meenakshi Mission Hospital": {
+    "lat": 9.935,
+    "lng": 78.135
+  },
+  "Government Rajaji Hospital": {
+    "lat": 9.915,
+    "lng": 78.12
+  },
+  "CMC Vellore": {
+    "lat": 12.92,
+    "lng": 79.13
+  },
+  "Apollo Chennai": {
+    "lat": 13.05,
+    "lng": 80.25
+  },
+  "SIDCO Industrial Estate": {
+    "lat": 9.59,
+    "lng": 77.96
+  },
+  "Sivakasi Industrial Area": {
+    "lat": 9.45,
+    "lng": 77.8
+  },
+  "Rajapalayam Mills Area": {
+    "lat": 9.455,
+    "lng": 77.555
+  },
+  "Madurai Industrial Estate": {
+    "lat": 9.9,
+    "lng": 78.1
+  },
+  "Coimbatore Industrial Area": {
+    "lat": 11.02,
+    "lng": 76.97
+  },
+  "Thirumangalam": {
+    "lat": 9.85,
+    "lng": 77.85
+  },
+  "T. Kallupatti": {
+    "lat": 9.7,
+    "lng": 77.87
+  },
+  "Chellampatti": {
+    "lat": 9.75,
+    "lng": 77.9
+  },
+  "Paramakudi": {
+    "lat": 9.55,
+    "lng": 78.6
+  },
+  "Mudukulathur": {
+    "lat": 9.35,
+    "lng": 78.5
+  },
+  "Kamuthi": {
+    "lat": 9.4,
+    "lng": 78.4
+  },
+  "Manamadurai": {
+    "lat": 9.7,
+    "lng": 78.5
+  },
+  "Sivaganga": {
+    "lat": 9.8667,
+    "lng": 78.4833
+  },
+  "Alangulam": {
+    "lat": 8.8667,
+    "lng": 77.5
+  },
+  "Valliyoor": {
+    "lat": 8.4167,
+    "lng": 77.65
+  },
+  "Ettayapuram": {
+    "lat": 9.15,
+    "lng": 77.9833
+  },
+  "Vilathikulam": {
+    "lat": 9.1333,
+    "lng": 78.1667
+  },
+  "Ottapidaram": {
+    "lat": 8.9,
+    "lng": 78.0167
+  },
+  "Shenkottai": {
+    "lat": 8.9667,
+    "lng": 77.2333
+  }
+}

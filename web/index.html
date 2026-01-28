@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/" />
+  <meta charset="UTF-8" />
+  <meta
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    name="viewport"
+  />
+
+  <title>SSA Travels Virudhunagar</title>
+  <link rel="icon" type="image/png" href="icons/ssa-logo.png" />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+  />
+
+  <!-- ✅ GOOGLE MAPS JAVASCRIPT API (VERY IMPORTANT) -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-WiIM0Ga4U1sAHstnFYuWL9xeQm2KWxs"
+    defer
+  ></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-WiIM0Ga4U1sAHstnFYuWL9xeQm2KWxs",
+      authDomain: "ssatravels-app-f1b43.firebaseapp.com",
+      projectId: "ssatravels-app-f1b43",
+      storageBucket: "ssatravels-app-f1b43.firebasestorage.app",
+      messagingSenderId: "657612328394",
+      appId: "1:657612328394:web:b4948b8e31b465bd34d333",
+      measurementId: "G-YE0EHJTPCW"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("flutter_service_worker.js");
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <script src="main.dart.js" type="application/javascript"></script>
+</body>
+</html>
