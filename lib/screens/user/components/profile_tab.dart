@@ -3,25 +3,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ssatravels_app/screens/user/components/about_page.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-
 // Import the new pages
 import 'help_support_page.dart';
-import 'about_page.dart';
 import 'settings_page.dart';
 import 'ride_history_page.dart';
 
 class ProfileTab extends StatefulWidget {
-  const ProfileTab({super.key});
+  final String? userName;  // ✅ ADD THIS PARAMETER
+
+  const ProfileTab({
+    super.key,
+    this.userName,  // ✅ ADD CONSTRUCTOR PARAMETER
+  });
 
   @override
   State<ProfileTab> createState() => _ProfileTabState();
 }
 
 class _ProfileTabState extends State<ProfileTab> {
+  
   // Theme colors - Green theme
   final Color _primaryColor = const Color(0xFF00B14F);
   final Color _backgroundColor = const Color(0xFFF5F5F5);
@@ -34,7 +37,7 @@ class _ProfileTabState extends State<ProfileTab> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-
+  
   // Image picker
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
@@ -74,7 +77,7 @@ class _ProfileTabState extends State<ProfileTab> {
       }
     } catch (e) {
       print('Error saving profile: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -150,15 +153,19 @@ class _ProfileTabState extends State<ProfileTab> {
 
   Widget _buildUserStatusHeader(User? user, Map<String, dynamic>? userData) {
     final bool isLoggedIn = user != null;
-    final String fullName =
-        userData?['fullName'] ?? user?.displayName ?? 'Guest User';
+    
+    // ✅ USE THE PARAMETER - Priority: Firebase Data > Constructor Parameter > Default
+    final String fullName = 
+        userData?['fullName'] ?? 
+        user?.displayName ?? 
+        (isLoggedIn ? null : widget.userName) ??  // Use userName for guest
+        'Guest User';
+        
     final String designation = userData?['designation'] ?? 'SSA Traveler';
     final String email =
         userData?['email'] ?? user?.email ?? 'guest@ssatravels.com';
     final String phoneNumber =
         userData?['phoneNumber'] ?? user?.phoneNumber ?? '+91 00000 00000';
-    final int followers = userData?['followers'] ?? 0;
-    final int following = userData?['following'] ?? 0;
 
     return Container(
       width: double.infinity,
@@ -179,8 +186,6 @@ class _ProfileTabState extends State<ProfileTab> {
       ),
       child: Column(
         children: [
-          // App Name
-
           // User Status Card
           Container(
             width: double.infinity,
@@ -263,20 +268,20 @@ class _ProfileTabState extends State<ProfileTab> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Hello!',
+                            isLoggedIn ? 'Hello!' : 'Welcome, Guest!',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFFEEEEEE),
+                              color: Colors.white.withOpacity(0.9),
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             fullName,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: _textColor,
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -285,19 +290,27 @@ class _ProfileTabState extends State<ProfileTab> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFFEEEEEE),
+                              color: Colors.white.withOpacity(0.9),
                             ),
                           ),
-                          if (isLoggedIn) ...[
-                            const SizedBox(height: 8),
+                          if (!isLoggedIn) ...[
+                            const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
+                                horizontal: 16,
+                                vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: _primaryColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Guest Mode',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
@@ -316,8 +329,14 @@ class _ProfileTabState extends State<ProfileTab> {
 
   Widget _buildContactInfoSection(User? user, Map<String, dynamic>? userData) {
     final bool isLoggedIn = user != null;
-    final String fullName =
-        userData?['fullName'] ?? user?.displayName ?? 'Guest User';
+    
+    // ✅ USE THE PARAMETER for guest view
+    final String fullName = 
+        userData?['fullName'] ?? 
+        user?.displayName ?? 
+        (isLoggedIn ? null : widget.userName) ?? 
+        'Guest User';
+        
     final String email =
         userData?['email'] ?? user?.email ?? 'guest@ssatravels.com';
     final String phoneNumber =
@@ -528,16 +547,20 @@ class _ProfileTabState extends State<ProfileTab> {
       ),
       child: Column(
         children: [
-          // Edit Profile Option
-          _buildProfileOptionItem(
-            title: 'Edit Profile',
-            subtitle: 'Update your personal information',
-            icon: Icons.edit_outlined,
-            color: _primaryColor,
-            onTap: () => _handleOptionTap(context, 'Edit Profile'),
-          ),
-
-          Divider(color: _dividerColor, height: 1, indent: 72),
+          // Edit Profile Option - Only for logged in users
+          if (isLoggedIn)
+            Column(
+              children: [
+                _buildProfileOptionItem(
+                  title: 'Edit Profile',
+                  subtitle: 'Update your personal information',
+                  icon: Icons.edit_outlined,
+                  color: _primaryColor,
+                  onTap: () => _handleOptionTap(context, 'Edit Profile'),
+                ),
+                Divider(color: _dividerColor, height: 1, indent: 72),
+              ],
+            ),
 
           // Ride History Option (only for logged in users)
           if (isLoggedIn)
@@ -553,17 +576,6 @@ class _ProfileTabState extends State<ProfileTab> {
                 Divider(color: _dividerColor, height: 1, indent: 72),
               ],
             ),
-
-          // Saved Addresses Option
-          _buildProfileOptionItem(
-            title: 'Saved Addresses',
-            subtitle: 'Manage your saved locations',
-            icon: Icons.location_on_outlined,
-            color: _primaryColor,
-            onTap: () => _handleOptionTap(context, 'Saved Addresses'),
-          ),
-
-          Divider(color: _dividerColor, height: 1, indent: 72),
 
           // Settings Option
           _buildProfileOptionItem(
@@ -687,9 +699,6 @@ class _ProfileTabState extends State<ProfileTab> {
           MaterialPageRoute(builder: (context) => const RideHistoryPage()),
         );
         break;
-      case 'Saved Addresses':
-        _showMessage(context, 'Saved Addresses feature coming soon!');
-        break;
       case 'Settings':
         Navigator.push(
           context,
@@ -738,7 +747,7 @@ class _ProfileTabState extends State<ProfileTab> {
     final TextEditingController confirmPasswordController =
         TextEditingController();
 
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
@@ -755,7 +764,7 @@ class _ProfileTabState extends State<ProfileTab> {
             padding: const EdgeInsets.all(24),
             child: SingleChildScrollView(
               child: Form(
-                key: _formKey,
+                key: formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -780,14 +789,6 @@ class _ProfileTabState extends State<ProfileTab> {
                     const SizedBox(height: 20),
 
                     // Personal Information Section
-                    Text(
-                      'Personal Information',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: _textColor,
-                      ),
-                    ),
                     const SizedBox(height: 16),
 
                     TextFormField(
@@ -936,9 +937,9 @@ class _ProfileTabState extends State<ProfileTab> {
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: _primaryColor, // Text color
+                              foregroundColor: _primaryColor,
                               side: BorderSide(
-                                  color: Colors.grey), // Border color
+                                  color: Colors.grey),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -957,7 +958,7 @@ class _ProfileTabState extends State<ProfileTab> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
+                              if (formKey.currentState!.validate()) {
                                 try {
                                   // Update profile information
                                   await _saveUserProfile(
@@ -1060,7 +1061,7 @@ class _ProfileTabState extends State<ProfileTab> {
           );
         }
 
-        // Guest view
+        // Guest view - use widget.userName from constructor
         return _buildProfileContent(context, null, null);
       },
     );
@@ -1095,7 +1096,7 @@ class _ProfileTabState extends State<ProfileTab> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: Text(
-                  'Developed by Rohil Technolgies',
+                  'Developed by Rohil Technologies',
                   style: TextStyle(
                     fontSize: 12,
                     color: _secondaryTextColor,

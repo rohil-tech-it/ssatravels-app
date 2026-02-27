@@ -1,34 +1,24 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <base href="/" />
   <meta charset="UTF-8" />
-  <meta
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    name="viewport"
-  />
-
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
   <title>SSA Travels Virudhunagar</title>
   <link rel="icon" type="image/png" href="icons/ssa-logo.png" />
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-  />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" />
 
-  <!-- ✅ GOOGLE MAPS JAVASCRIPT API (VERY IMPORTANT) -->
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-WiIM0Ga4U1sAHstnFYuWL9xeQm2KWxs"
-    defer
-  ></script>
-
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (Load first) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <script>
+    // ✅ Firebase Config - Using Android key (for Firebase Auth)
     const firebaseConfig = {
-      apiKey: "AIzaSyD-WiIM0Ga4U1sAHstnFYuWL9xeQm2KWxs",
+      apiKey: "AIzaSyA3ElqlmQtIPePKOhQweCdcKADv0K2c3ww",  // Android key for Firebase
       authDomain: "ssatravels-app-f1b43.firebaseapp.com",
       projectId: "ssatravels-app-f1b43",
       storageBucket: "ssatravels-app-f1b43.firebasestorage.app",
@@ -38,16 +28,36 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("flutter_service_worker.js");
-      });
-    }
+    console.log('✅ Firebase initialized with Android key');
+    
+    // ✅ Global callback for Google Maps
+    window.initMap = function() {
+      console.log('✅ Google Maps API loaded successfully with Browser key');
+      // Dispatch an event that Flutter can listen to
+      window.dispatchEvent(new CustomEvent('google-maps-loaded'));
+    };
   </script>
+
+  <!-- ✅ GOOGLE MAPS API - Load ASYNC with BROWSER KEY -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-WiIM0Ga4U1sAHstnFYuWL9xeQm2KWxs&libraries=places,geometry&v=weekly&callback=initMap">
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .gm-style {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
 </head>
 
 <body>
   <script src="main.dart.js" type="application/javascript"></script>
 </body>
+
 </html>

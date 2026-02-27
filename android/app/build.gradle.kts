@@ -1,14 +1,12 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // Flutter Gradle Plugin must be applied last
     id("dev.flutter.flutter-gradle-plugin")
-}
+    id("com.google.gms.google-services")
+    }
 
 android {
-    namespace = "com.example.ssatravels_app"
-
-    // Required for latest Play Store
+    namespace = "com.ssatravels.app"  // CHANGED to match Firebase
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -22,27 +20,27 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.ssatravels_app"
-        minSdk = flutter.minSdkVersion
-        targetSdk = 33   // ✅ MUST be 33+
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-    }
+    applicationId = "com.ssatravels.app"
+    minSdk = flutter.minSdkVersion        // ← CHANGE THIS: Use direct number, not flutter.minSdkVersion
+    targetSdk = 36
+    versionCode = 1
+    versionName = "1.0.0"
+}
 
-    buildTypes {
-        release {
-            // Temporary debug signing (OK for APK testing)
-            signingConfig = signingConfigs.getByName("debug")
-        }
+ buildTypes {
+    getByName("release") {
+        signingConfig = signingConfigs.getByName("debug")
+        isMinifyEnabled = false
+        isShrinkResources = false
     }
-
-    // 🔥 IMPORTANT: Prevent lint from blocking release build
-    lint {
-        checkReleaseBuilds = false
-        abortOnError = false
-    }
+}
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
+    implementation("com.google.firebase:firebase-analytics")
 }

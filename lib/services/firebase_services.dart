@@ -32,7 +32,6 @@ class FirebaseService {
 
       // If less than 8 vehicles exist, create default 8 vehicles
       if (snapshot.docs.length < 8) {
-       
         // Delete existing vehicles first to avoid duplicates
         for (var doc in snapshot.docs) {
           await rateCard.doc(doc.id).delete();
@@ -221,9 +220,7 @@ class FirebaseService {
         for (var vehicle in defaultVehicles) {
           await rateCard.doc(vehicle['vehicleType']).set(vehicle);
         }
-
-      } else {
-      }
+      } else {}
 
       // Initialize vehicle models if empty or missing
       final modelsSnapshot = await vehicleModels.get();
@@ -236,14 +233,14 @@ class FirebaseService {
       if (!hasHatchback || !hasSedan) {
         await _initializeVehicleModels();
       }
-    } catch (e) {
+    } catch (_) {
+      // ignored
     }
   }
 
   // ========== NEW: INITIALIZE VEHICLE MODELS ==========
   Future<void> _initializeVehicleModels() async {
     try {
-
       // Hatchback Models
       await vehicleModels.doc('hatchback').set({
         'vehicleType': 'Hatchback',
@@ -284,7 +281,8 @@ class FirebaseService {
           'updatedAt': FieldValue.serverTimestamp(),
         });
       }
-    } catch (e) {
+    } catch (_) {
+      // ignored
     }
   }
 
@@ -581,7 +579,8 @@ class FirebaseService {
 
       try {
         await _auth.signInAnonymously();
-      } catch (e) {
+      } catch (_) {
+        // ignored
       }
     } catch (e) {
       throw Exception('Registration failed: ${e.toString()}');
@@ -641,7 +640,8 @@ class FirebaseService {
           if (key != 'createdAt' && key != 'updatedAt' && value != null) {
             try {
               distances[key] = (value as num).toDouble();
-            } catch (e) {
+            } catch (_) {
+              // ignored
             }
           }
         });
@@ -733,7 +733,6 @@ class FirebaseService {
         fromCity: distance,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-
     } catch (e) {
       throw Exception('Failed to update route distance');
     }
@@ -817,7 +816,7 @@ class FirebaseService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-     throw Exception('Failed to add vehicle type');
+      throw Exception('Failed to add vehicle type');
     }
   }
 

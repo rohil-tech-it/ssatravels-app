@@ -1,0 +1,1122 @@
+[  +74 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[   +1 ms] executing: [D:\flutter/] git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[  +85 ms] Exit code 0 from: git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[        ] 2026-01-08 10:49:17 -0800
+[  +12 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +2 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[  +10 ms] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[   +2 ms] Flutter assets will be downloaded from https://storage.googleapis.com. Make sure you trust this source!
+[  +52 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[  +18 ms] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[   +2 ms] Changing current working directory to: D:\FlutterApps\ssatravels_app
+[  +81 ms] Skipping pub get: version match.
+[ +126 ms] Found plugin url_launcher at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +6 ms] Found plugin url_launcher_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +7 ms] Found plugin url_launcher_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.2\
+[   +6 ms] Found plugin url_launcher_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[   +3 ms] Found plugin url_launcher_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +3 ms] Found plugin url_launcher_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.0\
+[   +3 ms] Found plugin url_launcher_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[  +15 ms] Found plugin shared_preferences at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[   +2 ms] Found plugin shared_preferences_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +4 ms] Found plugin path_provider_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +9 ms] Found plugin shared_preferences_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +2 ms] Found plugin shared_preferences_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +7 ms] Found plugin path_provider_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +4 ms] Found plugin shared_preferences_foundation at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[   +2 ms] Found plugin shared_preferences_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\
+[   +2 ms] Found plugin share_plus at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-7.2.2\
+[   +8 ms] Found plugin path_provider at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +2 ms] Found plugin path_provider_foundation at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[  +17 ms] Found plugin path_provider_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.22\
+[  +11 ms] Found plugin printing at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\printing-5.14.2\
+[   +8 ms] Found plugin permission_handler at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-12.0.1\
+[   +1 ms] Found plugin permission_handler_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[   +2 ms] Found plugin permission_handler_html at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.3+5\
+[   +1 ms] Found plugin permission_handler_apple at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +1 ms] Found plugin permission_handler_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-13.0.1\
+[   +1 ms] Found plugin open_file at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file-3.5.11\
+[   +1 ms] Found plugin open_file_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_windows-0.0.3\
+[   +2 ms] Found plugin open_file_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_web-0.0.4\
+[   +1 ms] Found plugin open_file_mac at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_mac-1.0.4\
+[   +1 ms] Found plugin open_file_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_linux-0.0.5\
+[   +1 ms] Found plugin open_file_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_ios-1.0.4\
+[   +1 ms] Found plugin open_file_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_android-1.0.6\
+[   +1 ms] Found plugin location at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\location-8.0.1\
+[   +1 ms] Found plugin location_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\location_web-6.0.1\
+[   +3 ms] Found plugin image_picker at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +2 ms] Found plugin file_selector_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +2 ms] Found plugin image_picker_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +1 ms] Found plugin file_selector_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +1 ms] Found plugin image_picker_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +1 ms] Found plugin file_selector_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +1 ms] Found plugin image_picker_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[   +1 ms] Found plugin image_picker_for_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+13\
+[   +1 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[   +1 ms] Found plugin google_maps_flutter at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter-2.14.0\
+[   +1 ms] Found plugin google_maps_flutter_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_web-0.5.14+3\
+[   +7 ms] Found plugin google_maps_flutter_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_ios-2.17.2\
+[   +1 ms] Found plugin google_maps_flutter_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_android-2.18.12\
+[   +1 ms] Found plugin geolocator at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator-14.0.2\
+[   +1 ms] Found plugin geolocator_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_windows-0.2.5\
+[   +2 ms] Found plugin geolocator_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_web-4.1.3\
+[   +1 ms] Found plugin geolocator_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_linux-0.2.4\
+[   +2 ms] Found plugin package_info_plus at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-9.0.0\
+[   +5 ms] Found plugin geolocator_apple at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_apple-2.3.13\
+[   +1 ms] Found plugin geolocator_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-5.0.2\
+[   +1 ms] Found plugin geocoding at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding-4.0.0\
+[   +2 ms] Found plugin geocoding_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding_ios-3.1.0\
+[   +1 ms] Found plugin geocoding_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding_android-4.0.1\
+[   +2 ms] Found plugin fluttertoast at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\fluttertoast-8.2.14\
+[  +14 ms] Found plugin firebase_storage at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage-13.0.6\
+[   +1 ms] Found plugin firebase_storage_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage_web-3.11.2\
+[   +2 ms] Found plugin firebase_core at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core-4.4.0\
+[   +1 ms] Found plugin firebase_core_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core_web-3.4.0\
+[   +3 ms] Found plugin firebase_messaging at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_messaging-16.1.1\
+[   +1 ms] Found plugin firebase_messaging_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_messaging_web-4.1.2\
+[   +2 ms] Found plugin firebase_auth at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth-6.1.4\
+[   +1 ms] Found plugin firebase_auth_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth_web-6.1.2\
+[   +3 ms] Found plugin cloud_firestore at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore-6.1.2\
+[   +1 ms] Found plugin cloud_firestore_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore_web-5.1.2\
+[   +7 ms] Found plugin sqflite at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +4 ms] Found plugin sqflite_darwin at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[   +1 ms] Found plugin sqflite_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +72 ms] Found plugin url_launcher at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +1 ms] Found plugin url_launcher_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +2 ms] Found plugin url_launcher_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.2\
+[   +2 ms] Found plugin url_launcher_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[   +1 ms] Found plugin url_launcher_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +1 ms] Found plugin url_launcher_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.0\
+[   +1 ms] Found plugin url_launcher_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +6 ms] Found plugin shared_preferences at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[   +1 ms] Found plugin shared_preferences_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +2 ms] Found plugin path_provider_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +3 ms] Found plugin shared_preferences_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +1 ms] Found plugin path_provider_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[   +1 ms] Found plugin shared_preferences_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\
+[   +1 ms] Found plugin share_plus at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-7.2.2\
+[   +5 ms] Found plugin path_provider at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +1 ms] Found plugin path_provider_foundation at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +7 ms] Found plugin path_provider_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.22\
+[   +6 ms] Found plugin printing at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\printing-5.14.2\
+[   +5 ms] Found plugin permission_handler at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-12.0.1\
+[   +1 ms] Found plugin permission_handler_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[   +3 ms] Found plugin permission_handler_html at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.3+5\
+[   +1 ms] Found plugin permission_handler_apple at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +1 ms] Found plugin permission_handler_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-13.0.1\
+[   +1 ms] Found plugin open_file at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file-3.5.11\
+[   +1 ms] Found plugin open_file_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_windows-0.0.3\
+[   +1 ms] Found plugin open_file_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_web-0.0.4\
+[   +1 ms] Found plugin open_file_mac at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_mac-1.0.4\
+[   +1 ms] Found plugin open_file_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_linux-0.0.5\
+[   +1 ms] Found plugin open_file_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_ios-1.0.4\
+[   +1 ms] Found plugin open_file_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_android-1.0.6\
+[   +1 ms] Found plugin location at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\location-8.0.1\
+[   +2 ms] Found plugin location_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\location_web-6.0.1\
+[   +2 ms] Found plugin image_picker at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +1 ms] Found plugin file_selector_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +1 ms] Found plugin image_picker_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +1 ms] Found plugin file_selector_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +1 ms] Found plugin image_picker_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[   +1 ms] Found plugin image_picker_for_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+13\
+[   +1 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[   +1 ms] Found plugin google_maps_flutter at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter-2.14.0\
+[   +1 ms] Found plugin google_maps_flutter_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_web-0.5.14+3\
+[   +5 ms] Found plugin google_maps_flutter_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_ios-2.17.2\
+[   +1 ms] Found plugin google_maps_flutter_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_android-2.18.12\
+[   +1 ms] Found plugin geolocator at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator-14.0.2\
+[   +1 ms] Found plugin geolocator_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_windows-0.2.5\
+[   +1 ms] Found plugin geolocator_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_web-4.1.3\
+[   +1 ms] Found plugin geolocator_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_linux-0.2.4\
+[   +1 ms] Found plugin package_info_plus at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-9.0.0\
+[   +3 ms] Found plugin geolocator_apple at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_apple-2.3.13\
+[   +1 ms] Found plugin geolocator_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-5.0.2\
+[   +1 ms] Found plugin geocoding at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding-4.0.0\
+[   +1 ms] Found plugin geocoding_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding_ios-3.1.0\
+[   +1 ms] Found plugin geocoding_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding_android-4.0.1\
+[   +1 ms] Found plugin fluttertoast at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\fluttertoast-8.2.14\
+[  +10 ms] Found plugin firebase_storage at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage-13.0.6\
+[   +1 ms] Found plugin firebase_storage_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage_web-3.11.2\
+[   +1 ms] Found plugin firebase_core at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core-4.4.0\
+[   +1 ms] Found plugin firebase_core_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core_web-3.4.0\
+[   +2 ms] Found plugin firebase_messaging at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_messaging-16.1.1\
+[   +1 ms] Found plugin firebase_messaging_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_messaging_web-4.1.2\
+[   +1 ms] Found plugin firebase_auth at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth-6.1.4\
+[   +1 ms] Found plugin firebase_auth_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth_web-6.1.2\
+[   +2 ms] Found plugin cloud_firestore at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore-6.1.2\
+[   +1 ms] Found plugin cloud_firestore_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore_web-5.1.2\
+[   +4 ms] Found plugin sqflite at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +3 ms] Found plugin sqflite_darwin at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[   +1 ms] Found plugin sqflite_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +16 ms] Skipping generating web_plugin_registrant.dart because it is up-to-date.
+[  +40 ms] Found plugin url_launcher at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +1 ms] Found plugin url_launcher_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +2 ms] Found plugin url_launcher_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.2\
+[   +2 ms] Found plugin url_launcher_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.4.0\
+[        ] Found plugin url_launcher_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +5 ms] Found plugin shared_preferences at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[        ] Found plugin shared_preferences_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +1 ms] Found plugin path_provider_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[   +1 ms] Found plugin shared_preferences_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\
+[   +1 ms] Found plugin share_plus at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-7.2.2\
+[   +3 ms] Found plugin path_provider at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +1 ms] Found plugin path_provider_foundation at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.6.0\
+[   +6 ms] Found plugin path_provider_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.22\
+[   +4 ms] Found plugin printing at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\printing-5.14.2\
+[   +3 ms] Found plugin permission_handler at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-12.0.1\
+[        ] Found plugin permission_handler_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[   +1 ms] Found plugin permission_handler_html at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.3+5\
+[        ] Found plugin permission_handler_apple at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[        ] Found plugin permission_handler_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-13.0.1\
+[        ] Found plugin open_file at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file-3.5.11\
+[        ] Found plugin open_file_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_windows-0.0.3\
+[   +1 ms] Found plugin open_file_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_web-0.0.4\
+[        ] Found plugin open_file_mac at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_mac-1.0.4\
+[        ] Found plugin open_file_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_linux-0.0.5\
+[        ] Found plugin open_file_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_ios-1.0.4\
+[        ] Found plugin open_file_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\open_file_android-1.0.6\
+[        ] Found plugin location at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\location-8.0.1\
+[        ] Found plugin location_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\location_web-6.0.1\
+[   +2 ms] Found plugin image_picker at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[        ] Found plugin image_picker_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +1 ms] Found plugin file_selector_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +1 ms] Found plugin file_selector_macos at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +1 ms] Found plugin image_picker_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +1 ms] Found plugin file_selector_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +1 ms] Found plugin image_picker_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+6\
+[   +1 ms] Found plugin image_picker_for_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+13\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[        ] Found plugin google_maps_flutter at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter-2.14.0\
+[        ] Found plugin google_maps_flutter_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_web-0.5.14+3\
+[   +4 ms] Found plugin google_maps_flutter_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_ios-2.17.2\
+[   +1 ms] Found plugin google_maps_flutter_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_android-2.18.12\
+[   +1 ms] Found plugin geolocator at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator-14.0.2\
+[   +1 ms] Found plugin geolocator_windows at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_windows-0.2.5\
+[   +2 ms] Found plugin geolocator_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_web-4.1.3\
+[   +1 ms] Found plugin geolocator_linux at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_linux-0.2.4\
+[   +1 ms] Found plugin package_info_plus at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-9.0.0\
+[   +3 ms] Found plugin geolocator_apple at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_apple-2.3.13\
+[   +1 ms] Found plugin geolocator_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-5.0.2\
+[   +1 ms] Found plugin geocoding at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding-4.0.0\
+[   +2 ms] Found plugin geocoding_ios at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding_ios-3.1.0\
+[   +1 ms] Found plugin geocoding_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding_android-4.0.1\
+[   +2 ms] Found plugin fluttertoast at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\fluttertoast-8.2.14\
+[  +12 ms] Found plugin firebase_storage at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage-13.0.6\
+[   +1 ms] Found plugin firebase_storage_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage_web-3.11.2\
+[   +1 ms] Found plugin firebase_core at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core-4.4.0\
+[   +1 ms] Found plugin firebase_core_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core_web-3.4.0\
+[   +2 ms] Found plugin firebase_messaging at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_messaging-16.1.1\
+[   +1 ms] Found plugin firebase_messaging_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_messaging_web-4.1.2\
+[   +1 ms] Found plugin firebase_auth at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth-6.1.4\
+[   +1 ms] Found plugin firebase_auth_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth_web-6.1.2\
+[   +2 ms] Found plugin cloud_firestore at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore-6.1.2\
+[   +1 ms] Found plugin cloud_firestore_web at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore_web-5.1.2\
+[   +4 ms] Found plugin sqflite at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +3 ms] Found plugin sqflite_darwin at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[   +1 ms] Found plugin sqflite_android at C:\Users\Admin\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +14 ms] Generating D:\FlutterApps\ssatravels_app\android\app\src\main\java\io\flutter\plugins\GeneratedPluginRegistrant.java
+[   +1 ms] Skipping generating GeneratedPluginRegistrant.java because it is up-to-date.
+[   +6 ms] Skipping generating generated_plugin_registrant.h because it is up-to-date.
+[   +1 ms] Skipping generating generated_plugin_registrant.cc because it is up-to-date.
+[   +1 ms] Skipping generating generated_plugins.cmake because it is up-to-date.
+[   +2 ms] Skipping generating generated_plugin_registrant.h because it is up-to-date.
+[   +1 ms] Skipping generating generated_plugin_registrant.cc because it is up-to-date.
+[   +1 ms] Skipping generating generated_plugins.cmake because it is up-to-date.
+[   +2 ms] Skipping generating GeneratedPluginRegistrant.h because it is up-to-date.
+[   +1 ms] Skipping generating GeneratedPluginRegistrant.m because it is up-to-date.
+[   +1 ms] Skipping generating GeneratedPluginRegistrant.swift because it is up-to-date.
+[  +87 ms] executing: C:\Program Files\Android\Android Studio\jbr\bin\java -version
+[ +250 ms] Exit code 0 from: C:\Program Files\Android\Android Studio\jbr\bin\java -version
+[        ] openjdk version "21.0.8" 2025-07-15
+           OpenJDK Runtime Environment (build 21.0.8+-14196175-b1038.72)
+           OpenJDK 64-Bit Server VM (build 21.0.8+-14196175-b1038.72, mixed mode)
+[  +10 ms] Top-level Gradle build file not found, skipping migration of task "clean".
+[   +2 ms] executing: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java --version
+[ +163 ms] Exit code 0 from: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java --version
+[        ] openjdk 17.0.17 2025-10-21
+           OpenJDK Runtime Environment Temurin-17.0.17+10 (build 17.0.17+10)
+           OpenJDK 64-Bit Server VM Temurin-17.0.17+10 (build 17.0.17+10, mixed mode, sharing)
+[   +8 ms] CMake project not found, skipping support Android 15 16k page size migration.
+[   +3 ms] Using gradle from D:\FlutterApps\ssatravels_app\android\gradlew.bat.
+[  +12 ms] LocalFile: 'D:\FlutterApps\ssatravels_app\android\build.gradle.kts' doesn't provide an AGP version. Checking settings.
+[   +1 ms] LocalFile: 'D:\FlutterApps\ssatravels_app\android\settings.gradle.kts' provides AGP version: 8.11.1
+[   +6 ms] Running Gradle task 'assembleDebug'...
+[   +1 ms] executing: [D:\FlutterApps\ssatravels_app\android/] D:\FlutterApps\ssatravels_app\android\gradlew.bat --full-stacktrace --info -Pverbose=true -Ptarget-platform=android-arm,android-arm64,android-x64 -Ptarget=lib\main.dart -Pbase-application-name=android.app.Application -Pdart-defines=RkxVVFRFUl9WRVJTSU9OPTMuMzguNg==,RkxVVFRFUl9DSEFOTkVMPXN0YWJsZQ==,RkxVVFRFUl9HSVRfVVJMPWh0dHBzOi8vZ2l0aHViLmNvbS9mbHV0dGVyL2ZsdXR0ZXIuZ2l0,RkxVVFRFUl9GUkFNRVdPUktfUkVWSVNJT049OGI4NzI4Njg0OQ==,RkxVVFRFUl9FTkdJTkVfUkVWSVNJT049NzhmYzMwMTJlNA==,RkxVVFRFUl9EQVJUX1ZFUlNJT049My4xMC43 -Pdart-obfuscation=false -Ptrack-widget-creation=true -Ptree-shake-icons=false assembleDebug
+[ +843 ms] Initialized native services in: C:\Users\Admin\.gradle\native
+[        ] Initialized jansi services in: C:\Users\Admin\.gradle\native
+[ +124 ms] Received JVM installation metadata from 'C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot': {JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot, JAVA_VERSION=17.0.17, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.17+10, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.17+10, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+[ +305 ms] Removing 0 daemon stop events from registry
+[   +2 ms] Starting a Gradle Daemon (subsequent builds will be faster)
+[  +82 ms] Starting process 'Gradle build daemon'. Working directory: C:\Users\Admin\.gradle\daemon\8.3 Command: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java.exe -XX:MaxMetaspaceSize=512m --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED -Xmx4G -Dfile.encoding=windows-1252 -Duser.country=IN -Duser.language=en -Duser.variant -cp C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-launcher-8.3.jar -javaagent:C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\agents\gradle-instrumentation-agent-8.3.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.3
+[   +4 ms] Successfully started process 'Gradle build daemon'
+[+2208 ms] An attempt to start the daemon took 2.17 secs.
+[ +188 ms] The client will now receive all logging from the daemon (pid: 5164). The daemon log file: C:\Users\Admin\.gradle\daemon\8.3\daemon-5164.out.log
+[        ] Starting build in new daemon [memory: 4 GiB]
+[ +511 ms] Using 4 worker leases.
+[ +492 ms] Received JVM installation metadata from 'C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot': {JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot, JAVA_VERSION=17.0.17, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.17+10, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.17+10, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+[ +395 ms] Watching the file system is configured to be enabled if available
+[        ] Now considering [D:\FlutterApps\ssatravels_app\android] as hierarchies to watch
+[        ] File system watching is active
+[+1835 ms] Starting Build
+[ +268 ms] Generating C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-api-8.3.jar
+[+55698 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+1707 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+7943 ms] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-api-8.3.jar: class org/gradle/configurationcache/extensions/AutoCloseableExtensionsKt: inline fun useToRun(): compile avoidance is not supported with public inline functions
+[+3542 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[ +310 ms] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-kotlin-dsl-extensions-8.3.jar: class org/gradle/kotlin/dsl/GradleApiKotlinDslExtensions0Kt: inline fun environment(): compile avoidance is not supported with public inline functions
+[        ] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-kotlin-dsl-8.3.jar: class org/gradle/kotlin/dsl/ArtifactHandlerScope: inline fun invoke(): compile avoidance is not supported with public inline functions
+[  +93 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] Kotlin DSL script compilation (Settings/TopLevel/stage1) is not up-to-date because:
+[        ]   No history is available.
+[+2301 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[ +537 ms] Now considering [D:\flutter\packages\flutter_tools\gradle, D:\FlutterApps\ssatravels_app\android] as hierarchies to watch
+[ +273 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[   +4 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+11190 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\kotlin-dsl\executionHistory.bin
+[   +7 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[   +1 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[   +3 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[        ] Skipping Kotlin DSL script compilation (Settings/TopLevel/stage1) as it is up-to-date.
+[+2777 ms] > Configure project :gradle
+[   +3 ms] Evaluating project ':gradle' using build file 'D:\flutter\packages\flutter_tools\gradle\build.gradle.kts'.
+[        ] Using local directory build cache for build ':gradle' (location = C:\Users\Admin\.gradle\caches\build-cache-1, removeUnusedEntriesAfter = 7 days).
+[ +110 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\kotlin-dsl\executionHistory.bin
+[   +7 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[        ] Build cache key for Kotlin DSL plugin specs accessors for classpath '8feb2b64a4ab3196ea6820bb7d13153b' is 98cdbf3c0b6f8dd24bb3908f747aad7a
+[        ] Skipping Kotlin DSL plugin specs accessors for classpath '8feb2b64a4ab3196ea6820bb7d13153b' as it is up-to-date.
+[        ] Build cache key for Kotlin DSL script compilation (Project/TopLevel/stage1) is 83d0d00ca50186bd49c7b5d2f067523a
+[        ] Skipping Kotlin DSL script compilation (Project/TopLevel/stage1) as it is up-to-date.
+[        ] The configuration detachedConfiguration1 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration detachedConfiguration1 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[ +108 ms] The configuration detachedConfiguration1 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration detachedConfiguration1 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[+1979 ms] Downloading https://plugins.gradle.org/m2/org/gradle/kotlin/kotlin-dsl/org.gradle.kotlin.kotlin-dsl.gradle.plugin/4.1.0/org.gradle.kotlin.kotlin-dsl.gradle.plugin-4.1.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download10080434044129847391bin
+[ +617 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[+1175 ms] Resource missing. [HTTP HEAD: https://plugins.gradle.org/m2/org/gradle/kotlin/kotlin-dsl/org.gradle.kotlin.kotlin-dsl.gradle.plugin/4.1.0/org.gradle.kotlin.kotlin-dsl.gradle.plugin-4.1.0.jar]
+[        ] The configuration detachedConfiguration2 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration detachedConfiguration2 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[        ] The configuration detachedConfiguration2 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration detachedConfiguration2 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[+1397 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://plugins.gradle.org/m2/org/jetbrains/kotlin/jvm/org.jetbrains.kotlin.jvm.gradle.plugin/1.9.20/org.jetbrains.kotlin.jvm.gradle.plugin-1.9.20.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin.jvm\org.jetbrains.kotlin.jvm.gradle.plugin\1.9.20\2c94e9071bbd72a82b3873b360d0de9f4503d172\org.jetbrains.kotlin.jvm.gradle.plugin-1.9.20.pom]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +285 ms] Resource missing. [HTTP HEAD: https://plugins.gradle.org/m2/org/jetbrains/kotlin/jvm/org.jetbrains.kotlin.jvm.gradle.plugin/1.9.20/org.jetbrains.kotlin.jvm.gradle.plugin-1.9.20.jar]
+[        ] The configuration :gradle:classpath is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration :gradle:classpath is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[        ] The configuration :gradle:classpath is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration :gradle:classpath is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[+1324 ms] Downloading https://plugins.gradle.org/m2/org/gradle/kotlin/gradle-kotlin-dsl-plugins/4.1.0/gradle-kotlin-dsl-plugins-4.1.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download16477606475533241187bin
+[ +526 ms] Downloading https://plugins.gradle.org/m2/org/gradle/kotlin/gradle-kotlin-dsl-plugins/4.1.0/gradle-kotlin-dsl-plugins-4.1.0.module to C:\Users\Admin\.gradle\.tmp\gradle_download10574768459417209643bin
+[ +166 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +93 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[+1630 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.20/kotlin-gradle-plugin-1.9.20.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.9.20\fb5c7e7b4bbce12738b967c5040b8ad1f78b8231\kotlin-gradle-plugin-1.9.20.pom]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +216 ms] Found locally available resource with matching checksum: [https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/1.9.20/kotlin-gradle-plugins-bom-1.9.20.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugins-bom\1.9.20\fbcdc746ac900c9323fb3628217c586cbefd2776\kotlin-gradle-plugins-bom-1.9.20.pom]
+[ +447 ms] Found locally available resource with matching checksum: [https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/1.9.20/kotlin-gradle-plugins-bom-1.9.20.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugins-bom\1.9.20\473d6b1dfba956b916780cb901682dde9fa0022c\kotlin-gradle-plugins-bom-1.9.20.module]
+[+1237 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[   +4 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.20/kotlin-gradle-plugin-1.9.20.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.9.20\97b698b3c0150292f1878c6728f324941a29417d\kotlin-gradle-plugin-1.9.20.module]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +653 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-assignment/1.9.0/kotlin-assignment-1.9.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download11344878286186962791bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +196 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/1.9.0/kotlin-gradle-plugins-bom-1.9.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download13224593325736569826bin
+[  +99 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/1.9.0/kotlin-gradle-plugins-bom-1.9.0.module to C:\Users\Admin\.gradle\.tmp\gradle_download17739746626670498710bin
+[ +302 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-sam-with-receiver/1.9.0/kotlin-sam-with-receiver-1.9.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download7061840125293432522bin
+[ +100 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +892 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-sam-with-receiver/1.9.0/kotlin-sam-with-receiver-1.9.0.module to C:\Users\Admin\.gradle\.tmp\gradle_download2700751767604013808bin
+[ +402 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-assignment/1.9.0/kotlin-assignment-1.9.0.module to C:\Users\Admin\.gradle\.tmp\gradle_download8433208444931590121bin
+[ +177 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +58 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +167 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download17772904457813014199bin
+[  +97 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.20/kotlin-gradle-plugin-model-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download7217338303778041160bin
+[ +111 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea-proto/1.9.20/kotlin-gradle-plugin-idea-proto-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download9996611165182548255bin
+[  +92 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.20/kotlin-gradle-plugin-api-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download13786998813197809358bin
+[        ] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.20/kotlin-gradle-plugin-idea-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download11017312686023233057bin
+[ +400 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.20/kotlin-gradle-plugin-model-1.9.20.module to C:\Users\Admin\.gradle\.tmp\gradle_download14290656755517302164bin
+[ +492 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[   +1 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[   +2 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +505 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +132 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-klib-commonizer-api/1.9.20/kotlin-klib-commonizer-api-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download9676409772156866010bin
+[        ] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.20/kotlin-gradle-plugin-api-1.9.20.module to C:\Users\Admin\.gradle\.tmp\gradle_download3655875407197111835bin
+[   +1 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-klib/1.9.20/kotlin-util-klib-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download16451539357573998655bin
+[  +56 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.20/kotlin-gradle-plugin-idea-1.9.20.module to C:\Users\Admin\.gradle\.tmp\gradle_download11025608043547874614bin
+[ +108 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-build-tools-api/1.9.20/kotlin-build-tools-api-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download713283435793482939bin
+[  +95 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-android-extensions/1.9.20/kotlin-android-extensions-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download12477681292214555347bin
+[        ] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-runner/1.9.20/kotlin-compiler-runner-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download8339353705886301336bin
+[        ] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.20/kotlin-compiler-embeddable-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download11913225434667314800bin
+[        ] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.20/kotlin-scripting-compiler-embeddable-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download1120271284922991208bin
+[ +723 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[   +1 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[  +13 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +187 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.20/kotlin-scripting-compiler-impl-embeddable-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download7768866851121152869bin
+[  +84 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib/1.9.0/kotlin-stdlib-1.9.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download11831079210786227007bin
+[        ] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download17314528949117441281bin
+[ +389 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +817 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-sam-with-receiver/1.9.20/kotlin-sam-with-receiver-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download3087417678607392054bin
+[ +176 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[   +1 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[ +609 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-sam-with-receiver/1.9.20/kotlin-sam-with-receiver-1.9.20.module to C:\Users\Admin\.gradle\.tmp\gradle_download7863871072101036149bin
+[ +389 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +410 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-assignment/1.9.20/kotlin-assignment-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download6314047335005554375bin
+[ +290 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +499 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-assignment/1.9.20/kotlin-assignment-1.9.20.module to C:\Users\Admin\.gradle\.tmp\gradle_download8244488784380723971bin
+[ +297 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +896 ms] Cached resource https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-native-utils/1.9.20/kotlin-native-utils-1.9.20.pom is up-to-date (lastModified: Tue Oct 31 00:06:18 IST 2023).
+[   +1 ms] Cached resource https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-tooling-core/1.9.20/kotlin-tooling-core-1.9.20.pom is up-to-date (lastModified: Tue Oct 31 00:05:27 IST 2023).
+[+2197 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[   +2 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +92 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +512 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea-proto/1.9.20/kotlin-gradle-plugin-idea-proto-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download9003425853790407962bin
+[        ] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-klib/1.9.20/kotlin-util-klib-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download2815908437187241828bin
+[ +103 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.20/kotlin-gradle-plugin-1.9.20-gradle81.jar to C:\Users\Admin\.gradle\.tmp\gradle_download4727075311147814656bin
+[  +90 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-native-utils/1.9.20/kotlin-native-utils-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download4906453577924950854bin
+[ +400 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +998 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-build-tools-api/1.9.20/kotlin-build-tools-api-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download6705015537791775106bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[+1005 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-android-extensions/1.9.20/kotlin-android-extensions-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download8215661090707890480bin
+[ +701 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +411 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[   +1 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[ +182 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +492 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.20/kotlin-scripting-compiler-embeddable-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download16551382690749380253bin
+[ +109 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.20/kotlin-compiler-embeddable-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download5283438364101962623bin
+[+2673 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[+1571 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.20/kotlin-scripting-compiler-impl-embeddable-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download13348192970508193958bin
+[+2469 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[   +1 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[+1470 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.20/kotlin-daemon-embeddable-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download3231274801575634379bin
+[+3302 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +493 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +843 ms] Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-common/1.9.20/kotlin-scripting-common-1.9.20.jar to C:\Users\Admin\.gradle\.tmp\gradle_download2464065747716491811bin
+[+1707 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +61 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[+7887 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +96 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[+37710 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[ +594 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+17194 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[+2130 ms] > Configure project :gradle
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+1592 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+3298 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+1315 ms] Using Kotlin Gradle Plugin gradle81 variant
+[ +880 ms] kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+[ +136 ms] kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+[ +343 ms] WARNING: Unsupported Kotlin plugin version.
+[        ] The `embedded-kotlin` and `kotlin-dsl` plugins rely on features of Kotlin `1.9.0` that might work differently than in the requested version `1.9.20`.
+[ +131 ms] file or directory 'D:\flutter\packages\flutter_tools\gradle\src\main\java', not found
+[  +67 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[   +1 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+2811 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+1257 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\kotlin-dsl\executionHistory.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +659 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[ +174 ms] Build cache key for Kotlin DSL accessors for project ':gradle' is 4c44976a8cc018aefee4ac08644423f3
+[        ] Skipping Kotlin DSL accessors for project ':gradle' as it is up-to-date.
+[+1518 ms] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.9.20\d67c5ea81ba3098bf02a3feff06c378740af2bc3\kotlin-gradle-plugin-1.9.20-gradle81.jar: class org/jetbrains/kotlin/gradle/internal/KaptWithAndroid: inline fun androidVariantData(): compile avoidance is not supported with public inline functions
+[+2107 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[ +119 ms] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-idea-proto\1.9.20\c35d575cec4f2e5759fd63df8a3207653bae9ade\kotlin-gradle-plugin-idea-proto-1.9.20.jar: class org/jetbrains/kotlin/gradle/idea/proto/generated/IdeaExtrasProtoKt$Dsl: inline fun setValues(): compile avoidance is not supported with public inline functions
+[ +328 ms] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-idea\1.9.20\83cf5d4acdbf6c1e7b32ca96cb79b96e4cce032e\kotlin-gradle-plugin-idea-1.9.20.jar: class org/jetbrains/kotlin/gradle/idea/serialize/IdeaKotlinExtrasSerializer$Companion: inline fun javaIoSerializable(): compile avoidance is not supported with public inline functions
+[ +854 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+4995 ms] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-compiler-embeddable\1.9.20\b44d2f7d8c1c67c0ed66d40e57e52623ca753db7\kotlin-compiler-embeddable-1.9.20.jar: class org/jetbrains/kotlin/konan/file/FileKt: inline fun use(): compile avoidance is not supported with public inline functions
+[+2574 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[        ] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-tooling-core\1.9.20\bdc01105250e7ecc8bbcf49a21805685cd557dda\kotlin-tooling-core-1.9.20.jar: class org/jetbrains/kotlin/tooling/core/ClosureKt: inline fun closure(): compile avoidance is not supported with public inline functions
+[        ] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-util-io\1.9.20\13fa0df6f8e5aea3ee927e6299063d4a159766ca\kotlin-util-io-1.9.20.jar: class org/jetbrains/kotlin/konan/file/FileKt: inline fun use(): compile avoidance is not supported with public inline functions
+[ +126 ms] Cannot use Kotlin build script compile avoidance with C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.5.0\d8cebccdcddd029022aa8646a5a953ff88b13ac8\kotlinx-coroutines-core-jvm-1.5.0.jar: class kotlinx/coroutines/CoroutineScopeKt: inline fun currentCoroutineContext(): compile avoidance is not supported with public inline functions
+[ +165 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\kotlin-dsl\executionHistory.bin
+[ +107 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] Build cache key for Kotlin DSL script compilation (Project/TopLevel/stage2) is e3b7b8fb414bdc240a7bd860303cf6ac
+[        ] Kotlin DSL script compilation (Project/TopLevel/stage2) is not up-to-date because:
+[        ]   No history is available.
+[+2090 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[   +2 ms] Stored cache entry for Kotlin DSL script compilation (Project/TopLevel/stage2) with cache key e3b7b8fb414bdc240a7bd860303cf6ac
+[  +95 ms] Invalidating in-memory cache of D:\flutter\packages\flutter_tools\gradle\.gradle\buildOutputCleanup\outputFiles.bin
+[+2141 ms] The configuration detachedConfiguration1 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration detachedConfiguration1 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[        ] The configuration detachedConfiguration1 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration detachedConfiguration1 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[ +363 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/com/android/application/com.android.application.gradle.plugin/8.11.1/com.android.application.gradle.plugin-8.11.1.jar]
+[        ] The configuration detachedConfiguration2 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration detachedConfiguration2 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[        ] The configuration detachedConfiguration2 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration detachedConfiguration2 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[ +736 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.2.20/org.jetbrains.kotlin.android.gradle.plugin-2.2.20.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin.android\org.jetbrains.kotlin.android.gradle.plugin\2.2.20\86c7f45f1d76526f3dc83d8b332706c54b19cc46\org.jetbrains.kotlin.android.gradle.plugin-2.2.20.pom]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] The configuration classpath is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+[        ] The configuration classpath is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[ +268 ms] The configuration :gradle:mainSourceElements is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+[+1699 ms] Resolve mutations for :gradle:checkKotlinGradlePluginConfigurationErrors (Thread[included builds,5,main]) started.
+[ +101 ms] :gradle:checkKotlinGradlePluginConfigurationErrors (Thread[included builds,5,main]) started.
+[ +120 ms] > Task :gradle:checkKotlinGradlePluginConfigurationErrors
+[        ] Caching disabled for task ':gradle:checkKotlinGradlePluginConfigurationErrors' because:
+[        ]   This task renders reported diagnostics; caching this task will hide diagnostics and obscure issues in the build
+[        ] Task ':gradle:checkKotlinGradlePluginConfigurationErrors' is not up-to-date because:
+[        ]   Task has not declared any outputs despite executing actions.
+[        ] Resolve mutations for :gradle:compileKotlin (Thread[included builds,5,main]) started.
+[ +152 ms] :gradle:compileKotlin (Thread[included builds,5,main]) started.
+[+2017 ms] > Task :gradle:compileKotlin
+[        ] Invalidating in-memory cache of D:\flutter\packages\flutter_tools\gradle\.gradle\buildOutputCleanup\outputFiles.bin
+[        ] Invalidating in-memory cache of D:\flutter\packages\flutter_tools\gradle\.gradle\8.3\executionHistory\executionHistory.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\fileHashes\resourceHashesCache.bin
+[        ] Watching 1 directory hierarchies to track changes
+[        ] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.pom]
+[        ] Resource missing. [HTTP GET: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-reflect/1.9.0/kotlin-reflect-1.9.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.9.0\4f04e57e4a12d4a59f620c63520681c4ff1d03e6\kotlin-stdlib-jdk8-1.9.0.pom]
+[        ] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.9.0/kotlin-reflect-1.9.0.pom to C:\Users\Admin\.gradle\.tmp\gradle_download9176657972676736948bin
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.9.1/annotation-jvm-1.9.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.9.1\33599f2420d44099d3d9fa410a6c855928f59e82\annotation-jvm-1.9.1.pom]
+[        ] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.8.0/kotlin-gradle-plugin-1.8.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.8.0/kotlin-gradle-plugin-1.8.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.8.0\de3161a42545561fe9891d1632ce25936b0a0fd1\kotlin-gradle-plugin-1.8.0.pom]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.11.1/gradle-8.11.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle\8.11.1\f87771b39098ca00b22e4bac33d90ccadf86d52d\gradle-8.11.1.pom]
+[        ] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json/1.4.0/kotlinx-serialization-json-1.4.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.8.0/kotlin-gradle-plugin-1.8.0.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.8.0\3320f6fa2cd36c6a74ee3800943ee6c352701aa0\kotlin-gradle-plugin-1.8.0.module]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json/1.4.0/kotlinx-serialization-json-1.4.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json\1.4.0\689efc81fd28905f30472fcc3b4833d23b7f715d\kotlinx-serialization-json-1.4.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json/1.4.0/kotlinx-serialization-json-1.4.0.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json\1.4.0\30522ef157aec6c26b3d0fc92a5b59a3a3a059e2\kotlinx-serialization-json-1.4.0.module]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.9.1/annotation-jvm-1.9.1.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.9.1\95ca2172772c875ac264fd1acb0451fa9b4a31a5\annotation-jvm-1.9.1.module]
+[  +88 ms] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.11.1/gradle-8.11.1.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle\8.11.1\f3e10d6c6e5d47c09f3315216d0d9f8bb79e4ca8\gradle-8.11.1.module]
+[ +104 ms] Resource missing. [HTTP GET: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.24/kotlin-stdlib-1.9.24.pom]
+[ +107 ms] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.24/kotlin-stdlib-1.9.24.pom to C:\Users\Admin\.gradle\.tmp\gradle_download9093958808000791898bin
+[ +194 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[ +296 ms] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.24/kotlin-stdlib-1.9.24.module to C:\Users\Admin\.gradle\.tmp\gradle_download14189575201071327637bin
+[ +200 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +408 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.11.1/gradle-api-8.11.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle-api\8.11.1\557f9d289dd06da6852919adfedc8522d0e477e9\gradle-api-8.11.1.pom]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.11.1/builder-8.11.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder\8.11.1\b0a236d3ab21fc7a16a8f26eba4a59f1172cdd8c\builder-8.11.1.pom]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.11.1/builder-model-8.11.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder-model\8.11.1\1974dbd97aa3e367e4c4b7e689580d3c27978522\builder-model-8.11.1.pom]
+[ +501 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.11.1/builder-model-8.11.1.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder-model\8.11.1\cffe049c059bf709381307b45a4c4de0e62238b4\builder-model-8.11.1.module]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.11.1/gradle-api-8.11.1.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle-api\8.11.1\8b0a1696ba7b5c2fc2c82c1e6202d25fb09f40b8\gradle-api-8.11.1.module]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.11.1/builder-8.11.1.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder\8.11.1\15f20d414e194c4cd2acfc589e074a02ef38788d\builder-8.11.1.module]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +183 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.9.0\5ce6c5278ef6e342507a96372ee534ed0b830e54\kotlin-stdlib-jdk7-1.9.0.pom]
+[ +197 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-tooling-core/1.8.0/kotlin-tooling-core-1.8.0.pom]
+[        ] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.8.0/kotlin-gradle-plugin-api-1.8.0.pom]
+[        ] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.8.0/kotlin-gradle-plugin-model-1.8.0.pom]
+[ +797 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[   +1 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-tooling-core/1.8.0/kotlin-tooling-core-1.8.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-tooling-core\1.8.0\13729d5dade099481a474cdf1fe3f5b7a2349a30\kotlin-tooling-core-1.8.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.8.0/kotlin-gradle-plugin-api-1.8.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\444ec4947234fcfaea4b473c4a54e06a41eba28e\kotlin-gradle-plugin-api-1.8.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.8.0/kotlin-gradle-plugin-model-1.8.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-model\1.8.0\1abb7959b03996bc7e5225c665d1a0557f814ac7\kotlin-gradle-plugin-model-1.8.0.pom]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +113 ms] Cached resource https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.8.0/kotlin-gradle-plugin-api-1.8.0.module is up-to-date (lastModified: Wed Dec 28 01:53:37 IST 2022).
+[        ] Cached resource https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.8.0/kotlin-gradle-plugin-model-1.8.0.module is up-to-date (lastModified: Wed Dec 28 01:53:55 IST 2022).
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-jvm/1.4.0/kotlinx-serialization-json-jvm-1.4.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.4.0\309417ac51c56af9e72051610b0b19bec99b4d69\kotlinx-serialization-json-jvm-1.4.0.pom]
+[   +1 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-jvm/1.4.0/kotlinx-serialization-json-jvm-1.4.0.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.4.0\d5b2ea30952aabecaedb71cf9f436427bd8f597f\kotlinx-serialization-json-jvm-1.4.0.module]
+[ +204 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\fa7d3d07cc80547e2d15bf4839d3267c637c642f\annotations-13.0.pom]
+[ +937 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/apkzlib/8.11.1/apkzlib-8.11.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apkzlib\8.11.1\f0cc197539d729da0eb8e30bd65e6d6d67152f1a\apkzlib-8.11.1.pom]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/apksig/8.11.1/apksig-8.11.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apksig\8.11.1\adcb6f9430607af11912a3de34b883304abef957\apksig-8.11.1.pom]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.11.1/manifest-merger-31.11.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\manifest-merger\31.11.1\53543de7c92e70a098d32d6dc939fee456c06b46\manifest-merger-31.11.1.pom]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/zipflinger/8.11.1/zipflinger-8.11.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android\zipflinger\8.11.1\6ad86ad331c77dd3ddeefd750c9c8fff12e85f5f\zipflinger-8.11.1.pom]
+[  +49 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +302 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/com/squareup/javawriter/2.5.0/javawriter-2.5.0.pom]
+[ +693 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/com/squareup/javawriter/2.5.0/javawriter-2.5.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.squareup\javawriter\2.5.0\d932f2476f65ecd95dcd6fd8c568b3f466f6a482\javawriter-2.5.0.pom]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.11.1/manifest-merger-31.11.1.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\manifest-merger\31.11.1\79f6227a8f55cf1a5cb885aa9413dd8ee6117609\manifest-merger-31.11.1.module]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[  +92 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7.1/asm-9.7.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm\9.7.1\381a4b6892969305d88ee13c53e88eabff82d382\asm-9.7.1.pom]
+[ +140 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/ow2/ow2/1.5.1/ow2-1.5.1.pom]
+[   +7 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/ow2/ow2/1.5.1/ow2-1.5.1.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.ow2\ow2\1.5.1\bda66fa5f1b68fa7d2de3d569bdc8508b2af82d4\ow2-1.5.1.pom]
+[ +665 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-project-model/1.8.0/kotlin-project-model-1.8.0.pom]
+[        ] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-native-utils/1.8.0/kotlin-native-utils-1.8.0.pom]
+[ +800 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[   +9 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[   +7 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-project-model/1.8.0/kotlin-project-model-1.8.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-project-model\1.8.0\9b731271ca0f9538258e16e6b4574ea96f505061\kotlin-project-model-1.8.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-native-utils/1.8.0/kotlin-native-utils-1.8.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-native-utils\1.8.0\e02735a5b0c3cb11b0ad223b023eb4440623801d\kotlin-native-utils-1.8.0.pom]
+[  +64 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +216 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core/1.4.0/kotlinx-serialization-core-1.4.0.pom]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core/1.4.0/kotlinx-serialization-core-1.4.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core\1.4.0\33588f59d46127feb32deb6ee42da43b517b289e\kotlinx-serialization-core-1.4.0.pom]
+[  +89 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core/1.4.0/kotlinx-serialization-core-1.4.0.module, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core\1.4.0\bd86e33c110cf8ae994ff3677ecbdb80cc4bda92\kotlinx-serialization-core-1.4.0.module]
+[ +160 ms] Resource missing. [HTTP GET: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.24/kotlin-stdlib-common-1.9.24.pom]
+[        ] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.24/kotlin-stdlib-common-1.9.24.pom to C:\Users\Admin\.gradle\.tmp\gradle_download5241163962607931480bin
+[  +44 ms] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.24/kotlin-stdlib-common-1.9.24.module to C:\Users\Admin\.gradle\.tmp\gradle_download14679721443856000307bin
+[ +197 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-util-io/1.8.0/kotlin-util-io-1.8.0.pom]
+[ +104 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-util-io/1.8.0/kotlin-util-io-1.8.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-util-io\1.8.0\e538af647902383ce97ca226ac8024c34342fed3\kotlin-util-io-1.8.0.pom]
+[ +105 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.4.0/kotlinx-serialization-core-jvm-1.4.0.pom]
+[ +779 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.4.0/kotlinx-serialization-core-jvm-1.4.0.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.4.0\c8a7de10f28d65158da28677bda2b114c4c7707\kotlinx-serialization-core-jvm-1.4.0.pom]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +206 ms] Cached resource https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.4.0/kotlinx-serialization-core-jvm-1.4.0.module is up-to-date (lastModified: Thu Aug 18 22:05:23 IST 2022).
+[ +222 ms] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.24/kotlin-stdlib-1.9.24.jar to C:\Users\Admin\.gradle\.tmp\gradle_download14103481355684606744bin
+[        ] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.9.0/kotlin-reflect-1.9.0.jar to C:\Users\Admin\.gradle\.tmp\gradle_download1068163947392351526bin
+[ +471 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.11.1/gradle-8.11.1.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle\8.11.1\7861a99a64716fd75ce85a3c7e2fcb3a9e928857\gradle-8.11.1.jar]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.9.1/annotation-jvm-1.9.1.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.9.1\b17951747e38bf3986a24431b9ba0d039958aa5f\annotation-jvm-1.9.1.jar]
+[ +111 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +183 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.8.0/kotlin-gradle-plugin-1.8.0-gradle76.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.8.0\d79a079634e8d3bd92c594b224f4de2086bb4a10\kotlin-gradle-plugin-1.8.0-gradle76.jar]
+[ +600 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +730 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[   +1 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +80 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +316 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +74 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[+1997 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +19 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[  +78 ms] Cached resource https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.11.1/builder-8.11.1.jar is up-to-date (lastModified: Fri Jul 11 03:08:14 IST 2025).
+[ +200 ms] Cached resource https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.8.0/kotlin-gradle-plugin-model-1.8.0.jar is up-to-date (lastModified: Wed Dec 28 01:53:48 IST 2022).
+[   +1 ms] Cached resource https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.11.1/builder-model-8.11.1.jar is up-to-date (lastModified: Fri Jul 11 03:08:14 IST 2025).
+[  +96 ms] Cached resource https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.11.1/gradle-api-8.11.1.jar is up-to-date (lastModified: Fri Jul 11 03:08:14 IST 2025).
+[   +1 ms] Cached resource https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-tooling-core/1.8.0/kotlin-tooling-core-1.8.0.jar is up-to-date (lastModified: Wed Dec 28 01:56:54 IST 2022).
+[ +205 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.8.0/kotlin-gradle-plugin-api-1.8.0-gradle76.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\29f79a3bb109e05b07f1d2893074ab176a4276e0\kotlin-gradle-plugin-api-1.8.0-gradle76.jar]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.8.0/kotlin-gradle-plugin-api-1.8.0.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\29f79a3bb109e05b07f1d2893074ab176a4276e0\kotlin-gradle-plugin-api-1.8.0.jar]
+[  +91 ms] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.11.1/manifest-merger-31.11.1.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\manifest-merger\31.11.1\2eb20f98b2e71c3a1a2ebe675910e6958a7e1b78\manifest-merger-31.11.1.jar]
+[ +108 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/com/squareup/javawriter/2.5.0/javawriter-2.5.0.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.squareup\javawriter\2.5.0\81241ff7078ef14f42ea2a8995fa09c096256e6b\javawriter-2.5.0.jar]
+[   +1 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm\9.7.1\f0ed132a49244b042cd0e15702ab9f2ce3cc8436\asm-9.7.1.jar]
+[  +96 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-native-utils/1.8.0/kotlin-native-utils-1.8.0.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-native-utils\1.8.0\73361435f42e1fecbd81f686ccaa8aa1c498b941\kotlin-native-utils-1.8.0.jar]
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-project-model/1.8.0/kotlin-project-model-1.8.0.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-project-model\1.8.0\2b8d20018168339835a79512f46f3251ff09caf5\kotlin-project-model-1.8.0.jar]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/apksig/8.11.1/apksig-8.11.1.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apksig\8.11.1\f005788487574c7d6ba23dea63bf8cb3a4f164a6\apksig-8.11.1.jar]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/zipflinger/8.11.1/zipflinger-8.11.1.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android\zipflinger\8.11.1\3a3b1786c331db72b9610eb1f68f0ec1ec9a1f\zipflinger-8.11.1.jar]
+[        ] Found locally available resource with matching checksum: [https://dl.google.com/dl/android/maven2/com/android/tools/build/apkzlib/8.11.1/apkzlib-8.11.1.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apkzlib\8.11.1\ea2327cd7a67c0fc9a4d26f035b922dff11c7219\apkzlib-8.11.1.jar]
+[ +101 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-util-io/1.8.0/kotlin-util-io-1.8.0.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-util-io\1.8.0\1d7ca3cc3c24111ca8a12e29b10d6df0f778afd8\kotlin-util-io-1.8.0.jar]
+[   +1 ms] Transforming gradle-api-8.3.jar with ClasspathEntrySnapshotTransform
+[  +96 ms] Transforming groovy-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-ant-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-astbuilder-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-console-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-datetime-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-dateutil-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-groovydoc-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-json-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-nio-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-sql-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-templates-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-test-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming groovy-xml-3.0.17.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming javaparser-core-3.17.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-stdlib-1.9.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-stdlib-common-1.9.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-reflect-1.9.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-stdlib-jdk7-1.9.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-stdlib-jdk8-1.9.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming gradle-installation-beacon-8.3.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming gradle-kotlin-dsl-extensions-8.3.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming gradle-kotlin-dsl-8.3.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming gradle-kotlin-dsl-tooling-models-8.3.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming annotation-jvm-1.9.1.jar with ClasspathEntrySnapshotTransform
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[        ] Transforming gradle-8.11.1.jar with ClasspathEntrySnapshotTransform
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-3.0.17.jar is bf4e666c7c78c2b0df13df3763bec73c
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-ant-3.0.17.jar is 78aac5e134511d67e1074ae03fc18778
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-ant-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Transforming kotlin-reflect-1.9.0.jar with ClasspathEntrySnapshotTransform
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-api-8.3.jar is 8c8782d5bb94bc72766ad9d0a101bd90
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-api-8.3.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Transforming kotlin-stdlib-jdk7-1.9.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlinx-serialization-json-jvm-1.4.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlinx-serialization-core-jvm-1.4.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-stdlib-1.9.24.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-stdlib-jdk8-1.9.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-gradle-plugin-1.8.0-gradle76.jar with ClasspathEntrySnapshotTransform
+[  +85 ms] Transforming builder-8.11.1.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming builder-model-8.11.1.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming gradle-api-8.11.1.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-gradle-plugin-model-1.8.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-gradle-plugin-api-1.8.0-gradle76.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-gradle-plugin-api-1.8.0.jar with ClasspathEntrySnapshotTransform
+[ +103 ms] Transforming kotlin-tooling-core-1.8.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming annotations-13.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming manifest-merger-31.11.1.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming zipflinger-8.11.1.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming apksig-8.11.1.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming apkzlib-8.11.1.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming javawriter-2.5.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming asm-9.7.1.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-native-utils-1.8.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-project-model-1.8.0.jar with ClasspathEntrySnapshotTransform
+[        ] Transforming kotlin-util-io-1.8.0.jar with ClasspathEntrySnapshotTransform
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-astbuilder-3.0.17.jar is d89393188f11cbac6388598afb6cb94f
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-astbuilder-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[ +119 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-astbuilder-3.0.17.jar with cache key d89393188f11cbac6388598afb6cb94f
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-ant-3.0.17.jar with cache key 78aac5e134511d67e1074ae03fc18778
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-console-3.0.17.jar is d27fce4e9232919adf42fa39f1666120
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-datetime-3.0.17.jar is e11f8d76c53292e1dbd6538181e0390b
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-console-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-datetime-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[  +90 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-datetime-3.0.17.jar with cache key e11f8d76c53292e1dbd6538181e0390b
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-dateutil-3.0.17.jar is fbd526a8fe29b56faec066de6923a372
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-dateutil-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-dateutil-3.0.17.jar with cache key fbd526a8fe29b56faec066de6923a372
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-groovydoc-3.0.17.jar is 62c1a631dc6e297501f2bfde01a824a6
+[   +1 ms] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-groovydoc-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[ +436 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-groovydoc-3.0.17.jar with cache key 62c1a631dc6e297501f2bfde01a824a6
+[   +1 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-json-3.0.17.jar is d7cde03bafbc08df95a5e89f96b7148c
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-json-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-json-3.0.17.jar with cache key d7cde03bafbc08df95a5e89f96b7148c
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-nio-3.0.17.jar is 9522027a831864114d672caeadcdf635
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-nio-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-console-3.0.17.jar with cache key d27fce4e9232919adf42fa39f1666120
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-sql-3.0.17.jar is 50d93dae14e268beaec09c37f594d14d
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-sql-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-nio-3.0.17.jar with cache key 9522027a831864114d672caeadcdf635
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-templates-3.0.17.jar is d3d643f6ff34d40b5307c881f29ba52e
+[  +72 ms] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-templates-3.0.17.jar is not up-to-date because:
+[   +1 ms]   No history is available.
+[ +182 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-sql-3.0.17.jar with cache key 50d93dae14e268beaec09c37f594d14d
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-test-3.0.17.jar is a5e1446791aa3f1f0dde3a5732e29ff7
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-test-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[   +1 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-templates-3.0.17.jar with cache key d3d643f6ff34d40b5307c881f29ba52e
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-test-3.0.17.jar with cache key a5e1446791aa3f1f0dde3a5732e29ff7
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-xml-3.0.17.jar is 1dbfa2037a4bdfb0de3d0218a3c492d3
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-xml-3.0.17.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\javaparser-core-3.17.0.jar is 5d19b56ab31231f4d58c796b9f0ab759
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\javaparser-core-3.17.0.jar is not up-to-date because:
+[        ]   No history is available.
+[  +85 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-xml-3.0.17.jar with cache key 1dbfa2037a4bdfb0de3d0218a3c492d3
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-1.9.0.jar is 76932fe5f760a143146d465c19155e19
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-1.9.0.jar is not up-to-date because:
+[        ]   No history is available.
+[ +126 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\javaparser-core-3.17.0.jar with cache key 5d19b56ab31231f4d58c796b9f0ab759
+[ +197 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-common-1.9.0.jar is cf8fa745f315c63a3f65a8c2bc34b426
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-common-1.9.0.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-common-1.9.0.jar with cache key cf8fa745f315c63a3f65a8c2bc34b426
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-reflect-1.9.0.jar is dba2e00cd6f21d30f247d630f44d640a
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-reflect-1.9.0.jar is not up-to-date because:
+[        ]   No history is available.
+[ +866 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+1742 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\groovy-3.0.17.jar with cache key bf4e666c7c78c2b0df13df3763bec73c
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-jdk7-1.9.0.jar is e1d82d443eec62e33e9978075840b313
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-jdk7-1.9.0.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-jdk7-1.9.0.jar with cache key e1d82d443eec62e33e9978075840b313
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-reflect-1.9.0.jar with cache key dba2e00cd6f21d30f247d630f44d640a
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-jdk8-1.9.0.jar is bae0c28e0cb2373b4d5652c9d7286e02
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-jdk8-1.9.0.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-installation-beacon-8.3.jar is 377309a7a22e6ac747daf8f908334c05
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-installation-beacon-8.3.jar is not up-to-date because:
+[        ]   No history is available.
+[  +76 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-jdk8-1.9.0.jar with cache key bae0c28e0cb2373b4d5652c9d7286e02
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-kotlin-dsl-extensions-8.3.jar is a0a34ace290fe80d6f37ed9e0873a88c
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-kotlin-dsl-extensions-8.3.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-installation-beacon-8.3.jar with cache key 377309a7a22e6ac747daf8f908334c05
+[ +112 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-kotlin-dsl-8.3.jar is 05d43f05248bff2d8b4fb173809bfac9
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-kotlin-dsl-8.3.jar is not up-to-date because:
+[        ]   No history is available.
+[ +564 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-kotlin-dsl-extensions-8.3.jar with cache key a0a34ace290fe80d6f37ed9e0873a88c
+[   +7 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\kotlin-stdlib-1.9.0.jar with cache key 76932fe5f760a143146d465c19155e19
+[   +4 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-kotlin-dsl-tooling-models-8.3.jar is c0a75f25e460d1602bb1858b1028c2c9
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-kotlin-dsl-tooling-models-8.3.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.9.1\b17951747e38bf3986a24431b9ba0d039958aa5f\annotation-jvm-1.9.1.jar is 15757590a4f04f67d807ef6258a89d46
+[   +1 ms] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.9.1\b17951747e38bf3986a24431b9ba0d039958aa5f\annotation-jvm-1.9.1.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\androidx.annotation\annotation-jvm\1.9.1\b17951747e38bf3986a24431b9ba0d039958aa5f\annotation-jvm-1.9.1.jar with cache key 15757590a4f04f67d807ef6258a89d46
+[ +925 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-kotlin-dsl-tooling-models-8.3.jar with cache key c0a75f25e460d1602bb1858b1028c2c9
+[   +4 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.4.0\cfa3e57d044a20e5c9e4561a997df823e2f1c81a\kotlinx-serialization-json-jvm-1.4.0.jar is bdb46c31cbe4ac7a05d70577b15dd657
+[   +1 ms] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.4.0\cfa3e57d044a20e5c9e4561a997df823e2f1c81a\kotlinx-serialization-json-jvm-1.4.0.jar is not up-to-date because:
+[        ]   No history is available.
+[ +633 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\wrapper\dists\gradle-8.3-all\6en3ugtfdg5xnpx44z4qbwgas\gradle-8.3\lib\gradle-kotlin-dsl-8.3.jar with cache key 05d43f05248bff2d8b4fb173809bfac9
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.4.0\9b00d574374ae0201a505ab54c7744586866dc27\kotlinx-serialization-core-jvm-1.4.0.jar is 50ece4f30deebee251fd29fef0ce6122
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.4.0\9b00d574374ae0201a505ab54c7744586866dc27\kotlinx-serialization-core-jvm-1.4.0.jar is not up-to-date because:
+[        ]   No history is available.
+[ +170 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-json-jvm\1.4.0\cfa3e57d044a20e5c9e4561a997df823e2f1c81a\kotlinx-serialization-json-jvm-1.4.0.jar with cache key bdb46c31cbe4ac7a05d70577b15dd657
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-serialization-core-jvm\1.4.0\9b00d574374ae0201a505ab54c7744586866dc27\kotlinx-serialization-core-jvm-1.4.0.jar with cache key 50ece4f30deebee251fd29fef0ce6122
+[ +207 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\1.9.24\9928532f12c66ad816a625b3f9984f8368ca6d2b\kotlin-stdlib-1.9.24.jar is b190ff3a2562ee16b10343af81312fd3
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\1.9.24\9928532f12c66ad816a625b3f9984f8368ca6d2b\kotlin-stdlib-1.9.24.jar is not up-to-date because:
+[        ]   No history is available.
+[ +271 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle\8.11.1\7861a99a64716fd75ce85a3c7e2fcb3a9e928857\gradle-8.11.1.jar is 49d625e4d76bb5dc8f926b584dc79897
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle\8.11.1\7861a99a64716fd75ce85a3c7e2fcb3a9e928857\gradle-8.11.1.jar is not up-to-date because:
+[        ]   No history is available.
+[ +323 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.8.0\d79a079634e8d3bd92c594b224f4de2086bb4a10\kotlin-gradle-plugin-1.8.0-gradle76.jar is 8b498c2753cf03610fe7ed88fa87ccff
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.8.0\d79a079634e8d3bd92c594b224f4de2086bb4a10\kotlin-gradle-plugin-1.8.0-gradle76.jar is not up-to-date because:
+[        ]   No history is available.
+[ +384 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\1.9.24\9928532f12c66ad816a625b3f9984f8368ca6d2b\kotlin-stdlib-1.9.24.jar with cache key b190ff3a2562ee16b10343af81312fd3
+[+3912 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin\1.8.0\d79a079634e8d3bd92c594b224f4de2086bb4a10\kotlin-gradle-plugin-1.8.0-gradle76.jar with cache key 8b498c2753cf03610fe7ed88fa87ccff
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder-model\8.11.1\6888ed42b8bcc73e3a378048263d2cad36707494\builder-model-8.11.1.jar is 36a5cb6f7e398028d3fe2e42f1a89523
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder-model\8.11.1\6888ed42b8bcc73e3a378048263d2cad36707494\builder-model-8.11.1.jar is not up-to-date because:
+[        ]   No history is available.
+[ +111 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder\8.11.1\52ae05e99786bd491ad363825acbc2476c8b905\builder-8.11.1.jar is 6b272cf8ce214e51569931bae7c939c4
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder\8.11.1\52ae05e99786bd491ad363825acbc2476c8b905\builder-8.11.1.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle\8.11.1\7861a99a64716fd75ce85a3c7e2fcb3a9e928857\gradle-8.11.1.jar with cache key 49d625e4d76bb5dc8f926b584dc79897
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle-api\8.11.1\e0ce2faa3fe7331e1e6855e5aa699c650f6d56c3\gradle-api-8.11.1.jar is 81f78b1a0798ea24136a6c76b01a839a
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle-api\8.11.1\e0ce2faa3fe7331e1e6855e5aa699c650f6d56c3\gradle-api-8.11.1.jar is not up-to-date because:
+[        ]   No history is available.
+[ +183 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder-model\8.11.1\6888ed42b8bcc73e3a378048263d2cad36707494\builder-model-8.11.1.jar with cache key 36a5cb6f7e398028d3fe2e42f1a89523
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-model\1.8.0\9da2fce7af0a94348001ee8dd20a82167f5de284\kotlin-gradle-plugin-model-1.8.0.jar is 190c1f1ed170680887a8d1e200ddecea
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-model\1.8.0\9da2fce7af0a94348001ee8dd20a82167f5de284\kotlin-gradle-plugin-model-1.8.0.jar is not up-to-date because:
+[        ]   No history is available.
+[ +100 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\gradle-api\8.11.1\e0ce2faa3fe7331e1e6855e5aa699c650f6d56c3\gradle-api-8.11.1.jar with cache key 81f78b1a0798ea24136a6c76b01a839a
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\29f79a3bb109e05b07f1d2893074ab176a4276e0\kotlin-gradle-plugin-api-1.8.0-gradle76.jar is 01a9b799622b022ebc04cbaf11bf6a60
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\29f79a3bb109e05b07f1d2893074ab176a4276e0\kotlin-gradle-plugin-api-1.8.0-gradle76.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-model\1.8.0\9da2fce7af0a94348001ee8dd20a82167f5de284\kotlin-gradle-plugin-model-1.8.0.jar with cache key 190c1f1ed170680887a8d1e200ddecea
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\29f79a3bb109e05b07f1d2893074ab176a4276e0\kotlin-gradle-plugin-api-1.8.0.jar is 521ce2fa49b52895a8e80be4ac403943
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\29f79a3bb109e05b07f1d2893074ab176a4276e0\kotlin-gradle-plugin-api-1.8.0.jar is not up-to-date because:
+[        ]   No history is available.
+[ +223 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\29f79a3bb109e05b07f1d2893074ab176a4276e0\kotlin-gradle-plugin-api-1.8.0-gradle76.jar with cache key 01a9b799622b022ebc04cbaf11bf6a60
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-gradle-plugin-api\1.8.0\29f79a3bb109e05b07f1d2893074ab176a4276e0\kotlin-gradle-plugin-api-1.8.0.jar with cache key 521ce2fa49b52895a8e80be4ac403943
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar is 9efe2bc3a560f47a3c8496f49a57dc74
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar with cache key 9efe2bc3a560f47a3c8496f49a57dc74
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\manifest-merger\31.11.1\2eb20f98b2e71c3a1a2ebe675910e6958a7e1b78\manifest-merger-31.11.1.jar is 88034378c6fc663228d331303e522a99
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\manifest-merger\31.11.1\2eb20f98b2e71c3a1a2ebe675910e6958a7e1b78\manifest-merger-31.11.1.jar is not up-to-date because:
+[        ]   No history is available.
+[ +210 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-tooling-core\1.8.0\da3a4252e4b48833eb566227b2baecbaede8993\kotlin-tooling-core-1.8.0.jar is d8632ef2d67f63e6b46e293999b57e83
+[   +1 ms] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-tooling-core\1.8.0\da3a4252e4b48833eb566227b2baecbaede8993\kotlin-tooling-core-1.8.0.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-tooling-core\1.8.0\da3a4252e4b48833eb566227b2baecbaede8993\kotlin-tooling-core-1.8.0.jar with cache key d8632ef2d67f63e6b46e293999b57e83
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android\zipflinger\8.11.1\3a3b1786c331db72b9610eb1f68f0ec1ec9a1f\zipflinger-8.11.1.jar is d81c6e7b8efff4fe543b18255a12df61
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android\zipflinger\8.11.1\3a3b1786c331db72b9610eb1f68f0ec1ec9a1f\zipflinger-8.11.1.jar is not up-to-date because:
+[        ]   No history is available.
+[ +183 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\manifest-merger\31.11.1\2eb20f98b2e71c3a1a2ebe675910e6958a7e1b78\manifest-merger-31.11.1.jar with cache key 88034378c6fc663228d331303e522a99
+[   +1 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android\zipflinger\8.11.1\3a3b1786c331db72b9610eb1f68f0ec1ec9a1f\zipflinger-8.11.1.jar with cache key d81c6e7b8efff4fe543b18255a12df61
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apksig\8.11.1\f005788487574c7d6ba23dea63bf8cb3a4f164a6\apksig-8.11.1.jar is 2c3dbcaef1af86ae330544aa3ae9dff4
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apksig\8.11.1\f005788487574c7d6ba23dea63bf8cb3a4f164a6\apksig-8.11.1.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apkzlib\8.11.1\ea2327cd7a67c0fc9a4d26f035b922dff11c7219\apkzlib-8.11.1.jar is fd0a48176442a4caa4075d817fe5ae1f
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apkzlib\8.11.1\ea2327cd7a67c0fc9a4d26f035b922dff11c7219\apkzlib-8.11.1.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apksig\8.11.1\f005788487574c7d6ba23dea63bf8cb3a4f164a6\apksig-8.11.1.jar with cache key 2c3dbcaef1af86ae330544aa3ae9dff4
+[ +242 ms] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.squareup\javawriter\2.5.0\81241ff7078ef14f42ea2a8995fa09c096256e6b\javawriter-2.5.0.jar is 5689aa40ad19b2b47e6c47be6cb2c495
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.squareup\javawriter\2.5.0\81241ff7078ef14f42ea2a8995fa09c096256e6b\javawriter-2.5.0.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\apkzlib\8.11.1\ea2327cd7a67c0fc9a4d26f035b922dff11c7219\apkzlib-8.11.1.jar with cache key fd0a48176442a4caa4075d817fe5ae1f
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm\9.7.1\f0ed132a49244b042cd0e15702ab9f2ce3cc8436\asm-9.7.1.jar is 2c206fd346939cad31e547e044f3a786
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm\9.7.1\f0ed132a49244b042cd0e15702ab9f2ce3cc8436\asm-9.7.1.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.squareup\javawriter\2.5.0\81241ff7078ef14f42ea2a8995fa09c096256e6b\javawriter-2.5.0.jar with cache key 5689aa40ad19b2b47e6c47be6cb2c495
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm\9.7.1\f0ed132a49244b042cd0e15702ab9f2ce3cc8436\asm-9.7.1.jar with cache key 2c206fd346939cad31e547e044f3a786
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-native-utils\1.8.0\73361435f42e1fecbd81f686ccaa8aa1c498b941\kotlin-native-utils-1.8.0.jar is 891440a6b7bb83b173c3a6bd16b99971
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-native-utils\1.8.0\73361435f42e1fecbd81f686ccaa8aa1c498b941\kotlin-native-utils-1.8.0.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-project-model\1.8.0\2b8d20018168339835a79512f46f3251ff09caf5\kotlin-project-model-1.8.0.jar is 9bc5cf8f511389633c08a2180c6f5f7b
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-project-model\1.8.0\2b8d20018168339835a79512f46f3251ff09caf5\kotlin-project-model-1.8.0.jar is not up-to-date because:
+[        ]   No history is available.
+[        ] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-project-model\1.8.0\2b8d20018168339835a79512f46f3251ff09caf5\kotlin-project-model-1.8.0.jar with cache key 9bc5cf8f511389633c08a2180c6f5f7b
+[        ] Build cache key for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-util-io\1.8.0\1d7ca3cc3c24111ca8a12e29b10d6df0f778afd8\kotlin-util-io-1.8.0.jar is 56bf37402841c21f6b51c2dc666ca3f3
+[        ] ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-util-io\1.8.0\1d7ca3cc3c24111ca8a12e29b10d6df0f778afd8\kotlin-util-io-1.8.0.jar is not up-to-date because:
+[        ]   No history is available.
+[  +86 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-util-io\1.8.0\1d7ca3cc3c24111ca8a12e29b10d6df0f778afd8\kotlin-util-io-1.8.0.jar with cache key 56bf37402841c21f6b51c2dc666ca3f3
+[  +96 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-native-utils\1.8.0\73361435f42e1fecbd81f686ccaa8aa1c498b941\kotlin-native-utils-1.8.0.jar with cache key 891440a6b7bb83b173c3a6bd16b99971
+[ +285 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\modules-2\files-2.1\com.android.tools.build\builder\8.11.1\52ae05e99786bd491ad363825acbc2476c8b905\builder-8.11.1.jar with cache key 6b272cf8ce214e51569931bae7c939c4
+[+2310 ms] Stored cache entry for ClasspathEntrySnapshotTransform: C:\Users\Admin\.gradle\caches\8.3\generated-gradle-jars\gradle-api-8.3.jar with cache key 8c8782d5bb94bc72766ad9d0a101bd90
+[+1020 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.20/kotlin-compiler-embeddable-1.9.20.pom]
+[+1318 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[   +1 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[ +753 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.20/kotlin-compiler-embeddable-1.9.20.jar, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-compiler-embeddable\1.9.20\b44d2f7d8c1c67c0ed66d40e57e52623ca753db7\kotlin-compiler-embeddable-1.9.20.jar]
+[ +504 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[ +824 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[+1259 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.20/kotlin-scripting-compiler-embeddable-1.9.20.pom]
+[        ] Resource missing. [HTTP GET: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-sam-with-receiver-compiler-plugin-embeddable/1.9.20/kotlin-sam-with-receiver-compiler-plugin-embeddable-1.9.20.pom]
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Resource missing. [HTTP GET: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-assignment-compiler-plugin-embeddable/1.9.20/kotlin-assignment-compiler-plugin-embeddable-1.9.20.pom]
+[ +176 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.20/kotlin-scripting-compiler-embeddable-1.9.20.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-scripting-compiler-embeddable\1.9.20\b5541fa49ab0ae80e75464df70dc42b910d75403\kotlin-scripting-compiler-embeddable-1.9.20.pom]
+[        ] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-assignment-compiler-plugin-embeddable/1.9.20/kotlin-assignment-compiler-plugin-embeddable-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download8543936551435720235bin
+[        ] Downloading https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-sam-with-receiver-compiler-plugin-embeddable/1.9.20/kotlin-sam-with-receiver-compiler-plugin-embeddable-1.9.20.pom to C:\Users\Admin\.gradle\.tmp\gradle_download17022820003531801553bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +433 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[  +95 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +404 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.20/kotlin-scripting-compiler-impl-embeddable-1.9.20.pom]
+[ +109 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[   +3 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[        ] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.20/kotlin-scripting-compiler-impl-embeddable-1.9.20.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-scripting-compiler-impl-embeddable\1.9.20\cf1eb6f9f29382a9b76742dae45c1fea6e570c79\kotlin-scripting-compiler-impl-embeddable-1.9.20.pom]
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[ +204 ms] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-scripting-common/1.9.20/kotlin-scripting-common-1.9.20.pom]
+[        ] Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/org/jetbrains/kotlin/kotlin-scripting-jvm/1.9.20/kotlin-scripting-jvm-1.9.20.pom]
+[ +489 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\md5-checksums.bin
+[   +8 ms] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha256-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha1-checksums.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\checksums\sha512-checksums.bin
+[ +112 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-scripting-jvm/1.9.20/kotlin-scripting-jvm-1.9.20.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-scripting-jvm\1.9.20\8b0eac0fce86ef7cadeb85a2befaeeb09dde6f02\kotlin-scripting-jvm-1.9.20.pom]
+[   +6 ms] Found locally available resource with matching checksum: [https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-scripting-common/1.9.20/kotlin-scripting-common-1.9.20.pom, C:\Users\Admin\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-scripting-common\1.9.20\68f2e9c6aea484d72d0b23d7afee76850d949bce\kotlin-scripting-common-1.9.20.pom]
+[  +14 ms] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\journal-1\file-access.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of C:\Users\Admin\.gradle\caches\8.3\fileHashes\resourceHashesCache.bin
+[ +547 ms] Build cache key for task ':gradle:compileKotlin' is cf24a1b071c7f646b281a909846fe2f0
+[ +394 ms] Task ':gradle:compileKotlin' is not up-to-date because:
+[        ]   Output property 'classpathSnapshotProperties.classpathSnapshotDir' file D:\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\classpath-snapshot has been removed.
+[        ]   Output property 'classpathSnapshotProperties.classpathSnapshotDir' file D:\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\classpath-snapshot\shrunk-classpath-snapshot.bin has been removed.
+[        ]   Output property 'destinationDirectory' file D:\flutter\packages\flutter_tools\gradle\build\classes\kotlin\main has been removed.
+[        ] The input changes require a full rebuild for incremental task ':gradle:compileKotlin'.
+[ +466 ms] file or directory 'D:\flutter\packages\flutter_tools\gradle\src\main\java', not found
+[ +137 ms] file or directory 'D:\flutter\packages\flutter_tools\gradle\src\main\java', not found
+[        ] file or directory 'D:\flutter\packages\flutter_tools\gradle\src\main\java', not found
+[        ] file or directory 'D:\flutter\packages\flutter_tools\gradle\src\main\java', not found
+[        ] Kotlin source files: D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\AppLinkSettings.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\BaseApplicationNameHandler.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\Deeplink.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\DependencyVersionChecker.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterAppPluginLoaderPlugin.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterExtension.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterPlugin.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterPluginConstants.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterPluginUtils.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\IntentFilterCheck.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\NativePluginLoaderReflectionBridge.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\plugins\PluginHandler.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\BaseFlutterTask.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\BaseFlutterTaskHelper.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\DeepLinkJsonFromManifestTask.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\DeepLinkJsonFromManifestTaskHelper.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\FlutterTask.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\FlutterTaskHelper.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\VersionFetcher.kt, D:\flutter\packages\flutter_tools\gradle\src\main\kotlin\VersionUtils.kt
+[        ] Java source files: 
+[        ] Script source files: 
+[        ] Script file extensions: 
+[+1203 ms] Using Kotlin/JVM incremental compilation
+[        ] [KOTLIN] Kotlin compilation 'jdkHome' argument: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot
+[+2343 ms] Resolve mutations for :gradle:pluginDescriptors (Thread[Execution worker,5,main]) started.
+[        ] :gradle:pluginDescriptors (Thread[Execution worker,5,main]) started.
+[ +661 ms] > Task :gradle:compileKotlin
+[        ] i: found daemon on port 17629 (1019 ms old), trying to connect
+[        ] i: connected to the daemon
+[        ] Options for KOTLIN DAEMON: IncrementalCompilationOptions(super=CompilationOptions(compilerMode=INCREMENTAL_COMPILER, targetPlatform=JVM, reportCategories=[0, 3], reportSeverity=2, requestedCompilationResults=[0], kotlinScriptExtensions=[]), areFileChangesKnown=false, modifiedFiles=null, deletedFiles=null, classpathChanges=NotAvailableForNonIncrementalRun, workingDir=D:\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\cacheable, multiModuleICSettings=MultiModuleICSettings(buildHistoryFile=D:\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\local-state\build-history.bin, useModuleDetection=false), usePreciseJavaTracking=true, outputFiles=[D:\flutter\packages\flutter_tools\gradle\build\classes\kotlin\main, D:\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\cacheable, D:\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\local-state])
+[ +566 ms] > Task :gradle:pluginDescriptors UP-TO-DATE
+[        ] Invalidating in-memory cache of D:\flutter\packages\flutter_tools\gradle\.gradle\buildOutputCleanup\outputFiles.bin
+[        ] Invalidating in-memory cache of D:\flutter\packages\flutter_tools\gradle\.gradle\8.3\executionHistory\executionHistory.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\fileHashes\fileHashes.bin
+[        ] Invalidating in-memory cache of D:\FlutterApps\ssatravels_app\android\.gradle\8.3\fileHashes\resourceHashesCache.bin
+[   +3 ms] Caching disabled for task ':gradle:pluginDescriptors' because:
+[        ]   Not worth caching
+[        ] Skipping task ':gradle:pluginDescriptors' as it is up-to-date.
+[        ] Resolve mutations for :gradle:processResources (Thread[Execution worker,5,main]) started.
+[        ] :gradle:processResources (Thread[Execution worker,5,main]) started.
+[ +645 ms] > Task :gradle:processResources
+[        ] Caching disabled for task ':gradle:processResources' because:
+[        ]   Not worth caching
+[        ] Task ':gradle:processResources' is not up-to-date because:
+[        ]   Value of input property 'rootSpec$1.filteringCharset' has changed for task ':gradle:processResources'
+[   +5 ms]   Value of input property 'rootSpec$2.filteringCharset' has changed for task ':gradle:processResources'
+[        ] file or directory 'D:\flutter\packages\flutter_tools\gradle\src\main\resources', not found

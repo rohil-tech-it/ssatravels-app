@@ -5,7 +5,7 @@ import 'package:ssatravels_app/screens/admin/admin_about_page.dart';
 import 'package:ssatravels_app/screens/admin/admin_help_support_page.dart';
 
 class AdminProfileTab extends StatefulWidget {
-  const AdminProfileTab({Key? key}) : super(key: key);
+  const AdminProfileTab({super.key});
 
   @override
   State<AdminProfileTab> createState() => _AdminProfileTabState();
@@ -182,10 +182,10 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
               // Navigate to login screen - adjust route as needed
               Navigator.pushReplacementNamed(context, '/admin-login');
             },
-            child: Text('Logout'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
+            child: Text('Logout'),
           ),
         ],
       ),
@@ -583,7 +583,7 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
                           color: const Color.fromARGB(255, 156, 230, 162),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: const Color.fromARGB(255, 51, 180, 51)!),
+                              color: const Color.fromARGB(255, 51, 180, 51)),
                         ),
                         child: Row(
                           children: [

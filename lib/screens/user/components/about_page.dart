@@ -24,7 +24,7 @@ class AboutPage extends StatelessWidget {
         child: Column(
           children: [
             // App Logo
-            Container(
+            SizedBox(
               width: 140,
               height: 140,
               child: Padding(

@@ -37,13 +37,13 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
         title: const Text(
           'Ride History',
           style: TextStyle(
-            color: Colors.white, // ⬅ white text
+            color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
         backgroundColor: const Color(0xFF00B14F),
         iconTheme: const IconThemeData(
-          color: Colors.white, // ⬅ back arrow white
+          color: Colors.white,
         ),
         actions: [
           IconButton(
@@ -95,6 +95,32 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 80,
+                          color: Colors.red[400],
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Error loading rides',
+                          style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          snapshot.error.toString(),
+                          style: const TextStyle(color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return Center(
                     child: Column(
@@ -125,8 +151,11 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                   padding: const EdgeInsets.all(16),
                   itemCount: rides.length,
                   itemBuilder: (context, index) {
-                    final ride = rides[index].data() as Map<String, dynamic>;
-                    return _buildRideCard(ride);
+                    final rideDoc = rides[index];
+                    final rideData = rideDoc.data() as Map<String, dynamic>;
+                    // Add the document ID to the ride data
+                    rideData['id'] = rideDoc.id;
+                    return _buildRideCard(rideData);
                   },
                 );
               },
@@ -144,29 +173,56 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
         .orderBy('createdAt', descending: true);
 
     if (_selectedFilter != 'All') {
-      query = query.where('status', isEqualTo: _selectedFilter.toLowerCase());
+      // Handle filter values (convert to lowercase for consistency)
+      String filterValue = _selectedFilter.toLowerCase();
+      if (filterValue == 'upcoming') {
+        // You might want to handle upcoming differently based on your data structure
+        query = query.where('status', isEqualTo: 'pending');
+      } else {
+        query = query.where('status', isEqualTo: filterValue);
+      }
     }
 
     return query.snapshots();
   }
 
   Widget _buildRideCard(Map<String, dynamic> ride) {
-    final pickup = ride['pickup'] ?? {};
-    final destination = ride['destination'] ?? {};
-    final status = ride['status'] ?? 'unknown';
-    final fare = ride['fare'] ?? 0;
-    final date = ride['createdAt'] != null
-        ? (ride['createdAt'] as Timestamp).toDate()
-        : DateTime.now();
+    // Safely extract data with null checks
+    final pickup = ride['pickup'] is Map ? ride['pickup'] as Map : {};
+    final destination = ride['destination'] is Map ? ride['destination'] as Map : {};
+    final status = ride['status']?.toString().toLowerCase() ?? 'unknown';
+    final fare = (ride['fare'] ?? 0).toDouble();
+    
+    // Handle date parsing safely
+    DateTime date;
+    if (ride['createdAt'] != null) {
+      if (ride['createdAt'] is Timestamp) {
+        date = (ride['createdAt'] as Timestamp).toDate();
+      } else if (ride['createdAt'] is DateTime) {
+        date = ride['createdAt'] as DateTime;
+      } else {
+        date = DateTime.now();
+      }
+    } else {
+      date = DateTime.now();
+    }
 
-    // Status colors
+    // Get ride ID safely
+    String rideId = ride['rideId']?.toString() ?? 
+                   ride['id']?.toString() ?? 
+                   'N/A';
+    if (rideId.length > 8) {
+      rideId = rideId.substring(0, 8);
+    }
+
+    // Status colors and icons
     Color statusColor;
     IconData statusIcon;
     String statusText;
 
     switch (status) {
       case 'completed':
-        statusColor =  const Color(0xFF00B14F);
+        statusColor = const Color(0xFF00B14F);
         statusIcon = Icons.check_circle;
         statusText = 'Completed';
         break;
@@ -175,12 +231,14 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
         statusIcon = Icons.cancel;
         statusText = 'Cancelled';
         break;
+      case 'pending':
       case 'upcoming':
         statusColor = Colors.orange;
         statusIcon = Icons.schedule;
         statusText = 'Upcoming';
         break;
       case 'ongoing':
+      case 'accepted':
         statusColor = Colors.blue;
         statusIcon = Icons.directions_car;
         statusText = 'Ongoing';
@@ -188,7 +246,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
       default:
         statusColor = Colors.grey;
         statusIcon = Icons.help;
-        statusText = 'Unknown';
+        statusText = status[0].toUpperCase() + status.substring(1);
     }
 
     return Container(
@@ -226,7 +284,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ride ${ride['rideId']?.toString().substring(0, 8) ?? 'N/A'}',
+                        'Ride #$rideId',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -274,7 +332,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                       width: 8,
                       height: 8,
                       decoration: BoxDecoration(
-                        color:  const Color(0xFF00B14F),
+                        color: const Color(0xFF00B14F),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -291,7 +349,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                             ),
                           ),
                           Text(
-                            pickup['address'] ?? 'Unknown location',
+                            pickup['address']?.toString() ?? 'Unknown location',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -331,7 +389,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                             ),
                           ),
                           Text(
-                            destination['address'] ?? 'Unknown location',
+                            destination['address']?.toString() ?? 'Unknown location',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -387,7 +445,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                           foregroundColor: const Color(0xFF00B14F),
                         ),
                       ),
-                    if (status == 'upcoming')
+                    if (status == 'pending' || status == 'upcoming')
                       ElevatedButton.icon(
                         onPressed: () {
                           _cancelRide(ride['id']);
@@ -445,8 +503,9 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                       });
                       Navigator.pop(context);
                     },
+                    activeColor: const Color(0xFF00B14F),
                   );
-                }).toList(),
+                }),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -497,19 +556,15 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                       'Ride ID', ride['rideId']?.toString() ?? 'N/A'),
                   _buildDetailRow(
                       'Date',
-                      DateFormat('MMMM dd, yyyy').format(
-                        (ride['createdAt'] as Timestamp).toDate(),
-                      )),
+                      _formatDate(ride['createdAt'])),
                   _buildDetailRow(
                       'Time',
-                      DateFormat('hh:mm a').format(
-                        (ride['createdAt'] as Timestamp).toDate(),
-                      )),
-                  _buildDetailRow('Status', ride['status'] ?? 'Unknown'),
+                      _formatTime(ride['createdAt'])),
+                  _buildDetailRow('Status', ride['status']?.toString() ?? 'Unknown'),
                   _buildDetailRow(
-                      'Vehicle Type', ride['vehicleType'] ?? 'Standard'),
-                  _buildDetailRow('Distance', '${ride['distance'] ?? 0} km'),
-                  _buildDetailRow('Duration', '${ride['duration'] ?? 0} mins'),
+                      'Vehicle Type', ride['vehicleType']?.toString() ?? 'Standard'),
+                  _buildDetailRow('Distance', '${_getDoubleValue(ride['distance'])} km'),
+                  _buildDetailRow('Duration', '${_getDoubleValue(ride['duration'])} mins'),
                   const SizedBox(height: 20),
                   const Divider(),
                   const SizedBox(height: 20),
@@ -521,16 +576,15 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _buildFareRow('Base Fare', ride['baseFare'] ?? 0),
-                  _buildFareRow('Distance Charge', ride['distanceCharge'] ?? 0),
-                  _buildFareRow('Time Charge', ride['timeCharge'] ?? 0),
-                  if (ride['tollCharge'] != null && ride['tollCharge']! > 0)
-                    _buildFareRow('Toll Charge', ride['tollCharge']!),
-                  if (ride['waitingCharge'] != null &&
-                      ride['waitingCharge']! > 0)
-                    _buildFareRow('Waiting Charge', ride['waitingCharge']!),
+                  _buildFareRow('Base Fare', _getDoubleValue(ride['baseFare'])),
+                  _buildFareRow('Distance Charge', _getDoubleValue(ride['distanceCharge'])),
+                  _buildFareRow('Time Charge', _getDoubleValue(ride['timeCharge'])),
+                  if (_getDoubleValue(ride['tollCharge']) > 0)
+                    _buildFareRow('Toll Charge', _getDoubleValue(ride['tollCharge'])),
+                  if (_getDoubleValue(ride['waitingCharge']) > 0)
+                    _buildFareRow('Waiting Charge', _getDoubleValue(ride['waitingCharge'])),
                   const Divider(),
-                  _buildFareRow('Total', ride['fare'] ?? 0, isTotal: true),
+                  _buildFareRow('Total', _getDoubleValue(ride['fare']), isTotal: true),
                   const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
@@ -551,6 +605,48 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
     );
   }
 
+  String _formatDate(dynamic date) {
+    try {
+      if (date == null) return 'N/A';
+      if (date is Timestamp) {
+        return DateFormat('MMMM dd, yyyy').format(date.toDate());
+      } else if (date is DateTime) {
+        return DateFormat('MMMM dd, yyyy').format(date);
+      }
+    } catch (e) {
+      return 'Invalid date';
+    }
+    return 'N/A';
+  }
+
+  String _formatTime(dynamic date) {
+    try {
+      if (date == null) return 'N/A';
+      if (date is Timestamp) {
+        return DateFormat('hh:mm a').format(date.toDate());
+      } else if (date is DateTime) {
+        return DateFormat('hh:mm a').format(date);
+      }
+    } catch (e) {
+      return 'Invalid time';
+    }
+    return 'N/A';
+  }
+
+  double _getDoubleValue(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is int) return value.toDouble();
+    if (value is double) return value;
+    if (value is String) {
+      try {
+        return double.parse(value);
+      } catch (e) {
+        return 0.0;
+      }
+    }
+    return 0.0;
+  }
+
   Widget _buildDetailRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -561,9 +657,12 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
             label,
             style: const TextStyle(color: Colors.grey),
           ),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w500),
+          Flexible(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              textAlign: TextAlign.right,
+            ),
           ),
         ],
       ),
@@ -614,23 +713,30 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                   'status': 'cancelled',
                   'cancelledAt': FieldValue.serverTimestamp(),
                 });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Ride cancelled successfully'),
-                    backgroundColor:  const Color(0xFF00B14F),
-                  ),
-                );
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Ride cancelled successfully'),
+                      backgroundColor: Color(0xFF00B14F),
+                    ),
+                  );
+                }
               } catch (e) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               }
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
             child: const Text('Yes, Cancel'),
           ),
         ],

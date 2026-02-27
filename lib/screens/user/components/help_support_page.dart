@@ -216,14 +216,14 @@ class HelpSupportPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color:  const Color(0xFF00B14F),
+        color:  const Color.fromARGB(255, 199, 247, 221),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color:  const Color(0xFF00B14F)!),
+        border: Border.all(color:  const Color(0xFF00B14F)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle, color:  const Color(0xFF00B14F), size: 20),
+          const Icon(Icons.check_circle, color:  Color(0xFF00B14F), size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -333,7 +333,7 @@ class HelpSupportPage extends StatelessWidget {
     final Uri launchUri = Uri(
       scheme: 'sms',
       path: phoneNumber,
-      queryParameters: {'body': 'Hello SSA Travels Team, I need assistance:'},
+      queryParameters: {'body': 'Hello SSA Travel!'},
     );
 
     if (await canLaunchUrl(launchUri)) {

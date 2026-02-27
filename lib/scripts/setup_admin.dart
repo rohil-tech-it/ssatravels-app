@@ -8,7 +8,6 @@ Future<void> setupAdminAccount() async {
   try {
     await Firebase.initializeApp();
   } catch (e) {
-    print('❌ Firebase initialization failed: $e');
     return;
   }
 
@@ -37,9 +36,9 @@ Future<void> setupAdminAccount() async {
 
     // Create admin document
     await firestore.collection('admins').doc('admin_001').set(adminData);
-  } catch (e) {
-    print('❌ Error creating admin account: $e');
-  }
+  } catch (_) {
+  // ignored
+}
 }
 
 void main() async {

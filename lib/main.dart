@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -7,17 +8,32 @@ import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/user/user_home_screen.dart';
-import 'screens/admin/admin_main_screen.dart'; 
-import 'firebase_upload.dart';
-
+import 'screens/admin/admin_main_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Load environment variables
+  try {
+    await dotenv.load(fileName: ".env");
+    print('✅ .env loaded successfully');
+  } catch (e) {
+    print('❌ Error loading .env: $e');
+  }
+
+  // ✅ FIX: Check if Firebase is already initialized
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      print('✅ Firebase initialized successfully');
+    } else {
+      print('✅ Firebase already initialized');
+    }
+  } catch (e) {
+    print('❌ Firebase initialization error: $e');
+  }
 
   runApp(const MyApp());
 }
@@ -91,8 +107,7 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/user-home': (context) => const UserHomeScreen(),
-          '/admin-home': (context) => AdminMainScreen(), 
-          '/firebase-upload': (context) => FirebaseUploadPage(),
+          '/admin-home': (context) => const AdminMainScreen(),
         },
       ),
     );

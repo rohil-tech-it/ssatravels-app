@@ -1,103 +1,112 @@
-// lib/models/booking_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookingModel {
   final String? id;
-  final String customerName;
-  final String customerPhone;
-  final String? customerEmail;
-  final String pickupLocation;
-  final String dropLocation;
-  final String travelDate;
-  final String travelTime;
+  final String userId;
+  final String userName;
+  final String userEmail;
+  final String userPhone;
+  final String fromLocation;
+  final String toLocation;
+  final DateTime travelDate;
+  final DateTime? returnDate;
   final String vehicleType;
-  final int numberOfPersons;
+  final String vehicleNumber;
+  final int passengers;
+  final double baseFare;
+  final double? tollAmount;
   final double totalAmount;
-  final double paidAmount;
+  final String paymentMethod;
   final String paymentStatus;
-  final String status;
-  final String? paymentMethod;
-  final String? bookingId;
-  final Timestamp createdAt;
-  final Timestamp? updatedAt;
-  final String? notes;
-  final String? driverName;
-  final String? vehicleNumber;
+  final String bookingStatus;
+  final DateTime bookingDate;
+  
+  // New toll-related fields
+  final List<Map<String, dynamic>>? tollPlazas;
+  final String? routeKey;
+  final int? totalTollPlazas;
 
   BookingModel({
     this.id,
-    required this.customerName,
-    required this.customerPhone,
-    this.customerEmail,
-    required this.pickupLocation,
-    required this.dropLocation,
+    required this.userId,
+    required this.userName,
+    required this.userEmail,
+    required this.userPhone,
+    required this.fromLocation,
+    required this.toLocation,
     required this.travelDate,
-    required this.travelTime,
+    this.returnDate,
     required this.vehicleType,
-    required this.numberOfPersons,
+    required this.vehicleNumber,
+    required this.passengers,
+    required this.baseFare,
+    this.tollAmount,
     required this.totalAmount,
-    required this.paidAmount,
+    required this.paymentMethod,
     required this.paymentStatus,
-    required this.status,
-    this.paymentMethod,
-    this.bookingId,
-    required this.createdAt,
-    this.updatedAt,
-    this.notes,
-    this.driverName,
-    this.vehicleNumber,
+    required this.bookingStatus,
+    required this.bookingDate,
+    this.tollPlazas,
+    this.routeKey,
+    this.totalTollPlazas,
   });
-
-  factory BookingModel.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    
-    return BookingModel(
-      id: doc.id,
-      customerName: data['customerName'] ?? '',
-      customerPhone: data['customerPhone'] ?? '',
-      customerEmail: data['customerEmail'],
-      pickupLocation: data['pickupLocation'] ?? '',
-      dropLocation: data['dropLocation'] ?? '',
-      travelDate: data['travelDate'] ?? '',
-      travelTime: data['travelTime'] ?? '',
-      vehicleType: data['vehicleType'] ?? '',
-      numberOfPersons: data['numberOfPersons'] ?? 1,
-      totalAmount: (data['totalAmount'] ?? 0).toDouble(),
-      paidAmount: (data['paidAmount'] ?? 0).toDouble(),
-      paymentStatus: data['paymentStatus'] ?? 'pending',
-      status: data['status'] ?? 'pending',
-      paymentMethod: data['paymentMethod'],
-      bookingId: data['bookingId'],
-      createdAt: data['createdAt'] ?? Timestamp.now(),
-      updatedAt: data['updatedAt'],
-      notes: data['notes'],
-      driverName: data['driverName'],
-      vehicleNumber: data['vehicleNumber'],
-    );
-  }
 
   Map<String, dynamic> toMap() {
     return {
-      'customerName': customerName,
-      'customerPhone': customerPhone,
-      'customerEmail': customerEmail,
-      'pickupLocation': pickupLocation,
-      'dropLocation': dropLocation,
-      'travelDate': travelDate,
-      'travelTime': travelTime,
+      'userId': userId,
+      'userName': userName,
+      'userEmail': userEmail,
+      'userPhone': userPhone,
+      'fromLocation': fromLocation,
+      'toLocation': toLocation,
+      'travelDate': Timestamp.fromDate(travelDate),
+      'returnDate': returnDate != null ? Timestamp.fromDate(returnDate!) : null,
       'vehicleType': vehicleType,
-      'numberOfPersons': numberOfPersons,
-      'totalAmount': totalAmount,
-      'paidAmount': paidAmount,
-      'paymentStatus': paymentStatus,
-      'status': status,
-      'paymentMethod': paymentMethod,
-      'bookingId': bookingId ?? 'BK${DateTime.now().millisecondsSinceEpoch}',
-      'createdAt': createdAt,
-      'updatedAt': updatedAt ?? FieldValue.serverTimestamp(),
-      'notes': notes,
-      'driverName': driverName,
       'vehicleNumber': vehicleNumber,
+      'passengers': passengers,
+      'baseFare': baseFare,
+      'tollAmount': tollAmount,
+      'totalAmount': totalAmount,
+      'paymentMethod': paymentMethod,
+      'paymentStatus': paymentStatus,
+      'bookingStatus': bookingStatus,
+      'bookingDate': Timestamp.fromDate(bookingDate),
+      'tollPlazas': tollPlazas,
+      'routeKey': routeKey,
+      'totalTollPlazas': totalTollPlazas,
     };
+  }
+
+  factory BookingModel.fromMap(String id, Map<String, dynamic> map) {
+    return BookingModel(
+      id: id,
+      userId: map['userId'] ?? '',
+      userName: map['userName'] ?? '',
+      userEmail: map['userEmail'] ?? '',
+      userPhone: map['userPhone'] ?? '',
+      fromLocation: map['fromLocation'] ?? '',
+      toLocation: map['toLocation'] ?? '',
+      travelDate: (map['travelDate'] as Timestamp).toDate(),
+      returnDate: map['returnDate'] != null 
+          ? (map['returnDate'] as Timestamp).toDate() 
+          : null,
+      vehicleType: map['vehicleType'] ?? '',
+      vehicleNumber: map['vehicleNumber'] ?? '',
+      passengers: map['passengers'] ?? 1,
+      baseFare: (map['baseFare'] ?? 0).toDouble(),
+      tollAmount: map['tollAmount'] != null 
+          ? (map['tollAmount']).toDouble() 
+          : null,
+      totalAmount: (map['totalAmount'] ?? 0).toDouble(),
+      paymentMethod: map['paymentMethod'] ?? '',
+      paymentStatus: map['paymentStatus'] ?? 'pending',
+      bookingStatus: map['bookingStatus'] ?? 'pending',
+      bookingDate: (map['bookingDate'] as Timestamp).toDate(),
+      tollPlazas: map['tollPlazas'] != null 
+          ? List<Map<String, dynamic>>.from(map['tollPlazas']) 
+          : null,
+      routeKey: map['routeKey'],
+      totalTollPlazas: map['totalTollPlazas'],
+    );
   }
 }

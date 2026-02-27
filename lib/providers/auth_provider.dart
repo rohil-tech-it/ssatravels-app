@@ -83,7 +83,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   // ============================================
-  // MAIN LOGIN METHOD
+  // LOGIN METHOD
   // ============================================
   Future<bool> login({
     required String phoneNumber,
@@ -94,10 +94,13 @@ class AuthProvider with ChangeNotifier {
       _error = null;
       notifyListeners();
 
+      // Clean phone number
+      String cleanPhone = _cleanPhoneNumber(phoneNumber);
+
       // ================================
       // 1. ADMIN LOGIN
       // ================================
-      if (phoneNumber.trim() == AdminConfig.adminPhone) {
+      if (cleanPhone == AdminConfig.adminPhone) {
         if (password.trim() != AdminConfig.adminPassword) {
           _error = 'Invalid admin password';
           _isLoading = false;
@@ -122,7 +125,7 @@ class AuthProvider with ChangeNotifier {
         final adminDoc = adminQuery.docs.first;
         _isAdmin = true;
         _isLoggedIn = true;
-        _phoneNumber = phoneNumber;
+        _phoneNumber = cleanPhone;
         _userData = adminDoc.data();
         _userData!['uid'] = adminDoc.id;
         _firebaseUser = null;
@@ -133,15 +136,29 @@ class AuthProvider with ChangeNotifier {
       }
 
       // ================================
-      // 2. USER LOGIN (WITH PHONE-EMAIL)
+      // 2. USER LOGIN
       // ================================
 
+      // Check if phone number is registered
+      final phoneCheck = await _firestore
+          .collection('users')
+          .where('phoneNumber', isEqualTo: cleanPhone)
+          .limit(1)
+          .get();
+
+      if (phoneCheck.docs.isEmpty) {
+        _error = 'No account found with this phone number';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
       // Convert phone to SSA email format for Firebase Auth
-      String phoneEmail = '${phoneNumber.trim()}@ssatravels.com';
+      String phoneEmail = '$cleanPhone@ssatravels.com';
 
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: phoneEmail, // 6379226432@ssatravels.com
+          email: phoneEmail,
           password: password,
         );
 
@@ -150,7 +167,7 @@ class AuthProvider with ChangeNotifier {
 
         // Set user state
         _isLoggedIn = true;
-        _phoneNumber = phoneNumber;
+        _phoneNumber = cleanPhone;
         _firebaseUser = userCredential.user;
 
         _isLoading = false;
@@ -190,104 +207,22 @@ class AuthProvider with ChangeNotifier {
   }
 
   // ============================================
-  // PASSWORD RESET METHOD - TAKES PHONE, SENDS TO REAL EMAIL
-  // ============================================
-  Future<bool> sendPasswordResetEmail({
-    required String phoneNumber,
-  }) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-
-      // Don't allow password reset for admin
-      if (phoneNumber.trim() == AdminConfig.adminPhone) {
-        _error =
-            'Admin password cannot be reset through this method. Contact system administrator.';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-
-      // 1. Find user in Firestore by phone number
-      final userQuery = await _firestore
-          .collection('users')
-          .where('phoneNumber', isEqualTo: phoneNumber.trim())
-          .limit(1)
-          .get();
-
-      if (userQuery.docs.isEmpty) {
-        _error = 'No account found with this phone number';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-
-      // 2. Get user's REAL EMAIL from Firestore
-      final userData = userQuery.docs.first.data();
-      String realEmail = userData['email'];
-
-      // ignore: unnecessary_null_comparison
-      if (realEmail == null || realEmail.isEmpty) {
-        _error =
-            'No email address found for this account. Please contact support.';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-
-      // 3. Get phone-email for Firebase Auth
-      String phoneEmail = '${phoneNumber.trim()}@ssatravels.com';
-
-      // 4. Send password reset to phone-email (Firebase Auth uses this)
-      await _auth.sendPasswordResetEmail(email: phoneEmail);
-
-      _isLoading = false;
-      _error = null;
-      notifyListeners();
-      return true;
-    } on FirebaseAuthException catch (e) {
-      _error = _getPasswordResetErrorMessage(e.code);
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    } catch (e) {
-      _error = 'Failed to send reset email. Please try again.';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  String _getPasswordResetErrorMessage(String code) {
-    switch (code) {
-      case 'user-not-found':
-        return 'No account found with this phone number';
-      case 'invalid-email':
-        return 'Invalid phone number format';
-      case 'user-disabled':
-        return 'This account has been disabled';
-      case 'too-many-requests':
-        return 'Too many attempts. Try again later';
-      default:
-        return 'Failed to send password reset email';
-    }
-  }
-
-  // ============================================
-  // REGISTRATION METHOD - STORES REAL EMAIL IN FIRESTORE
+  // REGISTRATION METHOD
   // ============================================
   Future<bool> register({
     required String phoneNumber,
     required String password,
     required String confirmPassword,
     required String fullName,
-    required String email, // REAL EMAIL (sabarna620@gmail.com)
+    required String email,
   }) async {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
+
+      // Clean phone number
+      String cleanPhone = _cleanPhoneNumber(phoneNumber);
 
       // Validation
       if (password != confirmPassword) {
@@ -311,8 +246,17 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
+      // Validate phone number
+      if (cleanPhone.length != 10 ||
+          !RegExp(r'^[6-9]\d{9}$').hasMatch(cleanPhone)) {
+        _error = 'Please enter a valid 10-digit Indian phone number';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
       // BLOCK ADMIN PHONE
-      if (phoneNumber.trim() == AdminConfig.adminPhone) {
+      if (cleanPhone == AdminConfig.adminPhone) {
         _error = 'This phone number is reserved for admin use';
         _isLoading = false;
         notifyListeners();
@@ -322,7 +266,7 @@ class AuthProvider with ChangeNotifier {
       // Check if phone already exists
       final existingPhone = await _firestore
           .collection('users')
-          .where('phoneNumber', isEqualTo: phoneNumber.trim())
+          .where('phoneNumber', isEqualTo: cleanPhone)
           .limit(1)
           .get();
 
@@ -333,13 +277,27 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      // ✅ Use PHONE-EMAIL for Firebase Auth
-      String phoneEmail = '${phoneNumber.trim()}@ssatravels.com';
+      // Check if email already exists in Firestore
+      final existingEmail = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email.trim())
+          .limit(1)
+          .get();
+
+      if (existingEmail.docs.isNotEmpty) {
+        _error = 'Email address already registered';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // Use PHONE-EMAIL for Firebase Auth
+      String phoneEmail = '$cleanPhone@ssatravels.com';
 
       // Create user in Firebase Auth with PHONE-EMAIL
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
-        email: phoneEmail, // 6379226432@ssatravels.com
+        email: phoneEmail,
         password: password,
       );
 
@@ -349,8 +307,8 @@ class AuthProvider with ChangeNotifier {
       // Create user document in Firestore with REAL EMAIL
       _userData = {
         'uid': userCredential.user!.uid,
-        'phoneNumber': phoneNumber.trim(),
-        'email': email.trim(), // REAL EMAIL (sabarna620@gmail.com)
+        'phoneNumber': cleanPhone,
+        'email': email.trim(),
         'fullName': fullName.trim(),
         'isAdmin': false,
         'createdAt': FieldValue.serverTimestamp(),
@@ -365,7 +323,7 @@ class AuthProvider with ChangeNotifier {
       // Update state
       _isLoggedIn = true;
       _isAdmin = false;
-      _phoneNumber = phoneNumber;
+      _phoneNumber = cleanPhone;
       _firebaseUser = userCredential.user;
 
       _isLoading = false;
@@ -399,6 +357,130 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // ============================================
+  // PASSWORD RESET METHOD - UPDATED WITH BETTER FEEDBACK
+  // ============================================
+  Future<bool> sendPasswordResetEmail({
+    required String phoneNumber,
+  }) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      String cleanPhone = _cleanPhoneNumber(phoneNumber);
+
+      // Don't allow password reset for admin
+      if (cleanPhone == AdminConfig.adminPhone) {
+        _error =
+            'Admin password cannot be reset through this method. Contact system administrator.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // 1. Find user in Firestore by phone number
+      final userQuery = await _firestore
+          .collection('users')
+          .where('phoneNumber', isEqualTo: cleanPhone)
+          .limit(1)
+          .get();
+
+      if (userQuery.docs.isEmpty) {
+        _error = 'No account found with this phone number';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // 2. Get user's REAL EMAIL from Firestore (for display)
+      final userData = userQuery.docs.first.data();
+      String? realEmail = userData['email'];
+
+      // 3. Get phone-email for Firebase Auth
+      String phoneEmail = '$cleanPhone@ssatravels.com';
+
+      // 4. Send password reset to phone-email
+      await _auth.sendPasswordResetEmail(email: phoneEmail);
+
+      _isLoading = false;
+      _error = null;
+      notifyListeners();
+
+      // Return true with real email for display in UI
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _error = _getPasswordResetErrorMessage(e.code);
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _error = 'Failed to send reset email. Please try again.';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  String _getPasswordResetErrorMessage(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'No account found with this phone number';
+      case 'invalid-email':
+        return 'Invalid phone number format';
+      case 'user-disabled':
+        return 'This account has been disabled';
+      case 'too-many-requests':
+        return 'Too many attempts. Try again later';
+      default:
+        return 'Failed to send password reset email';
+    }
+  }
+
+  // ============================================
+  // CHECK IF PHONE EXISTS
+  // ============================================
+  Future<bool> checkPhoneExists(String phoneNumber) async {
+    try {
+      String cleanPhone = _cleanPhoneNumber(phoneNumber);
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('phoneNumber', isEqualTo: cleanPhone)
+          .limit(1)
+          .get();
+
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      debugPrint('Error checking phone: $e');
+      return false;
+    }
+  }
+
+  // ============================================
+  // GET REAL EMAIL BY PHONE
+  // ============================================
+  Future<String?> getRealEmailByPhone(String phoneNumber) async {
+    try {
+      String cleanPhone = _cleanPhoneNumber(phoneNumber);
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('phoneNumber', isEqualTo: cleanPhone)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.data()['email'];
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting email: $e');
+      return null;
+    }
+  }
+
+  // ============================================
+  // LOGOUT
+  // ============================================
   Future<void> logout() async {
     try {
       if (_firebaseUser != null) {
@@ -426,11 +508,16 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool isAdminPhone(String phoneNumber) {
-    return phoneNumber.trim() == AdminConfig.adminPhone;
+  String _cleanPhoneNumber(String phoneNumber) {
+    return phoneNumber.replaceAll('+91', '').replaceAll(' ', '').trim();
   }
 
-  // Update user's real email (if needed)
+  bool isAdminPhone(String phoneNumber) {
+    String cleanPhone = _cleanPhoneNumber(phoneNumber);
+    return cleanPhone == AdminConfig.adminPhone;
+  }
+
+  // Update user's real email
   Future<bool> updateRealEmail({required String email}) async {
     try {
       _isLoading = true;
@@ -444,14 +531,27 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      // Update real email in Firestore
-      _userData!['email'] = email;
-      _userData!['updatedAt'] = FieldValue.serverTimestamp();
-
-      await _firestore
+      // Check if email already exists
+      final existingEmail = await _firestore
           .collection('users')
-          .doc(_firebaseUser!.uid)
-          .update({'email': email, 'updatedAt': FieldValue.serverTimestamp()});
+          .where('email', isEqualTo: email.trim())
+          .where('uid', isNotEqualTo: _firebaseUser!.uid)
+          .limit(1)
+          .get();
+
+      if (existingEmail.docs.isNotEmpty) {
+        _error = 'Email address already in use by another account';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // Update real email in Firestore
+      await _firestore.collection('users').doc(_firebaseUser!.uid).update(
+          {'email': email.trim(), 'updatedAt': FieldValue.serverTimestamp()});
+
+      _userData!['email'] = email.trim();
+      _userData!['updatedAt'] = DateTime.now();
 
       _isLoading = false;
       notifyListeners();

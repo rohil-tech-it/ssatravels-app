@@ -25,113 +25,80 @@ class AdminHelpSupportPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // FAQ Section
+            // Admin FAQ Section (Updated)
             _buildSection(
-              title: 'Frequently Asked Questions',
+              title: 'Admin FAQs',
               children: [
                 _buildFAQItem(
-                  question: 'How do I book a trip with SSA Travels?',
+                  question: 'How to add new driver?',
                   answer:
-                      'You can book a trip by selecting your pickup location and destination, choosing the vehicle type, and confirming the trip through the SSA Travels app or by contacting our support.',
+                      'Go to Driver Management > Add New Driver. Fill driver details, vehicle info and upload documents.',
                 ),
                 _buildFAQItem(
-                  question: 'Which areas do you serve?',
+                  question: 'How to check daily earnings?',
                   answer:
-                      'We provide taxi services in Virudhunagar and surrounding areas including Sivakasi, Aruppukottai, Rajapalayam, Srivilliputhur, Madurai, and nearby towns.',
+                      'Go to Reports section. You can see daily, weekly and monthly earnings with trip details.',
                 ),
                 _buildFAQItem(
-                  question: 'Do you provide one-way drop trips?',
+                  question: 'How to handle customer complaints?',
                   answer:
-                      'Yes, we specialize in one-way drop trips as well as round trips at affordable and transparent pricing.',
+                      'Check Complaints section, view trip details and contact customer directly through app.',
                 ),
                 _buildFAQItem(
-                  question: 'What payment methods are accepted?',
+                  question: 'How to update fare rates?',
                   answer:
-                      'We accept cash, UPI payments, and popular digital payment options for your convenience.',
+                      'Go to Settings > Fare Management. Update base fare and per km rates.',
                 ),
                 _buildFAQItem(
-                  question: 'Can I cancel or reschedule my trip?',
+                  question: 'How to block user?',
                   answer:
-                      'Yes, trips can be cancelled or rescheduled based on availability. Please contact support as early as possible to avoid cancellation charges.',
+                      'Go to User Management, search user and click block option.',
                 ),
-                _buildFAQItem(
-                  question: 'Are your drivers experienced and verified?',
-                  answer:
-                      'Yes, all our drivers are experienced, locally knowledgeable, and verified to ensure a safe and comfortable journey.',
+              ],
+            ),
+            const SizedBox(height: 30),
+
+
+          
+
+            const SizedBox(height: 30),
+
+            // Safety Tips (Updated for admin)
+            _buildSection(
+              title: 'Admin Tips',
+              children: [
+                _buildSafetyTip(
+                  tip: 'Check driver documents carefully before approval',
+                ),
+                _buildSafetyTip(
+                  tip: 'Verify customer complaints with trip details',
+                ),
+                _buildSafetyTip(
+                  tip: 'Take backup of daily reports',
+                ),
+                _buildSafetyTip(
+                  tip: 'Update fare rates during festival seasons',
                 ),
               ],
             ),
 
-            const SizedBox(height: 30),
-
-            // Contact Support
-            _buildSection(
-              title: 'Contact Support',
-              children: [
-                _buildContactOption(
-                  icon: Icons.call,
-                  title: 'Call Us',
-                  subtitle: 'Available 24/7',
-                  phoneNumber: '9751867879',
-                  onTap: () => _makePhoneCall(context, '9751867879'),
-                ),
-                _buildContactOption(
-                  icon: Icons.email,
-                  title: 'Email Support',
-                  subtitle: 'support@ssatravels.com',
-                  email: 'support@ssatravels.com',
-                  onTap: () => _sendEmail(context, 'support@ssatravels.com'),
-                ),
-                _buildContactOption(
-                  icon: Icons.chat,
-                  title: 'Live Chat',
-                  subtitle: 'Chat with our support team',
-                  whatsappNumber: '9751867879',
-                  onTap: () => _openWhatsApp(context, '9751867879'),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 30),
-
-            // Safety Tips
-            _buildSection(
-              title: 'Safety Tips',
-              children: [
-                _buildSafetyTip(
-                  tip: 'Always verify the vehicle number and driver details',
-                ),
-                _buildSafetyTip(
-                  tip: 'Share your ride details with family/friends',
-                ),
-                _buildSafetyTip(
-                  tip: 'Rate your driver after every ride',
-                ),
-                _buildSafetyTip(
-                  tip: 'Keep emergency contacts saved',
-                ),
-                _buildSafetyTip(
-                  tip: 'Always wear seatbelts during the ride',
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 30),
+            const SizedBox(height: 30),            
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSection(
-      {required String title, required List<Widget> children}) {
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: const TextStyle(
-            color: Color(0xFF00B14F),
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -142,7 +109,10 @@ class AdminHelpSupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFAQItem({required String question, required String answer}) {
+  Widget _buildFAQItem({
+    required String question,
+    required String answer,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -160,8 +130,7 @@ class AdminHelpSupportPage extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Text(
               answer,
-              style: const TextStyle(
-                  fontSize: 14, color: Color.fromARGB(255, 34, 34, 34)),
+              style: const TextStyle(fontSize: 14),
             ),
           ),
         ],
@@ -169,45 +138,44 @@ class AdminHelpSupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactOption({
+ 
+  Widget _buildToolCard({
     required IconData icon,
     required String title,
-    required String subtitle,
-    String? phoneNumber,
-    String? email,
-    String? whatsappNumber,
-    required VoidCallback onTap,
+    required String description,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF00B14F), size: 24),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
           ),
         ],
-      ),
-      child: ListTile(
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: const Color(0xFF00B14F).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: const Color(0xFF00B14F)),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right, color: Color(0xFF00B14F)),
-        onTap: onTap,
       ),
     );
   }
@@ -217,14 +185,12 @@ class AdminHelpSupportPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color:  const Color(0xFF00B14F),
+        color: const Color(0xFF00B14F).withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color:  const Color(0xFF00B14F)),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle, color:  const Color(0xFF00B14F), size: 20),
+          const Icon(Icons.check_circle, color: Color(0xFF00B14F), size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -237,44 +203,7 @@ class AdminHelpSupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey[200]!),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: const Color(0xFF00B14F), size: 28),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+ 
 
   // Call Functionality
   Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
@@ -290,36 +219,16 @@ class AdminHelpSupportPage extends StatelessWidget {
     }
   }
 
-  // Email Functionality
-  Future<void> _sendEmail(BuildContext context, String email) async {
-    final Uri launchUri = Uri(
-      scheme: 'mailto',
-      path: email,
-      queryParameters: {
-        'subject': 'SSA Travels Support Request',
-        'body': 'Hello SSA Travels Team,\n\nI need assistance with:',
-      },
-    );
-
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
-    } else {
-      _showSnackBar(context, 'Could not launch email app');
-    }
-  }
-
   // WhatsApp Functionality
   Future<void> _openWhatsApp(BuildContext context, String phoneNumber) async {
-    // Remove any spaces or special characters
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
 
-    // Check if number starts with country code
     if (!cleanNumber.startsWith('91') && cleanNumber.length == 10) {
       cleanNumber = '91$cleanNumber';
     }
 
     final url =
-        'https://wa.me/$cleanNumber?text=Hello%20SSA%20Travels%20Team,%20I%20need%20assistance%20with:';
+        'https://wa.me/$cleanNumber?text=Hello%20Admin%20Team,%20I%20need%20help';
     final Uri launchUri = Uri.parse(url);
 
     if (await canLaunchUrl(launchUri)) {
@@ -329,33 +238,16 @@ class AdminHelpSupportPage extends StatelessWidget {
     }
   }
 
-  // SMS Functionality
-  Future<void> _sendSMS(BuildContext context, String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'sms',
-      path: phoneNumber,
-      queryParameters: {'body': 'Hello SSA Travels Team, I need assistance:'},
-    );
-
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
-    } else {
-      _showSnackBar(context, 'Could not launch SMS app');
-    }
-  }
-
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: const Color(0xFF00B14F),
-        duration: const Duration(seconds: 2),
       ),
     );
   }
 }
 
-// Helper widget for timing rows
 class _BuildTimingRow extends StatelessWidget {
   final String day;
   final String time;

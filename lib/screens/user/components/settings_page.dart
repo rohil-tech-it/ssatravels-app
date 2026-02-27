@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ssatravels_app/screens/user/components/privacy_policy_page.dart';
 import 'package:ssatravels_app/screens/user/components/terms_conditions_page.dart';
+import 'package:ssatravels_app/screens/user/components/help_support_page.dart';
+import 'package:ssatravels_app/screens/user/components/payment_tab.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ssatravels_app/screens/auth/login_screen.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -40,7 +45,28 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: 'Payment Methods',
                   subtitle: 'Manage your payment options',
                   onTap: () {
-                    // Navigate to payment methods
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) {
+                        return Container(
+                          height: MediaQuery.of(context).size.height * 0.85,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(30),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(30),
+                            ),
+                            child: const PaymentScreen(),
+                          ),
+                        );
+                      },
+                    );
                   },
                 ),
               ],
@@ -91,31 +117,29 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: 'Help Center',
                   subtitle: 'Get help and support',
                   onTap: () {
-                    // Navigate to help center
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HelpSupportPage(),
+                      ),
+                    );
                   },
                 ),
                 _buildSettingItem(
                   icon: Icons.contact_support_outlined,
                   title: 'Contact Us',
                   subtitle: 'Reach out to our team',
-                  onTap: () {
-                    // Navigate to contact us
-                  },
-                ),
-                _buildSettingItem(
-                  icon: Icons.star_outline,
-                  title: 'Rate App',
-                  subtitle: 'Rate us on app store',
-                  onTap: () {
-                    // Rate app functionality
-                  },
-                ),
-                _buildSettingItem(
-                  icon: Icons.share_outlined,
-                  title: 'Share App',
-                  subtitle: 'Share with friends',
-                  onTap: () {
-                    // Share app functionality
+                  onTap: () async {
+                    final Uri phoneUri = Uri(scheme: 'tel', path: '9751867879');
+
+                    if (await canLaunchUrl(phoneUri)) {
+                      await launchUrl(phoneUri);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Could not launch phone dialer')),
+                      );
+                    }
                   },
                 ),
               ],
@@ -196,7 +220,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-    void _showClearHistoryDialog() {
+  void _showClearHistoryDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -214,7 +238,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('History cleared successfully'),
-                  backgroundColor:  const Color(0xFF00B14F),
+                  backgroundColor: Color(0xFF00B14F),
                 ),
               );
             },
@@ -237,14 +261,15 @@ class _SettingsPageState extends State<SettingsPage> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Implement logout functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Logged out successfully'),
-                  backgroundColor:  const Color(0xFF00B14F),
-                ),
+
+              await FirebaseAuth.instance.signOut();
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
               );
             },
             child: const Text('Logout'),

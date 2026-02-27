@@ -12,6 +12,7 @@ import 'package:ssatravels_app/screens/user/components/terms_conditions_page.dar
 
 class UserDrawer extends StatelessWidget {
   final int currentIndex;
+  final String userName; // ✅ ADD THIS
   final Function(int) onIndexChanged;
 
   // ✅ CALL FUNCTION – HERE
@@ -31,6 +32,7 @@ class UserDrawer extends StatelessWidget {
   const UserDrawer({
     super.key,
     required this.currentIndex,
+    required this.userName, // ✅ ADD THIS
     required this.onIndexChanged,
   });
 
@@ -363,7 +365,7 @@ class UserDrawer extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
+              SizedBox(
                 width: screenWidth * 0.12,
                 height: screenWidth * 0.12,
                 child: Center(
@@ -522,7 +524,7 @@ class UserDrawer extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
+              SizedBox(
                 width: screenWidth * 0.12,
                 height: screenWidth * 0.12,
                 child: Center(
@@ -809,7 +811,7 @@ class UserDrawer extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Logged out successfully'),
-              backgroundColor: const Color(0xFF00B14F),
+              backgroundColor: Color(0xFF00B14F),
               duration: Duration(seconds: 2),
             ),
           );

@@ -1,102 +1,459 @@
-[
-  "Virudhunagar",
-  "Aruppukottai",
-  "Sivakasi",
-  "Rajapalayam",
-  "Sattur",
-  "Srivilliputhur",
-  "Krishnankovil",
-  "Kalasalingam University",
-  "Thiruchuli",
-  "Vembakottai",
-  "Kariapatti",
-  "Watrap",
-  "Thiruthangal",
-  
-  "Mappilaiurani",
-  "Vathirairuppu",
-  "Narikkudi",
-  "Kallupatti",
-  "Cholapuram",
-  "Thayilpatti",
-  "Puliankulam",
-  
-  "Madurai",
-  "Chennai",
-  "Bangalore",
-  "Coimbatore",
-  "Trichy",
-  "Tirunelveli",
-  "Thoothukudi",
-  "Salem",
-  "Theni",
-  "Dindigul",
-  "Nagercoil",
-  "Tenkasi",
-  "Sankarankovil",
-  "Kovilpatti",
-  "Kayathar",
-  
-  "Karaikudi",
-  "Devakottai",
-  "Ilayangudi",
-  "Ramanathapuram",
-  "Cumbum",
-  "Bodinayakkanur",
-  "Palani",
-  
-  "Virudhunagar Junction",
-  "Virudhunagar Bus Stand",
-  "Aruppukottai Station",
-  "Sivakasi Bus Stand",
-  "Madurai Airport",
-  "Madurai Railway Station",
-  "Tuticorin Port",
-  "Tuticorin Airport",
-  "Trichy Airport",
-  "Coimbatore Airport",
-  "Chennai Airport",
-  "Bangalore Airport",
-  
-  "Kodaikanal",
-  "Rameswaram",
-  "Kanyakumari",
-  "Courtallam",
-  "Hogenakkal",
-  "Yercaud",
-  "Ooty",
-  
-  "Thiagarajar College",
-  "Thiagarajar School",
-  "American College",
-  "Madurai Medical College",
-  "Alagappa University",
-  "Anna University",
-  
-  "Apollo Hospital Madurai",
-  "Meenakshi Mission Hospital",
-  "Government Rajaji Hospital",
-  "CMC Vellore",
-  "Apollo Chennai",
-  
-  "SIDCO Industrial Estate",
-  "Sivakasi Industrial Area",
-  "Rajapalayam Mills Area",
-  "Madurai Industrial Estate",
-  "Coimbatore Industrial Area",
-  
-  "Thirumangalam",
-  "T. Kallupatti",
-  "Chellampatti",
-  "Paramakudi",
-  "Mudukulathur",
-  "Kamuthi",
-  "Manamadurai",
-  "Sivaganga",
-  "Alangulam",
-  "Valliyoor",
-  "Ettayapuram",
-  "Vilathikulam",
-  "Ottapidaram",
-  "Shenkottai"
-]
+{
+  "cities": [
+    {
+      "name": "Virudhunagar, Tamil Nadu",
+      "latitude": 9.5850,
+      "longitude": 77.9570
+    },
+    {
+      "name": "Aruppukottai, Tamil Nadu",
+      "latitude": 9.5136,
+      "longitude": 78.1007
+    },
+    {
+      "name": "Sivakasi, Tamil Nadu",
+      "latitude": 9.4500,
+      "longitude": 77.8167
+    },
+    {
+      "name": "Rajapalayam, Tamil Nadu",
+      "latitude": 9.4500,
+      "longitude": 77.5500
+    },
+    {
+      "name": "Sattur, Tamil Nadu",
+      "latitude": 9.3553,
+      "longitude": 77.9244
+    },
+    {
+      "name": "Srivilliputhur, Tamil Nadu",
+      "latitude": 9.5128,
+      "longitude": 77.6339
+    },
+    {
+      "name": "Krishnankovil, Tamil Nadu",
+      "latitude": 9.5861,
+      "longitude": 77.9847
+    },
+    {
+      "name": "Kalasalingam University, Tamil Nadu",
+      "latitude": 9.5389,
+      "longitude": 77.7306
+    },
+    {
+      "name": "Thiruchuli, Tamil Nadu",
+      "latitude": 9.5333,
+      "longitude": 77.8167
+    },
+    {
+      "name": "Vembakottai, Tamil Nadu",
+      "latitude": 9.6833,
+      "longitude": 77.8500
+    },
+    {
+      "name": "Kariapatti, Tamil Nadu",
+      "latitude": 9.7000,
+      "longitude": 78.1000
+    },
+    {
+      "name": "Watrap, Tamil Nadu",
+      "latitude": 9.6333,
+      "longitude": 77.6500
+    },
+    {
+      "name": "Thiruthangal, Tamil Nadu",
+      "latitude": 9.4833,
+      "longitude": 77.8333
+    },
+    {
+      "name": "Mappilaiurani, Tamil Nadu",
+      "latitude": 9.2500,
+      "longitude": 77.9333
+    },
+    {
+      "name": "Vathirairuppu, Tamil Nadu",
+      "latitude": 9.4167,
+      "longitude": 77.8833
+    },
+    {
+      "name": "Narikkudi, Tamil Nadu",
+      "latitude": 10.1667,
+      "longitude": 78.5833
+    },
+    {
+      "name": "Kallupatti, Tamil Nadu",
+      "latitude": 9.7167,
+      "longitude": 77.8667
+    },
+    {
+      "name": "Cholapuram, Tamil Nadu",
+      "latitude": 9.5500,
+      "longitude": 78.0167
+    },
+    {
+      "name": "Thayilpatti, Tamil Nadu",
+      "latitude": 9.6333,
+      "longitude": 77.9333
+    },
+    {
+      "name": "Puliankulam, Tamil Nadu",
+      "latitude": 9.6000,
+      "longitude": 78.0167
+    },
+    {
+      "name": "Madurai, Tamil Nadu",
+      "latitude": 9.9252,
+      "longitude": 78.1198
+    },
+    {
+      "name": "Chennai, Tamil Nadu",
+      "latitude": 13.0827,
+      "longitude": 80.2707
+    },
+    {
+      "name": "Bangalore, Karnataka",
+      "latitude": 12.9716,
+      "longitude": 77.5946
+    },
+    {
+      "name": "Coimbatore, Tamil Nadu",
+      "latitude": 11.0168,
+      "longitude": 76.9558
+    },
+    {
+      "name": "Trichy, Tamil Nadu",
+      "latitude": 10.7905,
+      "longitude": 78.7047
+    },
+    {
+      "name": "Tirunelveli, Tamil Nadu",
+      "latitude": 8.7139,
+      "longitude": 77.7567
+    },
+    {
+      "name": "Thoothukudi, Tamil Nadu",
+      "latitude": 8.7642,
+      "longitude": 78.1348
+    },
+    {
+      "name": "Salem, Tamil Nadu",
+      "latitude": 11.6643,
+      "longitude": 78.1460
+    },
+    {
+      "name": "Theni, Tamil Nadu",
+      "latitude": 10.0104,
+      "longitude": 77.4768
+    },
+    {
+      "name": "Dindigul, Tamil Nadu",
+      "latitude": 10.3629,
+      "longitude": 77.9754
+    },
+    {
+      "name": "Nagercoil, Tamil Nadu",
+      "latitude": 8.1773,
+      "longitude": 77.4343
+    },
+    {
+      "name": "Tenkasi, Tamil Nadu",
+      "latitude": 8.9554,
+      "longitude": 77.3152
+    },
+    {
+      "name": "Sankarankovil, Tamil Nadu",
+      "latitude": 9.1712,
+      "longitude": 77.5488
+    },
+    {
+      "name": "Kovilpatti, Tamil Nadu",
+      "latitude": 9.1725,
+      "longitude": 77.8697
+    },
+    {
+      "name": "Kayathar, Tamil Nadu",
+      "latitude": 8.9486,
+      "longitude": 77.7742
+    },
+    {
+      "name": "Karaikudi, Tamil Nadu",
+      "latitude": 10.0667,
+      "longitude": 78.7833
+    },
+    {
+      "name": "Devakottai, Tamil Nadu",
+      "latitude": 9.9500,
+      "longitude": 78.8167
+    },
+    {
+      "name": "Ilayangudi, Tamil Nadu",
+      "latitude": 9.6333,
+      "longitude": 78.6333
+    },
+    {
+      "name": "Ramanathapuram, Tamil Nadu",
+      "latitude": 9.3833,
+      "longitude": 78.8333
+    },
+    {
+      "name": "Cumbum, Tamil Nadu",
+      "latitude": 9.7333,
+      "longitude": 77.2833
+    },
+    {
+      "name": "Bodinayakkanur, Tamil Nadu",
+      "latitude": 10.0167,
+      "longitude": 77.3500
+    },
+    {
+      "name": "Palani, Tamil Nadu",
+      "latitude": 10.4500,
+      "longitude": 77.5167
+    },
+    {
+      "name": "Virudhunagar Junction, Tamil Nadu",
+      "latitude": 9.5850,
+      "longitude": 77.9570
+    },
+    {
+      "name": "Virudhunagar Bus Stand, Tamil Nadu",
+      "latitude": 9.5850,
+      "longitude": 77.9570
+    },
+    {
+      "name": "Aruppukottai Station, Tamil Nadu",
+      "latitude": 9.5136,
+      "longitude": 78.1007
+    },
+    {
+      "name": "Sivakasi Bus Stand, Tamil Nadu",
+      "latitude": 9.4500,
+      "longitude": 77.8167
+    },
+    {
+      "name": "Madurai Airport, Tamil Nadu",
+      "latitude": 9.8345,
+      "longitude": 78.0934
+    },
+    {
+      "name": "Madurai Railway Station, Tamil Nadu",
+      "latitude": 9.9200,
+      "longitude": 78.1200
+    },
+    {
+      "name": "Tuticorin Port, Tamil Nadu",
+      "latitude": 8.7957,
+      "longitude": 78.1581
+    },
+    {
+      "name": "Tuticorin Airport, Tamil Nadu",
+      "latitude": 8.7241,
+      "longitude": 78.0258
+    },
+    {
+      "name": "Trichy Airport, Tamil Nadu",
+      "latitude": 10.7654,
+      "longitude": 78.7097
+    },
+    {
+      "name": "Coimbatore Airport, Tamil Nadu",
+      "latitude": 11.0300,
+      "longitude": 77.0434
+    },
+    {
+      "name": "Chennai Airport, Tamil Nadu",
+      "latitude": 12.9944,
+      "longitude": 80.1807
+    },
+    {
+      "name": "Bangalore Airport, Karnataka",
+      "latitude": 13.1986,
+      "longitude": 77.7066
+    },
+    {
+      "name": "Kodaikanal, Tamil Nadu",
+      "latitude": 10.2381,
+      "longitude": 77.4892
+    },
+    {
+      "name": "Rameswaram, Tamil Nadu",
+      "latitude": 9.2882,
+      "longitude": 79.3127
+    },
+    {
+      "name": "Kanyakumari, Tamil Nadu",
+      "latitude": 8.0883,
+      "longitude": 77.5385
+    },
+    {
+      "name": "Courtallam, Tamil Nadu",
+      "latitude": 8.9333,
+      "longitude": 77.2833
+    },
+    {
+      "name": "Hogenakkal, Tamil Nadu",
+      "latitude": 12.1167,
+      "longitude": 77.7833
+    },
+    {
+      "name": "Yercaud, Tamil Nadu",
+      "latitude": 11.7760,
+      "longitude": 78.2147
+    },
+    {
+      "name": "Ooty, Tamil Nadu",
+      "latitude": 11.4102,
+      "longitude": 76.6950
+    },
+    {
+      "name": "Thiagarajar College, Madurai",
+      "latitude": 9.9346,
+      "longitude": 78.1457
+    },
+    {
+      "name": "Thiagarajar School, Madurai",
+      "latitude": 9.9258,
+      "longitude": 78.1239
+    },
+    {
+      "name": "American College, Madurai",
+      "latitude": 9.9389,
+      "longitude": 78.1208
+    },
+    {
+      "name": "Madurai Medical College, Madurai",
+      "latitude": 9.9250,
+      "longitude": 78.1200
+    },
+    {
+      "name": "Alagappa University, Karaikudi",
+      "latitude": 10.0795,
+      "longitude": 78.7674
+    },
+    {
+      "name": "Anna University, Chennai",
+      "latitude": 13.0115,
+      "longitude": 80.2359
+    },
+    {
+      "name": "Apollo Hospital Madurai, Tamil Nadu",
+      "latitude": 9.9250,
+      "longitude": 78.1200
+    },
+    {
+      "name": "Meenakshi Mission Hospital, Madurai",
+      "latitude": 9.9356,
+      "longitude": 78.1175
+    },
+    {
+      "name": "Government Rajaji Hospital, Madurai",
+      "latitude": 9.9261,
+      "longitude": 78.1208
+    },
+    {
+      "name": "CMC Vellore, Tamil Nadu",
+      "latitude": 12.9202,
+      "longitude": 79.1310
+    },
+    {
+      "name": "Apollo Chennai, Tamil Nadu",
+      "latitude": 13.0351,
+      "longitude": 80.2302
+    },
+    {
+      "name": "SIDCO Industrial Estate, Virudhunagar",
+      "latitude": 9.5850,
+      "longitude": 77.9570
+    },
+    {
+      "name": "Sivakasi Industrial Area, Tamil Nadu",
+      "latitude": 9.4500,
+      "longitude": 77.8167
+    },
+    {
+      "name": "Rajapalayam Mills Area, Tamil Nadu",
+      "latitude": 9.4500,
+      "longitude": 77.5500
+    },
+    {
+      "name": "Madurai Industrial Estate, Tamil Nadu",
+      "latitude": 9.9252,
+      "longitude": 78.1198
+    },
+    {
+      "name": "Coimbatore Industrial Area, Tamil Nadu",
+      "latitude": 11.0168,
+      "longitude": 76.9558
+    },
+    {
+      "name": "Thirumangalam, Tamil Nadu",
+      "latitude": 9.8500,
+      "longitude": 77.9833
+    },
+    {
+      "name": "T. Kallupatti, Tamil Nadu",
+      "latitude": 9.7167,
+      "longitude": 77.8667
+    },
+    {
+      "name": "Chellampatti, Tamil Nadu",
+      "latitude": 9.8833,
+      "longitude": 78.0167
+    },
+    {
+      "name": "Paramakudi, Tamil Nadu",
+      "latitude": 9.5500,
+      "longitude": 78.6000
+    },
+    {
+      "name": "Mudukulathur, Tamil Nadu",
+      "latitude": 9.3500,
+      "longitude": 78.5167
+    },
+    {
+      "name": "Kamuthi, Tamil Nadu",
+      "latitude": 9.4167,
+      "longitude": 78.3833
+    },
+    {
+      "name": "Manamadurai, Tamil Nadu",
+      "latitude": 9.6833,
+      "longitude": 78.4833
+    },
+    {
+      "name": "Sivaganga, Tamil Nadu",
+      "latitude": 9.8500,
+      "longitude": 78.4833
+    },
+    {
+      "name": "Alangulam, Tamil Nadu",
+      "latitude": 8.8667,
+      "longitude": 77.5000
+    },
+    {
+      "name": "Valliyoor, Tamil Nadu",
+      "latitude": 8.4167,
+      "longitude": 77.6500
+    },
+    {
+      "name": "Ettayapuram, Tamil Nadu",
+      "latitude": 9.1500,
+      "longitude": 77.9833
+    },
+    {
+      "name": "Vilathikulam, Tamil Nadu",
+      "latitude": 9.1333,
+      "longitude": 78.1667
+    },
+    {
+      "name": "Ottapidaram, Tamil Nadu",
+      "latitude": 8.9000,
+      "longitude": 78.0167
+    },
+    {
+      "name": "Shenkottai, Tamil Nadu",
+      "latitude": 8.9667,
+      "longitude": 77.2667
+    }
+  ]
+}
