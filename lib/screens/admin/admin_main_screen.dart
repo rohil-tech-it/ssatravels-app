@@ -1,10 +1,11 @@
+// lib/screens/admin/admin_main_screen.dart
 import 'package:flutter/material.dart';
 import 'admin_price_screen.dart';
 import 'admin_booking_screen.dart';
 import 'admin_dashboard.dart';
 import 'admin_profile.dart';
 import 'admin_toll_plazas.dart';
-import 'admin_toll_routes.dart'; // This imports AdminTollRoutesScreen
+import 'admin_toll_routes.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
@@ -37,7 +38,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
     super.initState();
     
     // Initialize toll tab controller
-    _tollTabController = TabController(length: 3, vsync: this);
+    _tollTabController = TabController(length: 2, vsync: this);
     _tollTabController.addListener(() {
       if (_tollTabController.indexIsChanging) {
         setState(() {
@@ -48,13 +49,12 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
 
     // Initialize screens with callbacks
     _screens = [
-      // Dashboard with ALL callbacks
+      // Dashboard with callbacks
       AdminDashboard(
         onViewBookings: () => _switchToTab(2),
         onUpdatePrices: () => _switchToTab(1),
-        onManageTollPlazas: () => _switchToTabWithSubIndex(3, 0), // Navigate to toll plazas
-        onManageTollRoutes: () => _switchToTabWithSubIndex(3, 1), // Navigate to toll routes
-        onManageVehicles: () => _switchToTabWithSubIndex(3, 2), // Navigate to vehicles
+        onManageTollPlazas: () => _switchToTabWithSubIndex(3, 0),
+        onManageTollRoutes: () => _switchToTabWithSubIndex(3, 1),
       ),
       // Price Management
       AdminPriceScreen(),
@@ -65,10 +65,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
       // Profile Screen
       AdminProfileTab(),
     ];
-
-    print('✅ AdminMainScreen initialized');
-    print('✅ Screens count: ${_screens.length}');
-    print('✅ Current index: $_currentIndex');
   }
 
   @override
@@ -78,7 +74,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
     super.dispose();
   }
 
-  // Build Toll Management screen with tabs
+  // Build Toll Management screen with tabs (Vehicles tab removed)
   Widget _buildTollManagementScreen() {
     return Column(
       children: [
@@ -100,10 +96,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
                 icon: Icon(Icons.route),
                 text: 'Toll Routes',
               ),
-              Tab(
-                icon: Icon(Icons.directions_car),
-                text: 'Vehicles',
-              ),
             ],
           ),
         ),
@@ -115,10 +107,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
             children: [
               // Toll Plazas Tab
               AdminTollPlazas(),
-              // Toll Routes Tab - Using the full screen
-              AdminTollRoutesScreen(), // This is the correct class name
-              // Vehicle Management Tab - Placeholder for now
-              _buildVehicleManagementPlaceholder(),
+              // Toll Routes Tab
+              AdminTollRoutesScreen(),
             ],
           ),
         ),
@@ -126,55 +116,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
     );
   }
 
-  // Placeholder for Vehicle Management (create this screen later)
-  Widget _buildVehicleManagementPlaceholder() {
-    return Container(
-      color: Colors.grey[50],
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.directions_car,
-              size: 80,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Vehicle Management',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'This section is under construction',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to vehicle management when created
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Vehicle Management coming soon!')),
-                );
-              },
-              child: Text('Coming Soon'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // Helper method to switch tabs with sub-index
   void _switchToTabWithSubIndex(int mainIndex, int subIndex) {
-    print('🔄 Switching to main tab: $mainIndex, sub tab: $subIndex');
     setState(() {
       _currentIndex = mainIndex;
       _tollSubIndex = subIndex;
@@ -183,19 +126,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
     _tollTabController.animateTo(subIndex);
   }
 
-  // Helper method to switch sub tabs within toll management
-  void _switchToSubTab(int subIndex) {
-    if (_currentIndex == 3) {
-      setState(() {
-        _tollSubIndex = subIndex;
-      });
-      _tollTabController.animateTo(subIndex);
-    }
-  }
-
   // Helper method to switch tabs
   void _switchToTab(int index) {
-    print('🔄 Switching to tab: $index');
     setState(() {
       _currentIndex = index;
     });
@@ -211,26 +143,22 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
     _switchToTabWithSubIndex(3, 1);
   }
 
-  void _navigateToVehicles() {
-    _switchToTabWithSubIndex(3, 2);
-  }
-
   // Navigation methods for other sections
   void _navigateToDrivers() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Drivers screen coming soon!')),
+      const SnackBar(content: Text('Drivers screen coming soon!')),
     );
   }
 
   void _navigateToReports() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Reports screen coming soon!')),
+      const SnackBar(content: Text('Reports screen coming soon!')),
     );
   }
 
   void _navigateToSettings() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Settings screen coming soon!')),
+      const SnackBar(content: Text('Settings screen coming soon!')),
     );
   }
 
@@ -242,7 +170,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
           children: [
             Text(
               _appBarTitles[_currentIndex],
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -251,7 +179,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
             if (_currentIndex == 3)
               Text(
                 _getTollSubTitle(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.white70,
                 ),
@@ -261,12 +189,11 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
         backgroundColor: const Color(0xFF00B14F),
         elevation: 2,
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          
           if (_currentIndex == 3)
             PopupMenuButton<int>(
-              icon: Icon(Icons.more_vert),
+              icon: const Icon(Icons.more_vert),
               onSelected: (value) {
                 switch (value) {
                   case 0:
@@ -274,9 +201,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
                     break;
                   case 1:
                     _navigateToTollRoutes();
-                    break;
-                  case 2:
-                    _navigateToVehicles();
                     break;
                 }
               },
@@ -286,8 +210,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
                   child: Row(
                     children: [
                       Icon(Icons.location_on, color: _tollSubIndex == 0 ? const Color(0xFF00B14F) : Colors.grey),
-                      SizedBox(width: 8),
-                      Text('Toll Plazas'),
+                      const SizedBox(width: 8),
+                      const Text('Toll Plazas'),
                     ],
                   ),
                 ),
@@ -296,18 +220,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
                   child: Row(
                     children: [
                       Icon(Icons.route, color: _tollSubIndex == 1 ? const Color(0xFF00B14F) : Colors.grey),
-                      SizedBox(width: 8),
-                      Text('Toll Routes'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 2,
-                  child: Row(
-                    children: [
-                      Icon(Icons.directions_car, color: _tollSubIndex == 2 ? const Color(0xFF00B14F) : Colors.grey),
-                      SizedBox(width: 8),
-                      Text('Vehicles'),
+                      const SizedBox(width: 8),
+                      const Text('Toll Routes'),
                     ],
                   ),
                 ),
@@ -318,9 +232,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
       drawer: _buildDrawer(context),
       body: PageView(
         controller: _pageController,
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) {
-          print('📱 Page changed to: $index');
           setState(() {
             _currentIndex = index;
           });
@@ -330,14 +243,13 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          print('👆 Bottom nav tapped: $index');
           _switchToTab(index);
         },
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFF00B14F),
         unselectedItemColor: Colors.grey[600],
-        selectedLabelStyle: TextStyle(fontSize: 12),
-        unselectedLabelStyle: TextStyle(fontSize: 12),
+        selectedLabelStyle: const TextStyle(fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontSize: 12),
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
@@ -376,8 +288,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
         return 'Toll Plazas';
       case 1:
         return 'Toll Routes';
-      case 2:
-        return 'Vehicle Management';
       default:
         return '';
     }
@@ -405,17 +315,17 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 40,
                     backgroundColor: Colors.white,
                     child: Icon(
                       Icons.person,
                       size: 40,
-                      color: const Color(0xFF00B14F),
+                      color: Color(0xFF00B14F),
                     ),
                   ),
-                  SizedBox(height: 15),
-                  Text(
+                  const SizedBox(height: 15),
+                  const Text(
                     'Admin Panel',
                     style: TextStyle(
                       color: Colors.white,
@@ -423,11 +333,11 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
                     'SSA Travels',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9), // Fixed deprecated withOpacity
                       fontSize: 14,
                     ),
                   ),
@@ -488,11 +398,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
             icon: Icons.route,
             title: 'Toll Routes',
             onTap: _navigateToTollRoutes,
-          ),
-          _buildDrawerItem(
-            icon: Icons.directions_car,
-            title: 'Vehicle Management',
-            onTap: _navigateToVehicles,
           ),
 
           const Divider(height: 20, thickness: 1),
@@ -621,7 +526,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
 
     return InkWell(
       onTap: () {
-        Navigator.pop(context); // ✅ Always close drawer first
+        Navigator.pop(context); // Always close drawer first
 
         if (onTap != null) {
           onTap();
@@ -632,7 +537,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF00B14F).withOpacity(0.08)
+              ? const Color(0xFF00B14F).withValues(alpha: 0.08) // Fixed deprecated withOpacity
               : Colors.transparent,
           border: Border(
             left: BorderSide(
@@ -665,8 +570,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Logout'),
-        content:
-            const Text('Are you sure you want to logout from admin panel?'),
+        content: const Text('Are you sure you want to logout from admin panel?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

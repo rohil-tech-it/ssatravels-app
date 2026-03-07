@@ -1,6 +1,4 @@
 // lib/screens/user/components/booking_tab.dart
-// COMPLETE UPDATED CODE with proper Firebase vehicle loading
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +20,7 @@ import 'package:ssatravels_app/services/toll_service.dart';
 import 'package:ssatravels_app/services/route_service.dart';
 import 'package:ssatravels_app/screens/user/components/place_search_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/gestures.dart';
 
 class BookingTab extends StatefulWidget {
   final Color themeColor;
@@ -33,9 +31,15 @@ class BookingTab extends StatefulWidget {
   State<BookingTab> createState() => _BookingTabState();
 }
 
-class _BookingTabState extends State<BookingTab> {
+class _BookingTabState extends State<BookingTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return Column(
       children: [
         Expanded(
@@ -57,20 +61,22 @@ class OutstationCabBookingScreen extends StatefulWidget {
       _OutstationCabBookingScreenState();
 }
 
-class _OutstationCabBookingScreenState
-    extends State<OutstationCabBookingScreen> {
+class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   // ========== SERVICES ==========
   final BookingService _bookingService = BookingService();
   final TollService _tollService = TollService();
   late final RouteService _routeService;
   late PolylinePoints polylinePoints;
 
-  // ========== TRIP TYPE ==========
-  String _selectedTripType = 'DROP TRIP';
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // 🔥 TRACK INITIALIZATION STATE
+  bool _isInitialized = false;
 
   // ========== CONTROLLERS ==========
+  final TextEditingController _minutesInputController = TextEditingController();
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _dropController = TextEditingController();
   final TextEditingController _customerNameController = TextEditingController();
@@ -80,6 +86,8 @@ class _OutstationCabBookingScreenState
       TextEditingController();
   final TextEditingController _specialInstructionsController =
       TextEditingController();
+  final TextEditingController _vehicleNumberController =
+      TextEditingController();
 
   // ========== DATE & TIME ==========
   DateTime _pickupDate = DateTime.now();
@@ -87,8 +95,11 @@ class _OutstationCabBookingScreenState
   DateTime? _returnDate;
 
   // ========== VEHICLE SELECTION ==========
-  String? _selectedCarType;
-  String? _selectedVehicleModel;
+  String? _selectedVehicleType;
+  String? _selectedModel;
+  List<Map<String, dynamic>> _vehicleTypes = [];
+  Map<String, Map<String, dynamic>> _rateCard = {};
+  List<String> _availableModels = [];
 
   // ========== PASSENGER DETAILS ==========
   int _adults = 1;
@@ -105,21 +116,19 @@ class _OutstationCabBookingScreenState
   double _nightHaltCharges = 0.0;
   double _extraHourCharges = 0.0;
   double _extraKmCharges = 0.0;
+  double _extraHourRate = 0.0;
   String _tollInfo = "Select vehicle for toll calculation";
   bool _tollCalculated = false;
   List<Map<String, dynamic>> _tollDetails = [];
 
-  // ========== TRIP DURATION & EXTRA HOURS ==========
+  // ========== TRIP DURATION ==========
   int _tripDurationMinutes = 0;
   int _tripDurationHours = 0;
   int _estimatedTripMinutes = 0;
-  int _baseHours = 8; // Default base hours for trips
-  
-  // ========== NEW: User Selectable Hours ==========
-  int _selectedHours = 0;
+  int _baseHours = 8;
+  int _selectedHours = 8;
   int _selectedMinutes = 0;
-  bool _isManualHours = false;
-  
+  bool _isManualHours = true;
   int _extraHours = 0;
   bool _showExtraHoursWarning = false;
   String _extraHoursMessage = '';
@@ -155,11 +164,6 @@ class _OutstationCabBookingScreenState
   // ========== DATA STORAGE ==========
   List<String> _citySuggestions = [];
   final Map<String, LocationPoint> _cityCoordinates = {};
-  
-  // ========== VEHICLE DATA FROM FIREBASE ==========
-  List<Map<String, dynamic>> _vehicles = []; // List of vehicle documents
-  late Map<String, List<String>> _vehicleModels; // Models from vehicleModels collection
-  Map<String, Map<String, dynamic>> _rateCard = {}; // Rate card data
 
   // ========== TOLL MARKERS ==========
   List<Map<String, dynamic>> _tollMarkers = [];
@@ -181,25 +185,30 @@ class _OutstationCabBookingScreenState
   // WhatsApp number for sharing booking details
   final String _whatsappNumber = '9751867879';
 
+  // Animation controllers for smooth transitions
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   void initState() {
     super.initState();
     _routeService = RouteService();
     polylinePoints = PolylinePoints();
-    _vehicleModels = {}; // Initialize the map
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
 
-      await _initializeApiKeys();
-      await _loadCitySuggestions();
-
-      if (mounted) {
-        _checkNightTravel();
-        await _loadVehiclesFromFirebase(); // This now loads from vehicles collection
-        await _setDefaultLocation(); // Set default location instead of getting current
-      }
-    });
+    // Initialize immediately
+    _initializeData();
   }
 
   @override
@@ -214,53 +223,222 @@ class _OutstationCabBookingScreenState
     _customerPhoneController.dispose();
     _customerEmailController.dispose();
     _specialInstructionsController.dispose();
+    _vehicleNumberController.dispose();
+    _fadeController.dispose();
 
     if (_mapController != null) {
       try {
         _mapController!.dispose();
       } catch (e) {
-        print('Error disposing map controller: $e');
+        print('Map controller dispose error: $e');
       }
     }
 
     super.dispose();
   }
 
-  // ========== API KEY INITIALIZATION ==========
+  Future<void> _initializeData() async {
+    if (!mounted) return;
+
+    print('📦 Initializing data...');
+
+    setState(() {
+      _isInitialized = true;
+    });
+
+    await _initializeApiKeys();
+    await _loadCitySuggestions();
+    await _loadVehicleData();
+
+    if (mounted) {
+      _checkNightTravel();
+      await _setDefaultLocation();
+      _fadeController.forward();
+    }
+
+    print('✅ Data initialized successfully!');
+  }
+
   Future<void> _initializeApiKeys() async {
     try {
-      print('🔑 Starting API key initialization...');
-
       await dotenv.load(fileName: ".env");
       _googleMapsApiKey = dotenv.get('GOOGLE_MAPS_API_KEY', fallback: '');
-
-      if (_googleMapsApiKey.isEmpty) {
-        print('❌ WARNING: GOOGLE_MAPS_API_KEY is empty in .env file');
-
-        // Try alternative loading method
-        try {
-          const String apiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
-          if (apiKey.isNotEmpty) {
-            _googleMapsApiKey = apiKey;
-            print('✅ API Key loaded from environment');
-          }
-        } catch (e) {
-          print('❌ Could not load from environment: $e');
-        }
-      } else {
-        print(
-            '✅ Google Maps API Key loaded: ${_googleMapsApiKey.substring(0, 10)}...');
-      }
     } catch (e) {
-      print('❌ Error loading API keys from .env: $e');
+      print('API key initialization error: $e');
     }
   }
 
-  // ========== LOAD CITY SUGGESTIONS FROM JSON ==========
+  Future<void> _loadVehicleData() async {
+    try {
+      if (mounted) {
+        setState(() => _loadingVehicles = true);
+      }
+
+      _vehicleTypes.clear();
+      _rateCard.clear();
+
+      try {
+        final modelsSnapshot = await _firestore
+            .collection('vehicleModels')
+            .where('isActive', isEqualTo: true)
+            .get();
+
+        if (modelsSnapshot.docs.isNotEmpty) {
+          for (var doc in modelsSnapshot.docs) {
+            try {
+              Map<String, dynamic> data = doc.data();
+              String vehicleType = doc.id;
+              String displayName = data['vehicleType'] ?? vehicleType;
+              int seatingCapacity = data['seatingCapacity'] ?? 4;
+              List<String> models = List<String>.from(data['models'] ?? []);
+
+              _vehicleTypes.add({
+                'id': vehicleType,
+                'displayName': displayName,
+                'seatingCapacity': seatingCapacity,
+                'models': models,
+              });
+            } catch (e) {
+              print('Error parsing vehicle model: $e');
+            }
+          }
+        }
+      } catch (e) {
+        print('Error loading vehicle models: $e');
+      }
+
+      try {
+        final vehiclesSnapshot = await _firestore
+            .collection('vehicles')
+            .where('isActive', isEqualTo: true)
+            .get();
+
+        if (vehiclesSnapshot.docs.isNotEmpty) {
+          for (var doc in vehiclesSnapshot.docs) {
+            try {
+              Map<String, dynamic> vehicleData = doc.data();
+              String vehicleId = doc.id;
+
+              _rateCard[vehicleId] = {
+                'below200': vehicleData['below200'] ?? {},
+                'above200': vehicleData['above200'] ?? {},
+              };
+            } catch (e) {
+              print('Error parsing rate card: $e');
+            }
+          }
+        }
+      } catch (e) {
+        print('Error loading rate card: $e');
+      }
+
+      if (_vehicleTypes.isEmpty) {
+        _useFallbackVehicleData();
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      print('Vehicle data loading error: $e');
+      _useFallbackVehicleData();
+    } finally {
+      if (mounted) {
+        setState(() => _loadingVehicles = false);
+      }
+    }
+  }
+
+  void _useFallbackVehicleData() {
+    _vehicleTypes = [
+      {
+        'id': 'hatchback',
+        'displayName': 'Hatchback',
+        'seatingCapacity': 5,
+        'models': [
+          'Tata Tiago',
+          'Swift Dzire',
+          'Hyundai Santro',
+          'Tata Zest',
+        ],
+      },
+      {
+        'id': 'sedan',
+        'displayName': 'Sedan',
+        'seatingCapacity': 5,
+        'models': ['Honda City', 'Toyota Yaris', 'Hyundai Verna'],
+      },
+      {
+        'id': 'innova',
+        'displayName': 'Innova',
+        'seatingCapacity': 7,
+        'models': [
+          'Toyota Innova Crysta',
+          'Toyota Innova',
+        ],
+      },
+      {
+        'id': 'ertiga',
+        'displayName': 'Ertiga',
+        'seatingCapacity': 7,
+        'models': ['Maruti Ertiga', 'Maruti Ertiga ZXI'],
+      },
+    ];
+
+    _rateCard = {
+      'hatchback': {
+        'below200': {
+          'perKm': 9.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'minHours': 8,
+          'extraHourRate': 100.0
+        },
+        'above200': {
+          'perKm': 10.0,
+          'driverAllowance': 300.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'extraHourRate': 100.0
+        },
+      },
+      'sedan': {
+        'below200': {
+          'perKm': 9.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'minHours': 8,
+          'extraHourRate': 100.0
+        },
+        'above200': {
+          'perKm': 11.0,
+          'driverAllowance': 300.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'extraHourRate': 100.0
+        },
+      },
+      'innova': {
+        'below200': {
+          'perKm': 12.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'minHours': 8,
+          'extraHourRate': 150.0
+        },
+        'above200': {
+          'perKm': 15.0,
+          'driverAllowance': 300.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'extraHourRate': 150.0
+        },
+      },
+    };
+  }
+
   Future<void> _loadCitySuggestions() async {
     try {
-      print('📋 Loading city suggestions from JSON...');
-
       final String jsonString =
           await rootBundle.loadString('assets/data/city_suggestions.json');
       final Map<String, dynamic> jsonData = jsonDecode(jsonString);
@@ -286,48 +464,27 @@ class _OutstationCabBookingScreenState
               }
             }
 
-            print('✅ Loaded ${_citySuggestions.length} cities from JSON');
             _citySuggestions.sort();
           });
         }
       } else {
-        print('❌ JSON structure is not as expected');
         _useFallbackCitySuggestions();
       }
     } catch (e) {
-      print('❌ Error loading city suggestions JSON: $e');
+      print('City suggestions loading error: $e');
       _useFallbackCitySuggestions();
     }
   }
 
   void _useFallbackCitySuggestions() {
-    print('⚠️ Using fallback city suggestions');
-
     final fallbackCities = {
       'Chennai, Tamil Nadu': LocationPoint(13.0827, 80.2707),
       'Coimbatore, Tamil Nadu': LocationPoint(11.0168, 76.9558),
       'Madurai, Tamil Nadu': LocationPoint(9.9252, 78.1198),
       'Trichy, Tamil Nadu': LocationPoint(10.7905, 78.7047),
       'Salem, Tamil Nadu': LocationPoint(11.6643, 78.1460),
-      'Tirunelveli, Tamil Nadu': LocationPoint(8.7139, 77.7567),
-      'Erode, Tamil Nadu': LocationPoint(11.3410, 77.7172),
-      'Vellore, Tamil Nadu': LocationPoint(12.9165, 79.1325),
-      'Thoothukudi, Tamil Nadu': LocationPoint(8.7642, 78.1348),
-      'Dindigul, Tamil Nadu': LocationPoint(10.3673, 77.9803),
-      'Kanchipuram, Tamil Nadu': LocationPoint(12.8342, 79.7034),
-      'Nagercoil, Tamil Nadu': LocationPoint(8.1833, 77.4119),
-      'Thanjavur, Tamil Nadu': LocationPoint(10.7870, 79.1378),
-      'Karaikudi, Tamil Nadu': LocationPoint(10.0746, 78.7822),
-      'Udagamandalam, Tamil Nadu': LocationPoint(11.4102, 76.6950),
       'Bengaluru, Karnataka': LocationPoint(12.9716, 77.5946),
-      'Hyderabad, Telangana': LocationPoint(17.3850, 78.4867),
       'Kochi, Kerala': LocationPoint(9.9312, 76.2673),
-      'Thiruvananthapuram, Kerala': LocationPoint(8.5241, 76.9366),
-      'Kozhikode, Kerala': LocationPoint(11.2588, 75.7804),
-      'Mumbai, Maharashtra': LocationPoint(19.0760, 72.8777),
-      'Pune, Maharashtra': LocationPoint(18.5204, 73.8567),
-      'Delhi, Delhi': LocationPoint(28.6139, 77.2090),
-      'Kolkata, West Bengal': LocationPoint(22.5726, 88.3639)
     };
 
     if (mounted) {
@@ -348,7 +505,6 @@ class _OutstationCabBookingScreenState
     return null;
   }
 
-  // ========== SEARCH LOCATION USING GOOGLE PLACES API ==========
   Future<void> _searchLocation(String query) async {
     if (query.isEmpty || query.length < 2) {
       if (mounted) {
@@ -361,7 +517,6 @@ class _OutstationCabBookingScreenState
     }
 
     _searchDebounceTimer?.cancel();
-
     _searchDebounceTimer = Timer(const Duration(milliseconds: 500), () async {
       try {
         if (mounted) {
@@ -370,40 +525,36 @@ class _OutstationCabBookingScreenState
 
         List<Map<String, dynamic>> allResults = [];
 
-        // Use Google Places API for autocomplete
-        try {
-          final String url =
-              'https://maps.googleapis.com/maps/api/place/autocomplete/json'
-              '?input=$query'
-              '&components=country:in'
-              '&key=$_googleMapsApiKey';
+        if (_googleMapsApiKey.isNotEmpty) {
+          try {
+            final String url =
+                'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+                '?input=$query'
+                '&components=country:in'
+                '&key=$_googleMapsApiKey';
 
-          print('📍 Places search URL: $url');
+            final response = await http.get(Uri.parse(url));
 
-          final response = await http.get(Uri.parse(url));
+            if (response.statusCode == 200) {
+              final data = json.decode(response.body);
 
-          if (response.statusCode == 200) {
-            final data = json.decode(response.body);
-
-            if (data['status'] == 'OK' && data['predictions'] != null) {
-              for (var prediction in data['predictions']) {
-                allResults.add({
-                  'name': prediction['structured_formatting']['main_text'] ??
-                      prediction['description'].split(',').first,
-                  'address': prediction['description'],
-                  'place_id': prediction['place_id'],
-                  'type': 'google_places',
-                });
+              if (data['status'] == 'OK' && data['predictions'] != null) {
+                for (var prediction in data['predictions']) {
+                  allResults.add({
+                    'name': prediction['structured_formatting']['main_text'] ??
+                        prediction['description'].split(',').first,
+                    'address': prediction['description'],
+                    'place_id': prediction['place_id'],
+                    'type': 'google_places',
+                  });
+                }
               }
-              print(
-                  '✅ Found ${data['predictions'].length} Google Places results');
             }
+          } catch (e) {
+            print('Places API error: $e');
           }
-        } catch (e) {
-          print('Google Places search error: $e');
         }
 
-        // Add local JSON cities as fallback
         final queryLower = query.toLowerCase();
         for (var city in _citySuggestions) {
           if (city.toLowerCase().contains(queryLower)) {
@@ -420,7 +571,6 @@ class _OutstationCabBookingScreenState
           }
         }
 
-        // Remove duplicates based on address
         final uniqueResults = <Map<String, dynamic>>[];
         final seenAddresses = <String>{};
 
@@ -438,10 +588,7 @@ class _OutstationCabBookingScreenState
             _isSearching = false;
           });
         }
-
-        print('✅ Found ${uniqueResults.length} results for "$query"');
       } catch (e) {
-        print('❌ Search error: $e');
         if (mounted) {
           setState(() {
             _searchResults = [];
@@ -452,8 +599,9 @@ class _OutstationCabBookingScreenState
     });
   }
 
-  // ========== GET PLACE DETAILS FROM PLACE ID ==========
   Future<Map<String, dynamic>?> _getPlaceDetails(String placeId) async {
+    if (_googleMapsApiKey.isEmpty) return null;
+
     try {
       final String url =
           'https://maps.googleapis.com/maps/api/place/details/json'
@@ -484,13 +632,11 @@ class _OutstationCabBookingScreenState
     return null;
   }
 
-  // ========== HANDLE PLACE SELECTION ==========
   Future<void> _onPlaceSelected(
       Map<String, dynamic> place, bool isPickup) async {
     if (place.isEmpty) return;
 
     try {
-      print('📍 Place selected: ${place['name']}');
       if (mounted) {
         setState(() {
           _isLoadingLocation = true;
@@ -503,21 +649,17 @@ class _OutstationCabBookingScreenState
       LatLng? selectedLatLng;
       String displayText = place['address'] ?? place['name'] ?? '';
 
-      // If it's a Google Places result, get details
       if (place['type'] == 'google_places' && place.containsKey('place_id')) {
         final details = await _getPlaceDetails(place['place_id']);
         if (details != null) {
           selectedLatLng = LatLng(details['lat'], details['lng']);
           displayText = details['address'] ?? details['name'] ?? displayText;
         }
-      }
-      // If it's a local JSON city
-      else if (place.containsKey('lat') && place.containsKey('lng')) {
+      } else if (place.containsKey('lat') && place.containsKey('lng')) {
         selectedLatLng = LatLng(place['lat'], place['lng']);
         displayText = place['address'] ?? place['name'] ?? '';
       }
 
-      // If still no coordinates, try geocoding
       if (selectedLatLng == null) {
         try {
           final locations = await locationFromAddress(displayText);
@@ -531,18 +673,15 @@ class _OutstationCabBookingScreenState
       }
 
       if (selectedLatLng == null) {
-        throw Exception('Could not get coordinates for selected place');
+        throw Exception('Could not get coordinates');
       }
 
-      // Update the appropriate controller
       if (isPickup) {
         _pickupLatLng = selectedLatLng;
         _pickupController.text = displayText;
-        print('✅ Pickup set to: $displayText');
       } else {
         _dropLatLng = selectedLatLng;
         _dropController.text = displayText;
-        print('✅ Drop set to: $displayText');
       }
 
       if (mounted) {
@@ -554,12 +693,10 @@ class _OutstationCabBookingScreenState
 
       _updateMarkers();
 
-      // Move camera to selected location
       if (_mapController != null && mounted) {
         await _moveCameraToLocation(selectedLatLng, zoom: 16.0);
       }
 
-      // Close the bottom sheet if open
       if (Navigator.canPop(context)) {
         Navigator.pop(context);
       }
@@ -569,13 +706,10 @@ class _OutstationCabBookingScreenState
         widget.themeColor,
       );
 
-      // Fetch route if both locations are set
       if (_pickupLatLng != null && _dropLatLng != null) {
-        print('📍 Both locations set, fetching route...');
         await _fetchRealRoadRoute();
       }
     } catch (e) {
-      print('❌ Place selection error: $e');
       _showSnackBar('Error: Could not set location', Colors.orange);
       if (mounted) {
         setState(() => _isLoadingLocation = false);
@@ -583,19 +717,8 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== FETCH REAL ROAD ROUTE USING GOOGLE DIRECTIONS API ==========
   Future<void> _fetchRealRoadRoute() async {
-    print('📍 ===== FETCHING REAL ROAD ROUTE =====');
-
-    if (_pickupLatLng == null) {
-      print('❌ Pickup location is null');
-      return;
-    }
-
-    if (_dropLatLng == null) {
-      print('❌ Drop location is null');
-      return;
-    }
+    if (_pickupLatLng == null || _dropLatLng == null) return;
 
     if (mounted) {
       setState(() {
@@ -607,7 +730,11 @@ class _OutstationCabBookingScreenState
     }
 
     try {
-      // Call Google Directions API
+      if (_googleMapsApiKey.isEmpty) {
+        _useFallbackRoute();
+        return;
+      }
+
       final String origin =
           '${_pickupLatLng!.latitude},${_pickupLatLng!.longitude}';
       final String destination =
@@ -620,40 +747,26 @@ class _OutstationCabBookingScreenState
           '&alternatives=true'
           '&key=$_googleMapsApiKey';
 
-      print('📍 Directions API URL: $url');
-
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         if (data['status'] == 'OK') {
-          // Get the first route (fastest)
           final route = data['routes'][0];
           final leg = route['legs'][0];
 
-          // Extract distance and duration
-          _distance = leg['distance']['value'] / 1000.0; // Convert to km
+          _distance = leg['distance']['value'] / 1000.0;
           _routeDistance = leg['distance']['text'];
           _routeDuration = leg['duration']['text'];
 
-          // Calculate trip duration in minutes and hours
-          _tripDurationMinutes =
-              leg['duration']['value'] ~/ 60; // Convert to minutes
+          _tripDurationMinutes = leg['duration']['value'] ~/ 60;
           _tripDurationHours = (_tripDurationMinutes / 60).ceil();
           _estimatedTripMinutes = _tripDurationMinutes;
 
-          print('📏 Distance: $_distance km');
-          print('⏱️ Duration: $_routeDuration');
-          print('⏱️ Duration in minutes: $_tripDurationMinutes min');
-          print('⏱️ Duration in hours: $_tripDurationHours hrs');
-
-          // Decode polyline points for the route
           final points = route['overview_polyline']['points'];
           _routePoints = _decodePolyline(points);
-          print('📍 Route Points Count: ${_routePoints.length}');
 
-          // Extract step-by-step directions
           _routeSteps = [];
           for (var step in leg['steps']) {
             _routeSteps.add({
@@ -663,7 +776,6 @@ class _OutstationCabBookingScreenState
             });
           }
 
-          // Calculate extra hours based on user selected hours
           _calculateExtraHours();
 
           if (mounted) {
@@ -673,11 +785,9 @@ class _OutstationCabBookingScreenState
             });
           }
 
-          // Update markers and polylines
           _updateMarkers();
           _updateRoutePolyline();
 
-          // Fit camera to show entire route
           Future.delayed(const Duration(milliseconds: 500), () {
             if (mounted && _mapController != null && _routePoints.isNotEmpty) {
               _fitCameraToRoute();
@@ -695,10 +805,7 @@ class _OutstationCabBookingScreenState
         throw Exception('HTTP error: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Route fetch error: $e');
-      _showSnackBar('Error loading route: $e', Colors.orange);
-
-      // Try fallback straight line route
+      print('Route fetch error: $e');
       _useFallbackRoute();
 
       if (mounted) {
@@ -707,48 +814,45 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== NEW: Calculate Extra Hours Based on User Selection ==========
   void _calculateExtraHours() {
-    if (_selectedCarType == null) return;
+    if (_selectedVehicleType == null) return;
 
-    var carRates = _rateCard[_selectedCarType];
+    var carRates = _rateCard[_selectedVehicleType];
     if (carRates == null) return;
 
-    double effectiveDistance =
-        _selectedTripType == 'ROUND TRIP' ? _distance * 2 : _distance;
+    double effectiveDistance = _getEffectiveDistanceForCharges();
     bool isBelow200 = effectiveDistance <= 200;
     var rateData = isBelow200 ? carRates['below200'] : carRates['above200'];
 
     if (rateData == null) return;
 
-    // Get base hours from rate card
     _baseHours = rateData['minHours'] ?? 8;
+    _extraHourRate = (rateData['extraHourRate'] as num?)?.toDouble() ?? 0.0;
 
-    // Calculate total user selected minutes
     int userSelectedMinutes = (_selectedHours * 60) + _selectedMinutes;
-    
-    // Calculate extra hours if user selected more than trip duration
+
     if (userSelectedMinutes > _tripDurationMinutes) {
       _extraHours = ((userSelectedMinutes - _tripDurationMinutes) / 60).ceil();
-    } else {
-      _extraHours = 0;
-    }
-
-    if (_extraHours > 0) {
-      double extraHourRate = rateData['extraHourRate'] ?? 100.0;
-      _extraHourCharges = _extraHours * extraHourRate;
-
       _extraHoursMessage =
-          '⚠️ NOTICE: If the booking exceeds the allotted time, additional charges will be applicable. The extra amount must be paid as per the defined rate.';
+          '⚠️ Extended trip duration: $_extraHours extra hours will be charged at ₹$_extraHourRate/hour';
       _showExtraHoursWarning = true;
+
+      // Calculate extra hour charges
+      _extraHourCharges = _extraHours * _extraHourRate;
     } else {
       _extraHours = 0;
       _extraHourCharges = 0.0;
       _showExtraHoursWarning = false;
+      _extraHoursMessage = '';
     }
+
+    _calculateFare();
   }
 
-  // ========== DECODE POLYLINE FROM DIRECTIONS API ==========
+  double _getEffectiveDistanceForCharges() {
+    return _distance;
+  }
+
   List<LatLng> _decodePolyline(String encoded) {
     List<LatLng> points = [];
     int index = 0;
@@ -783,19 +887,16 @@ class _OutstationCabBookingScreenState
     return points;
   }
 
-  // ========== STRIP HTML TAGS FROM DIRECTIONS INSTRUCTIONS ==========
   String _stripHtmlTags(String htmlString) {
     return htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
   }
 
-  // ========== UPDATE ROUTE POLYLINE ==========
   void _updateRoutePolyline() {
     if (_routePoints.isEmpty) return;
 
     final newPolylines = Set<Polyline>.from(_polylines.where((p) =>
         p.polylineId.value != 'route' && p.polylineId.value != 'route_glow'));
 
-    // Main route polyline - Blue color
     newPolylines.add(
       Polyline(
         polylineId: const PolylineId('route'),
@@ -807,7 +908,6 @@ class _OutstationCabBookingScreenState
       ),
     );
 
-    // Add a subtle glow effect
     newPolylines.add(
       Polyline(
         polylineId: const PolylineId('route_glow'),
@@ -826,11 +926,9 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== USE FALLBACK ROUTE (STRAIGHT LINE) ==========
   void _useFallbackRoute() {
     if (_pickupLatLng == null || _dropLatLng == null) return;
 
-    // Calculate straight line distance
     double distance = Geolocator.distanceBetween(
           _pickupLatLng!.latitude,
           _pickupLatLng!.longitude,
@@ -839,9 +937,7 @@ class _OutstationCabBookingScreenState
         ) /
         1000;
 
-    // Estimate driving distance (approx 1.3x straight line)
     distance = distance * 1.3;
-
     int minutes = (distance * 1.5).round();
     String duration =
         minutes >= 60 ? '${minutes ~/ 60}h ${minutes % 60}m' : '${minutes}m';
@@ -863,25 +959,20 @@ class _OutstationCabBookingScreenState
     _updateRoutePolyline();
   }
 
-  // ========== GENERATE ROUTE POINTS FOR FALLBACK ==========
   List<LatLng> _generateFallbackRoutePoints() {
     List<LatLng> points = [];
     if (_pickupLatLng == null || _dropLatLng == null) return points;
 
     points.add(_pickupLatLng!);
-
-    // Add intermediate points for a curved line
     int steps = 20;
+
     for (int i = 1; i < steps; i++) {
       double t = i / steps;
-
-      // Add slight curve for visual appeal
       double lat = _pickupLatLng!.latitude +
           (_dropLatLng!.latitude - _pickupLatLng!.latitude) * t;
       double lng = _pickupLatLng!.longitude +
           (_dropLatLng!.longitude - _pickupLatLng!.longitude) * t;
 
-      // Add small offset for curve
       double offset = math.sin(t * math.pi) * 0.05;
       lat += offset;
       lng += offset * 0.5;
@@ -893,11 +984,9 @@ class _OutstationCabBookingScreenState
     return points;
   }
 
-  // ========== UPDATE MARKERS ==========
   void _updateMarkers() {
     final newMarkers = <Marker>{};
 
-    // Add pickup marker
     if (_pickupLatLng != null) {
       newMarkers.add(
         Marker(
@@ -915,7 +1004,6 @@ class _OutstationCabBookingScreenState
       );
     }
 
-    // Add drop marker
     if (_dropLatLng != null) {
       newMarkers.add(
         Marker(
@@ -932,7 +1020,6 @@ class _OutstationCabBookingScreenState
       );
     }
 
-    // Add temporary marker if exists
     if (_temporarySelectedLatLng != null) {
       newMarkers.add(
         Marker(
@@ -958,20 +1045,11 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== FIT CAMERA TO SHOW ENTIRE ROUTE ==========
   void _fitCameraToRoute() {
-    if (_mapController == null) {
-      print('⚠️ Map controller is null, cannot fit camera');
-      return;
-    }
-
-    if (_pickupLatLng == null || _dropLatLng == null) {
-      print('⚠️ Pickup or Drop location is null');
-      return;
-    }
+    if (_mapController == null) return;
+    if (_pickupLatLng == null || _dropLatLng == null) return;
 
     try {
-      // If we have route points, use them for bounds
       if (_routePoints.isNotEmpty) {
         double minLat = _routePoints.first.latitude;
         double maxLat = _routePoints.first.latitude;
@@ -985,11 +1063,9 @@ class _OutstationCabBookingScreenState
           maxLng = math.max(maxLng, point.longitude);
         }
 
-        // Add padding
         double latPadding = (maxLat - minLat) * 0.2;
         double lngPadding = (maxLng - minLng) * 0.2;
 
-        // Ensure minimum padding
         if (latPadding < 0.05) latPadding = 0.05;
         if (lngPadding < 0.05) lngPadding = 0.05;
 
@@ -1001,40 +1077,12 @@ class _OutstationCabBookingScreenState
         _mapController!.animateCamera(
           CameraUpdate.newLatLngBounds(bounds, 50),
         );
-      } else {
-        // Fallback to using just pickup and drop
-        double minLat =
-            math.min(_pickupLatLng!.latitude, _dropLatLng!.latitude);
-        double maxLat =
-            math.max(_pickupLatLng!.latitude, _dropLatLng!.latitude);
-        double minLng =
-            math.min(_pickupLatLng!.longitude, _dropLatLng!.longitude);
-        double maxLng =
-            math.max(_pickupLatLng!.longitude, _dropLatLng!.longitude);
-
-        double latPadding = (maxLat - minLat) * 0.2;
-        double lngPadding = (maxLng - minLng) * 0.2;
-
-        if (latPadding < 0.1) latPadding = 0.1;
-        if (lngPadding < 0.1) lngPadding = 0.1;
-
-        LatLngBounds bounds = LatLngBounds(
-          southwest: LatLng(minLat - latPadding, minLng - lngPadding),
-          northeast: LatLng(maxLat + latPadding, maxLng + lngPadding),
-        );
-
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLngBounds(bounds, 50),
-        );
       }
-
-      print('📍 Camera fitted to route successfully');
     } catch (e) {
-      print('❌ Error fitting camera: $e');
+      print('Camera fit error: $e');
     }
   }
 
-  // ========== MAP SELECTION SHEET ==========
   Widget _buildMapSelectionSheet(bool isPickup) {
     return StatefulBuilder(
       builder: (context, setState) {
@@ -1049,7 +1097,6 @@ class _OutstationCabBookingScreenState
           ),
           child: Column(
             children: [
-              // Header
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -1081,8 +1128,6 @@ class _OutstationCabBookingScreenState
                   ],
                 ),
               ),
-
-              // Search Bar with Autocomplete
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -1134,8 +1179,6 @@ class _OutstationCabBookingScreenState
                         },
                       ),
                     ),
-
-                    // Search Results
                     if (_searchResults.isNotEmpty)
                       Container(
                         margin: const EdgeInsets.only(top: 8),
@@ -1158,31 +1201,33 @@ class _OutstationCabBookingScreenState
                           itemCount: _searchResults.length,
                           itemBuilder: (context, index) {
                             final result = _searchResults[index];
-                            return ListTile(
-                              leading: Icon(
-                                result['type'] == 'google_places'
-                                    ? Icons.place
-                                    : Icons.location_city,
-                                color: widget.themeColor,
-                              ),
-                              title: Text(
-                                result['name'] ?? '',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              subtitle: Text(
-                                result['address'] ?? '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
+                            return GestureDetector(
                               onTap: () {
                                 _onPlaceSelected(result, isPickup);
                               },
+                              child: ListTile(
+                                leading: Icon(
+                                  result['type'] == 'google_places'
+                                      ? Icons.place
+                                      : Icons.location_city,
+                                  color: widget.themeColor,
+                                ),
+                                title: Text(
+                                  result['name'] ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  result['address'] ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
                             );
                           },
                         ),
@@ -1190,8 +1235,6 @@ class _OutstationCabBookingScreenState
                   ],
                 ),
               ),
-
-              // Map Section
               Expanded(
                 child: Stack(
                   children: [
@@ -1201,13 +1244,7 @@ class _OutstationCabBookingScreenState
                         zoom: _currentZoom,
                       ),
                       onMapCreated: (GoogleMapController controller) {
-                        print('🗺️ Map controller created');
                         _mapController = controller;
-
-                        // Enable all gestures
-                        controller.setMapStyle(null);
-
-                        // Fit camera after map is created if route exists
                         if (_routePoints.isNotEmpty) {
                           Future.delayed(const Duration(milliseconds: 300), () {
                             if (mounted) {
@@ -1218,13 +1255,15 @@ class _OutstationCabBookingScreenState
                       },
                       markers: _markers,
                       polylines: _polylines,
-                      myLocationEnabled: false, // DISABLED - No blue dot
+                      myLocationEnabled: false,
                       myLocationButtonEnabled: false,
                       zoomControlsEnabled: false,
                       zoomGesturesEnabled: true,
                       scrollGesturesEnabled: true,
                       rotateGesturesEnabled: true,
                       tiltGesturesEnabled: true,
+                      compassEnabled: true,
+                      mapToolbarEnabled: false,
                       onTap: (latLng) => _onMapTap(latLng, isPickup),
                       onCameraMove: (position) {
                         setState(() {
@@ -1252,9 +1291,14 @@ class _OutstationCabBookingScreenState
                         }
                       },
                       mapType: MapType.normal,
+                      minMaxZoomPreference:
+                          const MinMaxZoomPreference(3.0, 20.0),
+                      gestureRecognizers: const <Factory<
+                          OneSequenceGestureRecognizer>>{
+                        Factory<OneSequenceGestureRecognizer>(
+                            EagerGestureRecognizer.new),
+                      },
                     ),
-
-                    // Center Marker
                     Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1292,8 +1336,6 @@ class _OutstationCabBookingScreenState
                         ],
                       ),
                     ),
-
-                    // Loading indicator
                     if (_isMapMoving)
                       Positioned(
                         top: 16,
@@ -1337,8 +1379,6 @@ class _OutstationCabBookingScreenState
                           ),
                         ),
                       ),
-
-                    // Zoom Controls
                     Positioned(
                       right: 16,
                       bottom: 100,
@@ -1361,6 +1401,7 @@ class _OutstationCabBookingScreenState
                               onPressed: _zoomIn,
                               iconSize: 24,
                               splashRadius: 24,
+                              tooltip: 'Zoom In',
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -1382,13 +1423,39 @@ class _OutstationCabBookingScreenState
                               onPressed: _zoomOut,
                               iconSize: 24,
                               splashRadius: 24,
+                              tooltip: 'Zoom Out',
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    // Confirm Button
+                    Positioned(
+                      left: 16,
+                      bottom: 100,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          'Zoom: ${_currentZoom.toStringAsFixed(1)}x',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
                     Positioned(
                       bottom: 20,
                       left: 20,
@@ -1435,7 +1502,6 @@ class _OutstationCabBookingScreenState
     );
   }
 
-  // ========== GET ADDRESS FOR CENTER LOCATION ==========
   Future<void> _getAddressForCenter(bool isPickup) async {
     if (_temporarySelectedLatLng == null) return;
 
@@ -1449,11 +1515,10 @@ class _OutstationCabBookingScreenState
         });
       }
     } catch (e) {
-      print('Error getting address: $e');
+      print('Address fetch error: $e');
     }
   }
 
-  // ========== MAP TAP HANDLER ==========
   Future<void> _onMapTap(LatLng latLng, bool isPickup) async {
     try {
       setState(() {
@@ -1462,7 +1527,6 @@ class _OutstationCabBookingScreenState
         _isLoadingLocation = true;
       });
 
-      // Get address for tapped location
       String address = await _routeService.getAddressFromLatLng(latLng);
 
       if (mounted) {
@@ -1475,7 +1539,6 @@ class _OutstationCabBookingScreenState
       _updateMarkers();
       await _moveCameraToLocation(latLng, zoom: 16.0);
     } catch (e) {
-      print('Map tap error: $e');
       if (mounted) {
         setState(() {
           _searchController.text =
@@ -1486,7 +1549,6 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== SAVE SELECTED LOCATION ==========
   Future<void> _saveSelectedLocation() async {
     if (_temporarySelectedLatLng == null) {
       _showSnackBar('Please select a location first', Colors.orange);
@@ -1497,8 +1559,6 @@ class _OutstationCabBookingScreenState
       setState(() => _isLoadingLocation = true);
 
       String address = _searchController.text;
-
-      // Check if address is coordinates
       bool isCoordinates = RegExp(r'^\d+\.\d+,\s*\d+\.\d+$').hasMatch(address);
 
       if (address.isEmpty || isCoordinates) {
@@ -1509,11 +1569,9 @@ class _OutstationCabBookingScreenState
       if (_isPickupSelection) {
         _pickupLatLng = _temporarySelectedLatLng;
         _pickupController.text = address;
-        print('✅ Pickup set to: $address');
       } else {
         _dropLatLng = _temporarySelectedLatLng;
         _dropController.text = address;
-        print('✅ Drop set to: $address');
       }
 
       if (mounted) {
@@ -1536,7 +1594,6 @@ class _OutstationCabBookingScreenState
         await _fetchRealRoadRoute();
       }
     } catch (e) {
-      print('Save location error: $e');
       _showSnackBar('Error saving location', Colors.orange);
       if (mounted) {
         setState(() => _isLoadingLocation = false);
@@ -1544,22 +1601,19 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== SET DEFAULT LOCATION (instead of getting current) ==========
   Future<void> _setDefaultLocation() async {
     if (mounted) {
       setState(() {
-        _center = const LatLng(9.5850, 77.9570); // Virudhunagar, Tamil Nadu
+        _center = const LatLng(9.5850, 77.9570);
         _pickupLatLng = _center;
         _pickupController.text = 'Virudhunagar, Tamil Nadu';
       });
     }
     _updateMarkers();
     await _moveCameraToLocation(_center);
-    
     _showSnackBar('Default location set as pickup', widget.themeColor);
   }
 
-  // ========== ZOOM CONTROLS ==========
   Future<void> _zoomIn() async {
     try {
       if (_mapController != null) {
@@ -1569,6 +1623,7 @@ class _OutstationCabBookingScreenState
           if (mounted) {
             setState(() => _currentZoom = newZoom);
           }
+          HapticFeedback.lightImpact();
         }
       }
     } catch (e) {
@@ -1585,6 +1640,7 @@ class _OutstationCabBookingScreenState
           if (mounted) {
             setState(() => _currentZoom = newZoom);
           }
+          HapticFeedback.lightImpact();
         }
       }
     } catch (e) {
@@ -1596,7 +1652,6 @@ class _OutstationCabBookingScreenState
       {double zoom = 15.0}) async {
     try {
       if (_mapController == null) {
-        print('⏳ Map controller not ready yet, storing location');
         if (mounted) {
           setState(() {
             _center = location;
@@ -1605,8 +1660,6 @@ class _OutstationCabBookingScreenState
         }
         return;
       }
-
-      print('📍 Moving camera to: $location (zoom: $zoom)');
 
       await _mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
@@ -1623,20 +1676,11 @@ class _OutstationCabBookingScreenState
           _currentZoom = zoom;
         });
       }
-
-      print('✅ Camera moved successfully');
     } catch (e) {
-      print('❌ Move camera error: $e');
-      if (mounted) {
-        setState(() {
-          _center = location;
-          _currentZoom = zoom;
-        });
-      }
+      print('Camera move error: $e');
     }
   }
 
-  // ========== SHOW MAP SELECTION ==========
   void _showMapSelection(bool isPickup) {
     try {
       if (mounted) {
@@ -1656,11 +1700,10 @@ class _OutstationCabBookingScreenState
         builder: (context) => _buildMapSelectionSheet(isPickup),
       );
     } catch (e) {
-      print('❌ Error in showMapSelection: $e');
+      print('Map selection error: $e');
     }
   }
 
-// ========== CALCULATE DISTANCE AND TOLL ==========
   Future<void> _calculateDistanceAndToll() async {
     if (_pickupLatLng == null || _dropLatLng == null) {
       _showSnackBar('Please select both locations', Colors.orange);
@@ -1676,18 +1719,12 @@ class _OutstationCabBookingScreenState
     }
 
     try {
-      // Fetch route from Directions API
       await _fetchRealRoadRoute();
 
-      // Calculate toll using TollService
       final tollResult = await _tollService.calculateToll(
         source: _pickupController.text,
         destination: _dropController.text,
       );
-
-      print('💰 Toll Debug:');
-      print('   Success: ${tollResult['success']}');
-      print('   Total Amount: ${tollResult['totalAmount']}');
 
       if (mounted) {
         setState(() {
@@ -1701,8 +1738,7 @@ class _OutstationCabBookingScreenState
           } else {
             _tollCharges = 0.0;
             _tollDetails = [];
-            _tollInfo =
-                tollResult['message'] ?? 'No toll plazas found for this route';
+            _tollInfo = tollResult['message'] ?? 'No toll plazas found';
             _tollCalculated = false;
           }
         });
@@ -1715,8 +1751,8 @@ class _OutstationCabBookingScreenState
         widget.themeColor,
       );
     } catch (e) {
-      print('❌ Calculation error: $e');
-      _showSnackBar('Error calculating route: ${e.toString()}', Colors.orange);
+      print('Calculation error: $e');
+      _showSnackBar('Error calculating route', Colors.orange);
     } finally {
       if (mounted) {
         setState(() => _calculatingToll = false);
@@ -1724,16 +1760,15 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== CALCULATE FARE ==========
   void _calculateFare() {
-    if (_selectedCarType == null) {
+    if (_selectedVehicleType == null) {
       if (mounted) {
         setState(() => _totalFare = 0);
       }
       return;
     }
 
-    var carRates = _rateCard[_selectedCarType];
+    var carRates = _rateCard[_selectedVehicleType];
     if (carRates == null) {
       if (mounted) {
         setState(() => _totalFare = 0);
@@ -1749,35 +1784,31 @@ class _OutstationCabBookingScreenState
     _extraKmCharges = 0.0;
     double totalFare = 0.0;
 
-    double effectiveDistance =
-        _selectedTripType == 'ROUND TRIP' ? _distance * 2 : _distance;
+    double effectiveDistance = _getEffectiveDistanceForCharges();
     bool isBelow200 = effectiveDistance <= 200;
     var rateData = isBelow200 ? carRates['below200'] : carRates['above200'];
 
     if (rateData == null) return;
 
-    // Calculate kilometer charges
     _kmCharges = effectiveDistance * (rateData['perKm'] ?? 0.0);
 
-    // Driver allowance for above 200km trips
     if (!isBelow200 && rateData['driverAllowance'] != null) {
       _driverAllowance = rateData['driverAllowance'] as double;
     }
 
-    // Driver food charges
     if (rateData['driverFood'] != null) {
       _driverFoodCharges = rateData['driverFood'] as double;
     }
 
-    // Night halt charges
     if (_isNightTravel && rateData['nightHalt'] != null) {
       _nightHaltCharges = rateData['nightHalt'] as double;
     }
 
-    // Calculate extra hours based on user selection
-    _calculateExtraHours();
+    // Calculate extra hour charges if applicable
+    if (_extraHours > 0 && rateData['extraHourRate'] != null) {
+      _extraHourCharges = _extraHours * (rateData['extraHourRate'] as double);
+    }
 
-    // Calculate total fare
     totalFare = _kmCharges +
         _driverAllowance +
         _driverFoodCharges +
@@ -1791,7 +1822,6 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== CHECK NIGHT TRAVEL ==========
   void _checkNightTravel() {
     if (mounted) {
       setState(() =>
@@ -1896,276 +1926,25 @@ class _OutstationCabBookingScreenState
     }
   }
 
-  // ========== LOAD VEHICLES FROM FIREBASE (UPDATED) ==========
-  Future<void> _loadVehiclesFromFirebase() async {
-    try {
-      if (mounted) {
-        setState(() => _loadingVehicles = true);
-      }
+  List<String> _getModelsForSelectedVehicle() {
+    if (_selectedVehicleType == null) return [];
 
-      print('🚗 Loading vehicles from Firebase...');
-      
-      // Clear existing data
-      _vehicles.clear();
-      _vehicleModels.clear();
-      _rateCard.clear();
+    final vehicle = _vehicleTypes.firstWhere(
+      (v) => v['id'] == _selectedVehicleType,
+      orElse: () => {'models': <String>[]},
+    );
 
-      // ===== LOAD FROM VEHICLES COLLECTION =====
-      try {
-        final vehiclesSnapshot = await _firestore
-            .collection('vehicles')
-            .where('isActive', isEqualTo: true)
-            .get();
-
-        print('📦 Found ${vehiclesSnapshot.docs.length} vehicles in Firebase');
-
-        if (vehiclesSnapshot.docs.isNotEmpty) {
-          for (var doc in vehiclesSnapshot.docs) {
-            try {
-              Map<String, dynamic> vehicleData = doc.data();
-              vehicleData['id'] = doc.id; // Store document ID
-              
-              String vehicleType = doc.id; // Document ID is the vehicle type (access, hatchback, etc.)
-              String displayName = vehicleData['displayName'] ?? vehicleType;
-              String model = vehicleData['model'] ?? '';
-              int seatingCapacity = vehicleData['seatingCapacity'] ?? 4;
-              
-              _vehicles.add({
-                'id': doc.id,
-                'type': vehicleType,
-                'displayName': displayName,
-                'model': model,
-                'data': vehicleData,
-              });
-
-              // Create rate card entry for this vehicle
-              _rateCard[displayName] = {
-                'seats': seatingCapacity,
-                'below200': {
-                  'perKm': vehicleData['baseRate'] ?? 9.0,
-                  'driverFood': vehicleData['driverFood'] ?? 100.0,
-                  'nightHalt': vehicleData['nightHalt'] ?? 100.0,
-                  'minHours': vehicleData['minHours'] ?? 8,
-                  'extraHourRate': vehicleData['extraHourRate'] ?? 100.0,
-                },
-                'above200': {
-                  'perKm': vehicleData['baseRate'] ?? 10.0,
-                  'driverAllowance': vehicleData['driverAllowance'] ?? 300.0,
-                  'driverFood': vehicleData['driverFood'] ?? 100.0,
-                  'nightHalt': vehicleData['nightHalt'] ?? 100.0,
-                  'minHours': vehicleData['minHours'] ?? 12,
-                  'extraHourRate': vehicleData['extraHourRate'] ?? 150.0,
-                },
-              };
-
-              print('   ✅ Added vehicle: $displayName ($model) with $seatingCapacity seats');
-            } catch (e) {
-              print('❌ Error processing vehicle doc ${doc.id}: $e');
-            }
-          }
-        }
-      } catch (e) {
-        print('❌ Error loading vehicles collection: $e');
-      }
-
-      // ===== LOAD FROM VEHICLE MODELS COLLECTION =====
-      try {
-        final modelsSnapshot = await _firestore.collection('vehicleModels').get();
-        
-        print('📦 Found ${modelsSnapshot.docs.length} vehicle model groups');
-
-        if (modelsSnapshot.docs.isNotEmpty) {
-          for (var doc in modelsSnapshot.docs) {
-            try {
-              Map<String, dynamic> data = doc.data();
-              String vehicleType = doc.id; // Document ID is the vehicle type
-              
-              if (data.containsKey('models') && data['models'] is List) {
-                List<String> models = List<String>.from(data['models']);
-                
-                // Store with multiple key formats for robust lookup
-                _vehicleModels[vehicleType] = models;
-                _vehicleModels[vehicleType.toLowerCase()] = models;
-                
-                print('   ✅ Added models for $vehicleType: ${models.length} models');
-              }
-            } catch (e) {
-              print('❌ Error processing vehicle model doc: $e');
-            }
-          }
-        }
-      } catch (e) {
-        print('❌ Error loading vehicleModels collection: $e');
-      }
-
-      // If no vehicles found, use fallback
-      if (_vehicles.isEmpty) {
-        print('⚠️ No vehicles found in Firebase, using fallback data');
-        _useFallbackVehicleData();
-      }
-
-      if (mounted) {
-        setState(() {});
-      }
-
-    } catch (e) {
-      print('❌ Firebase error: $e');
-      _useFallbackVehicleData();
-    } finally {
-      if (mounted) {
-        setState(() => _loadingVehicles = false);
-      }
-    }
+    return List<String>.from(vehicle['models'] ?? []);
   }
 
-  void _useFallbackVehicleData() {
-    print('🚗 Using fallback vehicle data');
-    
-    _vehicles = [
-      {
-        'id': 'hatchback',
-        'type': 'hatchback',
-        'displayName': 'Hatchback',
-        'model': 'Swift/Tiago',
-        'data': {
-          'seatingCapacity': 5,
-          'model': 'Swift/Tiago',
-          'baseToLMultiplier': 1,
-        }
-      },
-      {
-        'id': 'sedan',
-        'type': 'sedan',
-        'displayName': 'Sedan',
-        'model': 'Honda City',
-        'data': {
-          'seatingCapacity': 5,
-          'model': 'Honda City',
-          'baseToLMultiplier': 1,
-        }
-      },
-      {
-        'id': 'innova',
-        'type': 'innova',
-        'displayName': 'Innova',
-        'model': 'Toyota Innova',
-        'data': {
-          'seatingCapacity': 7,
-          'model': 'Toyota Innova',
-          'baseToLMultiplier': 1,
-        }
-      },
-    ];
-
-    final fallbackRateCard = {
-      'Hatchback': {
-        'seats': 5,
-        'below200': {
-          'perKm': 9.0,
-          'driverFood': 100.0,
-          'nightHalt': 100.0,
-          'minHours': 8,
-          'extraHourRate': 100.0,
-        },
-        'above200': {
-          'perKm': 10.0,
-          'driverAllowance': 300.0,
-          'driverFood': 100.0,
-          'nightHalt': 100.0,
-          'minHours': 12,
-          'extraHourRate': 150.0,
-        },
-      },
-      'Sedan': {
-        'seats': 5,
-        'below200': {
-          'perKm': 9.0,
-          'driverFood': 100.0,
-          'nightHalt': 100.0,
-          'minHours': 8,
-          'extraHourRate': 100.0,
-        },
-        'above200': {
-          'perKm': 11.0,
-          'driverAllowance': 300.0,
-          'driverFood': 100.0,
-          'nightHalt': 100.0,
-          'minHours': 12,
-          'extraHourRate': 150.0,
-        },
-      },
-      'Innova': {
-        'seats': 7,
-        'below200': {
-          'perKm': 12.0,
-          'driverFood': 100.0,
-          'nightHalt': 100.0,
-          'minHours': 8,
-          'extraHourRate': 100.0,
-        },
-        'above200': {
-          'perKm': 15.0,
-          'driverAllowance': 300.0,
-          'driverFood': 100.0,
-          'nightHalt': 100.0,
-          'minHours': 12,
-          'extraHourRate': 150.0,
-        },
-      },
-    };
-
-    _rateCard = Map.from(fallbackRateCard);
-
-    // Add models with multiple key formats for robust lookup
-    _vehicleModels['hatchback'] = ['Tata Tiago', 'Swift Dzire', 'Hyundai Santro', 'Tata Zest'];
-    _vehicleModels['Hatchback'] = ['Tata Tiago', 'Swift Dzire', 'Hyundai Santro', 'Tata Zest'];
-    
-    _vehicleModels['sedan'] = ['Honda City', 'Toyota Yaris', 'Hyundai Verna'];
-    _vehicleModels['Sedan'] = ['Honda City', 'Toyota Yaris', 'Hyundai Verna'];
-    
-    _vehicleModels['innova'] = ['Toyota Innova Crysta', 'Toyota Innova', 'Toyota Innova HyCross'];
-    _vehicleModels['Innova'] = ['Toyota Innova Crysta', 'Toyota Innova', 'Toyota Innova HyCross'];
+  int _getSeatingCapacity(String vehicleType) {
+    final vehicle = _vehicleTypes.firstWhere(
+      (v) => v['id'] == vehicleType,
+      orElse: () => {'seatingCapacity': 4},
+    );
+    return vehicle['seatingCapacity'] ?? 4;
   }
 
-  // ========== GET VEHICLE MODELS FOR SELECTED CAR TYPE ==========
-  List<String> _getVehicleModelsForSelectedCar() {
-    if (_selectedCarType == null) return [];
-    
-    String selectedType = _selectedCarType!;
-    List<String>? models = [];
-    
-    // Try multiple lookup strategies
-    
-    // Strategy 1: Direct match
-    if (_vehicleModels.containsKey(selectedType)) {
-      models = _vehicleModels[selectedType];
-    }
-    // Strategy 2: Lowercase match
-    else if (_vehicleModels.containsKey(selectedType.toLowerCase())) {
-      models = _vehicleModels[selectedType.toLowerCase()];
-    }
-    // Strategy 3: First word match (for "Toyota Innova" -> "innova")
-    else {
-      String firstWord = selectedType.split(' ').first.toLowerCase();
-      if (_vehicleModels.containsKey(firstWord)) {
-        models = _vehicleModels[firstWord];
-      }
-      // Strategy 4: Check if any key contains the selected type
-      else {
-        for (var key in _vehicleModels.keys) {
-          if (selectedType.toLowerCase().contains(key.toLowerCase()) ||
-              key.toLowerCase().contains(selectedType.toLowerCase())) {
-            models = _vehicleModels[key];
-            break;
-          }
-        }
-      }
-    }
-    
-    return models ?? [];
-  }
-
-  // ========== NEW: Hours Selection Widget ==========
   Widget _buildHoursSelection() {
     return Container(
       width: double.infinity,
@@ -2220,9 +1999,10 @@ class _OutstationCabBookingScreenState
                             return DropdownMenuItem<int>(
                               value: index,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12),
-                                child: Text('$index hour${index != 1 ? 's' : ''}'),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child:
+                                    Text('$index hour${index != 1 ? 's' : ''}'),
                               ),
                             );
                           }),
@@ -2232,7 +2012,6 @@ class _OutstationCabBookingScreenState
                                 _selectedHours = value;
                                 _isManualHours = true;
                                 _calculateExtraHours();
-                                _calculateFare();
                               });
                             }
                           },
@@ -2243,6 +2022,8 @@ class _OutstationCabBookingScreenState
                 ),
               ),
               const SizedBox(width: 12),
+              // Add this controller at the top with other controllers
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2253,96 +2034,142 @@ class _OutstationCabBookingScreenState
                     ),
                     const SizedBox(height: 4),
                     Container(
+                      height: 50,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.grey.shade300),
                       ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<int>(
-                          value: _selectedMinutes,
-                          isExpanded: true,
-                          icon: Icon(Icons.arrow_drop_down,
-                              color: widget.themeColor),
-                          items: const [
-                            DropdownMenuItem(value: 0, child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Text('0 mins'),
-                            )),
-                            DropdownMenuItem(value: 15, child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Text('15 mins'),
-                            )),
-                            DropdownMenuItem(value: 30, child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Text('30 mins'),
-                            )),
-                            DropdownMenuItem(value: 45, child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Text('45 mins'),
-                            )),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
+                      child: Row(
+                        children: [
+                          // Minus button
+                          IconButton(
+                            icon: Icon(Icons.remove, color: widget.themeColor),
+                            onPressed: () {
                               setState(() {
-                                _selectedMinutes = value;
-                                _isManualHours = true;
-                                _calculateExtraHours();
-                                _calculateFare();
+                                if (_selectedMinutes > 0) {
+                                  _selectedMinutes = _selectedMinutes - 1;
+                                  _calculateExtraHours();
+                                }
                               });
-                            }
-                          },
-                        ),
+                            },
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          // Minutes display
+                          Expanded(
+                            child: Text(
+                              '$_selectedMinutes min',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          // Plus button
+                          IconButton(
+                            icon: Icon(Icons.add, color: widget.themeColor),
+                            onPressed: () {
+                              setState(() {
+                                if (_selectedMinutes < 59) {
+                                  _selectedMinutes = _selectedMinutes + 1;
+                                  _calculateExtraHours();
+                                }
+                              });
+                            },
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
                       ),
+                    ),
+                    // Quick minute buttons
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [0, 15, 30, 36, 45, 46, 50, 55].map((min) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedMinutes = min;
+                              _calculateExtraHours();
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _selectedMinutes == min
+                                  ? widget.themeColor
+                                  : Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '$min',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: _selectedMinutes == min
+                                    ? Colors.white
+                                    : Colors.black87,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          if (_isManualHours) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: _selectedHours > 0 || _selectedMinutes > 0
-                    ? Colors.blue.shade50
-                    : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: _selectedHours > 0 || _selectedMinutes > 0
-                        ? Colors.blue
-                        : Colors.grey,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _selectedHours > 0 || _selectedMinutes > 0
-                          ? 'Selected: $_selectedHours hours ${_selectedMinutes > 0 ? '$_selectedMinutes mins' : ''}'
-                          : 'No duration selected',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _selectedHours > 0 || _selectedMinutes > 0
-                            ? Colors.blue[700]
-                            : Colors.grey[600],
+          if (_extraHours > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning, color: Colors.orange[700], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Extra Hours: $_extraHours hour${_extraHours > 1 ? 's' : ''}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange[800],
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            'Extra Charges: ₹${_extraHourCharges.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: widget.themeColor,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ],
         ],
       ),
     );
   }
 
-  // ========== VALIDATE AND SAVE BOOKING ==========
   void _validateAndSaveBooking() {
     if (_customerNameController.text.trim().isEmpty) {
       _showSnackBar('Please enter customer name', Colors.orange);
@@ -2359,13 +2186,8 @@ class _OutstationCabBookingScreenState
       return;
     }
 
-    if (_selectedCarType == null) {
+    if (_selectedVehicleType == null) {
       _showSnackBar('Please select a vehicle type', Colors.orange);
-      return;
-    }
-
-    if (_selectedTripType == 'ROUND TRIP' && _returnDate == null) {
-      _showSnackBar('Please select return date for round trip', Colors.orange);
       return;
     }
 
@@ -2374,109 +2196,24 @@ class _OutstationCabBookingScreenState
       return;
     }
 
-    // Show extra hours confirmation dialog if needed
-    if (_showExtraHoursWarning && _extraHours > 0) {
-      _showExtraHoursConfirmationDialog();
-    } else {
-      _showBookingConfirmation();
-    }
-  }
+    // Return date is optional now - no validation needed
 
-  void _showExtraHoursConfirmationDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('⚠️ Extended Trip Duration'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.access_time, size: 40, color: Colors.orange),
-            const SizedBox(height: 16),
-            Text(
-              _extraHoursMessage,
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Trip duration:',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text('$_tripDurationHours hours $_tripDurationMinutes mins'),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Selected duration:',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text('$_selectedHours hours $_selectedMinutes mins',
-                          style: const TextStyle(color: Colors.blue)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Extra hours:',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text('$_extraHours hours',
-                          style: const TextStyle(color: Colors.red)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Extra hour charges:',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text('₹${_extraHourCharges.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                              color: Colors.red, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showBookingConfirmation();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: widget.themeColor,
-            ),
-            child: const Text('Continue with extra charges'),
-          ),
-        ],
-      ),
-    );
+    _showBookingConfirmation();
   }
 
   void _showBookingConfirmation() {
     String durationText = _tripDurationHours > 0
-        ? '$_tripDurationHours hours (${_tripDurationMinutes} mins)'
-        : '${_tripDurationMinutes} minutes';
+        ? '$_tripDurationHours h (${_tripDurationMinutes} m)'
+        : '${_tripDurationMinutes} m';
 
-    String selectedDurationText = '$_selectedHours hours $_selectedMinutes mins';
+    String selectedDurationText = '$_selectedHours h $_selectedMinutes m';
+
+    String billedDistance = '${_distance.toStringAsFixed(1)} km';
+
+    String tripTypeText = _returnDate != null ? 'ROUND TRIP' : 'ONE WAY';
+    String returnDateText = _returnDate != null
+        ? 'Return: ${DateFormat('dd/MM/yyyy').format(_returnDate!)}'
+        : 'Trip Type: One Way';
 
     showDialog(
       context: context,
@@ -2497,23 +2234,57 @@ class _OutstationCabBookingScreenState
               const SizedBox(height: 8),
               Text(
                   'Pickup: ${DateFormat('dd/MM/yyyy').format(_pickupDate)} at ${_pickupTime.format(context)}'),
-              if (_selectedTripType == 'ROUND TRIP' && _returnDate != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                      'Return: ${DateFormat('dd/MM/yyyy').format(_returnDate!)}'),
-                ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(returnDateText),
+              ),
               const SizedBox(height: 8),
-              Text('Distance: ${_distance.toStringAsFixed(1)} km'),
+              Text('Trip Type: $tripTypeText'),
+              const SizedBox(height: 8),
+              Text('Distance: $billedDistance'),
               Text('Est. Duration: $durationText'),
               Text('Selected Duration: $selectedDurationText',
                   style: const TextStyle(fontWeight: FontWeight.bold)),
               if (_tollCalculated)
                 Text('Toll Charges: ₹${_tollCharges.toStringAsFixed(0)}'),
               if (_extraHours > 0)
-                Text(
-                    'Extra Hour Charges: ₹${_extraHourCharges.toStringAsFixed(0)}',
-                    style: const TextStyle(color: Colors.red)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.warning,
+                                color: Colors.orange, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Extra Hours: $_extraHours h',
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.orange),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Extra Charges: ₹${_extraHourCharges.toStringAsFixed(0)}',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: widget.themeColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -2533,11 +2304,6 @@ class _OutstationCabBookingScreenState
                             color: widget.themeColor)),
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'After confirmation, booking details will be shared via WhatsApp',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
@@ -2565,13 +2331,20 @@ class _OutstationCabBookingScreenState
   Future<void> _shareToWhatsApp(String bookingId, double totalAmount) async {
     try {
       String durationText = _tripDurationHours > 0
-          ? '$_tripDurationHours hours (${_tripDurationMinutes} mins)'
-          : '${_tripDurationMinutes} minutes';
+          ? '$_tripDurationHours h (${_tripDurationMinutes} m)'
+          : '${_tripDurationMinutes} m';
 
-      String selectedDurationText = '$_selectedHours hours $_selectedMinutes mins';
+      String selectedDurationText = '$_selectedHours h $_selectedMinutes m';
 
       String extraHoursText = _extraHours > 0
-          ? '\n*Extra Hours:* $_extraHours hours (₹${_extraHourCharges.toStringAsFixed(0)})'
+          ? '\n*Extra Hours:* $_extraHours h (₹${_extraHourCharges.toStringAsFixed(0)})'
+          : '';
+
+      String billedDistance = '${_distance.toStringAsFixed(1)} km';
+
+      String tripTypeText = _returnDate != null ? 'ROUND TRIP' : 'ONE WAY';
+      String returnDateText = _returnDate != null
+          ? '\n*Return:* ${DateFormat('dd/MM/yyyy').format(_returnDate!)}'
           : '';
 
       String message = '''
@@ -2583,29 +2356,29 @@ class _OutstationCabBookingScreenState
 ${_customerEmailController.text.isNotEmpty ? '*Email:* ${_customerEmailController.text}\n' : ''}
 
 *📍 Trip Details*
-*Type:* $_selectedTripType
+*Type:* $tripTypeText
 *From:* ${_pickupController.text}
 *To:* ${_dropController.text}
-*Pickup:* ${DateFormat('dd/MM/yyyy').format(_pickupDate)} at ${_pickupTime.format(context)}
-${_selectedTripType == 'ROUND TRIP' && _returnDate != null ? '*Return:* ${DateFormat('dd/MM/yyyy').format(_returnDate!)}\n' : ''}
+*Pickup:* ${DateFormat('dd/MM/yyyy').format(_pickupDate)} at ${_pickupTime.format(context)}$returnDateText
 
 *🚙 Vehicle Details*
-*Type:* $_selectedCarType
-*Model:* ${_selectedVehicleModel ?? 'Not specified'}
+*Type:* $_selectedVehicleType
+*Model:* ${_selectedModel ?? 'Not specified'}
 
 *⏱️ Trip Duration*
 *Estimated Duration:* $durationText
 *Selected Duration:* $selectedDurationText
-*Distance:* ${_distance.toStringAsFixed(1)} km
+*Distance:* $billedDistance$extraHoursText
 
 *💰 Fare Details*
-*Base Fare:* ₹${(_totalFare - _tollCharges - _extraHourCharges).toStringAsFixed(0)}${_extraHours > 0 ? '\n*Extra Hour Charges:* ₹${_extraHourCharges.toStringAsFixed(0)}' : ''}${_tollCalculated ? '\n*Toll Charges:* ₹${_tollCharges.toStringAsFixed(0)}' : ''}
+*Base Fare:* ₹${(_kmCharges + _driverAllowance + _driverFoodCharges + _nightHaltCharges).toStringAsFixed(0)}
+${_tollCalculated ? '*Toll Charges:* ₹${_tollCharges.toStringAsFixed(0)}\n' : ''}${_extraHours > 0 ? '*Extra Hour Charges:* ₹${_extraHourCharges.toStringAsFixed(0)}\n' : ''}
 *Total Fare:* ₹${totalAmount.toStringAsFixed(0)}
 
 *👥 Passenger Details*
 *Adults:* $_adults
 *Children:* $_children
-*Total Passengers:* ${_adults + _children}
+*Total:* ${_adults + _children}
 *Luggage:* $_luggage
 
 ${_specialInstructionsController.text.isNotEmpty ? '*Special Instructions:* ${_specialInstructionsController.text}\n' : ''}
@@ -2624,7 +2397,7 @@ Thank you for choosing SSA Travels! 🎉
         throw 'Could not launch WhatsApp';
       }
     } catch (e) {
-      print('❌ WhatsApp share error: $e');
+      print('WhatsApp share error: $e');
       _showSnackBar(
           'Could not open WhatsApp. Please install WhatsApp.', Colors.orange);
 
@@ -2648,140 +2421,72 @@ Thank you for choosing SSA Travels! 🎉
         return;
       }
 
-      // Generate unique booking ID
-      String bookingId =
-          'SSA${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}${_randomString(3).toUpperCase()}';
-
-      // Format date for display
-      String formattedDate = DateFormat('dd MMM yyyy').format(_pickupDate);
-      String formattedTime = _pickupTime.format(context);
-      String bookedOn = '$formattedDate at $formattedTime';
-
-      double baseFare = _totalFare - _tollCharges;
+      double baseFare = _kmCharges +
+          _driverAllowance +
+          _driverFoodCharges +
+          _nightHaltCharges;
       int passengers = _adults + _children;
 
-      // Complete booking data with user selected hours
-      Map<String, dynamic> bookingData = {
-        // Booking identifiers
-        'bookingId': bookingId,
-        'userId': user.uid,
-
-        // Customer details
-        'customerName': _customerNameController.text.trim(),
-        'customerPhone': _customerPhoneController.text.trim(),
-        'customerEmail': _customerEmailController.text.trim().isNotEmpty
-            ? _customerEmailController.text.trim()
-            : null,
-
-        // Trip details
-        'tripType': _selectedTripType,
-        'fromLocation': _pickupController.text.trim(),
-        'toLocation': _dropController.text.trim(),
-        'pickupLocation': _pickupController.text.trim(),
-        'dropLocation': _dropController.text.trim(),
-
-        // Coordinates
-        'pickupLatLng': _pickupLatLng != null
-            ? GeoPoint(_pickupLatLng!.latitude, _pickupLatLng!.longitude)
-            : null,
-        'dropLatLng': _dropLatLng != null
-            ? GeoPoint(_dropLatLng!.latitude, _dropLatLng!.longitude)
-            : null,
-
-        // Vehicle details
-        'vehicleType': _selectedCarType ?? '',
-        'vehicleModel': _selectedVehicleModel ?? 'Not specified',
-        'vehicleNumber': _selectedVehicleModel ?? 'Not specified',
-
-        // Passenger details
-        'adults': _adults,
-        'children': _children,
-        'passengers': passengers,
-        'luggage': _luggage,
-
-        // Trip details
-        'distance': _distance,
-        'distanceText': '${_distance.toStringAsFixed(1)} km',
-        'duration': _routeDuration,
-        'durationMinutes': _tripDurationMinutes,
-        'durationHours': _tripDurationHours,
-        
-        // NEW: User selected hours
-        'selectedHours': _selectedHours,
-        'selectedMinutes': _selectedMinutes,
-        'selectedDuration': '$_selectedHours hours $_selectedMinutes mins',
-
-        // Fare details
-        'baseFare': baseFare,
-        'kmCharges': _kmCharges,
-        'tollCharges': _tollCharges,
-        'driverAllowance': _driverAllowance,
-        'driverFoodCharges': _driverFoodCharges,
-        'nightHaltCharges': _nightHaltCharges,
-        'extraHourCharges': _extraHourCharges,
-        'extraKmCharges': _extraKmCharges,
-        'totalFare': _totalFare,
-        'totalAmount': _totalFare,
-
-        // Payment details
-        'paymentMethod': 'Cash',
-        'paymentStatus': 'Pending',
-
-        // Status
-        'status': 'Pending',
-        'bookingStatus': 'Pending',
-
-        // Special instructions
-        'specialInstructions':
-            _specialInstructionsController.text.trim().isNotEmpty
-                ? _specialInstructionsController.text.trim()
-                : null,
-
-        // Return date for round trips
-        'returnDate': _selectedTripType == 'ROUND TRIP' && _returnDate != null
-            ? Timestamp.fromDate(_returnDate!)
-            : null,
-
-        // Timestamps
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-        'travelDate': Timestamp.fromDate(DateTime(
-          _pickupDate.year,
-          _pickupDate.month,
-          _pickupDate.day,
-          _pickupTime.hour,
-          _pickupTime.minute,
-        )),
-
-        // Display formats
-        'formattedDate': formattedDate,
-        'formattedTime': formattedTime,
-        'bookedOn': bookedOn,
-      };
-
-      print('📝 Saving booking with ID: $bookingId');
-
-      // Save to Firestore
-      DocumentReference docRef =
-          await _firestore.collection('bookings').add(bookingData);
-
-      print('✅ Booking saved with document ID: ${docRef.id}');
-
-      // Update with document ID
-      await docRef.update({
-        'documentId': docRef.id,
-      });
-
-      _showSnackBar(
-        '✅ Booking confirmed! ID: $bookingId',
-        widget.themeColor,
+      DateTime travelDateTime = DateTime(
+        _pickupDate.year,
+        _pickupDate.month,
+        _pickupDate.day,
+        _pickupTime.hour,
+        _pickupTime.minute,
       );
 
-      await _shareToWhatsApp(bookingId, _totalFare);
-      _resetForm();
+      print('📝 Creating booking with:');
+      print('   From: ${_pickupController.text}');
+      print('   To: ${_dropController.text}');
+      print('   Vehicle: $_selectedVehicleType');
+      print('   Base Fare: $baseFare');
+      print('   Extra Hours: $_extraHours');
+      print('   Extra Hour Charges: $_extraHourCharges');
+      print('   Total Fare: $_totalFare');
+      print('   Distance: $_distance km');
+      print('   Trip Type: ${_returnDate != null ? "ROUND TRIP" : "ONE WAY"}');
+
+      final result = await _bookingService.createBookingWithToll(
+        fromLocation: _pickupController.text.trim(),
+        toLocation: _dropController.text.trim(),
+        travelDate: travelDateTime,
+        vehicleType: _selectedVehicleType ?? 'sedan',
+        vehicleNumber: _vehicleNumberController.text.trim().isEmpty
+            ? 'Not specified'
+            : _vehicleNumberController.text.trim(),
+        passengers: passengers,
+        baseFare: baseFare,
+        paymentMethod: 'Cash',
+        returnDate: _returnDate,
+        adults: _adults,
+        children: _children,
+        luggage: _luggage,
+        specialInstructions: _specialInstructionsController.text.trim(),
+        tripType: _returnDate != null ? 'ROUND TRIP' : 'ONE WAY',
+      );
+
+      print('📦 Booking result: $result');
+
+      if (result['success'] == true) {
+        String bookingId = result['bookingId'];
+
+        _showSnackBar(
+          '✅ Booking confirmed! ID: $bookingId',
+          widget.themeColor,
+        );
+
+        await _shareToWhatsApp(bookingId, _totalFare);
+
+        _resetForm();
+      } else {
+        _showSnackBar(
+          'Failed: ${result['message']}',
+          Colors.red,
+        );
+      }
     } catch (e) {
-      print('❌ Firestore save error: $e');
-      _showSnackBar('Failed to save booking: ${e.toString()}', Colors.red);
+      print('❌ Save booking error: $e');
+      _showSnackBar('Error: ${e.toString()}', Colors.red);
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -2789,7 +2494,6 @@ Thank you for choosing SSA Travels! 🎉
     }
   }
 
-  // Helper method to generate random string
   String _randomString(int length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     Random rnd = Random();
@@ -2804,18 +2508,18 @@ Thank you for choosing SSA Travels! 🎉
   void _resetForm() {
     if (mounted) {
       setState(() {
-        _selectedTripType = 'DROP TRIP';
         _pickupController.clear();
         _dropController.clear();
         _customerNameController.clear();
         _customerPhoneController.clear();
         _customerEmailController.clear();
         _specialInstructionsController.clear();
+        _vehicleNumberController.clear();
         _pickupDate = DateTime.now();
         _pickupTime = TimeOfDay.now();
         _returnDate = null;
-        _selectedCarType = null;
-        _selectedVehicleModel = null;
+        _selectedVehicleType = null;
+        _selectedModel = null;
         _adults = 1;
         _children = 0;
         _luggage = 0;
@@ -2836,9 +2540,9 @@ Thank you for choosing SSA Travels! 🎉
         _showRouteInfo = false;
         _tripDurationMinutes = 0;
         _tripDurationHours = 0;
-        _selectedHours = 0;
+        _selectedHours = 8;
         _selectedMinutes = 0;
-        _isManualHours = false;
+        _isManualHours = true;
         _extraHours = 0;
         _extraHourCharges = 0.0;
         _showExtraHoursWarning = false;
@@ -2850,85 +2554,114 @@ Thank you for choosing SSA Travels! 🎉
     _setDefaultLocation();
   }
 
-  // ========== BUILD UI METHODS ==========
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        bool isMobile = constraints.maxWidth < 600;
+    super.build(context);
 
-        return Stack(
-          children: [
-            SingleChildScrollView(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [widget.themeColor.withOpacity(0.1), Colors.white],
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          bool isMobile = constraints.maxWidth < 600;
+
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        widget.themeColor.withOpacity(0.1),
+                        Colors.white
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.all(isMobile ? 12 : 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            _buildLocationSection(isMobile),
+                            const Divider(height: 0),
+                            Padding(
+                              padding: EdgeInsets.all(isMobile ? 16 : 20),
+                              child: _buildHoursSelection(),
+                            ),
+                            const Divider(height: 0),
+                            _buildDateTimeSection(isMobile),
+                            const Divider(height: 0),
+                            _buildVehicleTypeSection(isMobile),
+                            if (_selectedVehicleType != null)
+                              _buildVehicleModelsSection(isMobile),
+                            const Divider(height: 0),
+                            _buildFareSection(isMobile),
+                            const Divider(height: 0),
+                            _buildPassengerSection(isMobile),
+                            const Divider(height: 0),
+                            _buildCustomerDetailsSection(isMobile),
+                          ],
+                        ),
+                      ),
+                      _buildConfirmButton(isMobile),
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.all(isMobile ? 12 : 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          _buildTripTypeSection(isMobile),
-                          const Divider(height: 0),
-                          _buildLocationSection(isMobile),
-                          const Divider(height: 0),
-                          
-                          // NEW: Hours Selection Section
-                          Padding(
-                            padding: EdgeInsets.all(isMobile ? 16 : 20),
-                            child: _buildHoursSelection(),
-                          ),
-                          const Divider(height: 0),
-                          
-                          _buildDateTimeSection(isMobile),
-                          const Divider(height: 0),
-                          _buildVehicleSection(isMobile),
-                          if (_selectedCarType != null)
-                            _buildVehicleModelsSection(isMobile),
-                          const Divider(height: 0),
-                          _buildFareSection(isMobile),
-                          const Divider(height: 0),
-                          _buildPassengerSection(isMobile),
-                          const Divider(height: 0),
-                          _buildCustomerDetailsSection(isMobile),
-                        ],
-                      ),
-                    ),
-                    _buildConfirmButton(isMobile),
-                    const SizedBox(height: 100),
-                  ],
-                ),
               ),
-            ),
-            if (_showRouteInfo && _routeDuration.isNotEmpty && _distance > 0)
-              _buildRouteInfoCard(),
-          ],
-        );
-      },
+              if (!_isInitialized)
+                Container(
+                  color: Colors.white.withOpacity(0.9),
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF00C853)),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Loading booking form...',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (_showRouteInfo && _routeDuration.isNotEmpty && _distance > 0)
+                _buildRouteInfoCard(),
+            ],
+          );
+        },
+      ),
     );
   }
 
   Widget _buildRouteInfoCard() {
     String durationText = _tripDurationHours > 0
-        ? '$_tripDurationHours hours'
-        : '${_tripDurationMinutes} mins';
+        ? '$_tripDurationHours h'
+        : '${_tripDurationMinutes} m';
+
+    String distanceText = '${_distance.toStringAsFixed(1)} km';
+
+    String tripTypeText = _returnDate != null
+        ? 'Round trip with return on ${DateFormat('dd/MM/yyyy').format(_returnDate!)}'
+        : 'One way trip';
 
     return Positioned(
       bottom: 20,
@@ -2997,13 +2730,23 @@ Thank you for choosing SSA Travels! 🎉
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
-                              _routeDistance,
+                              distanceText,
                               style: TextStyle(
                                   fontSize: 14, color: Colors.grey.shade800),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          tripTypeText,
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: widget.themeColor,
+                              fontWeight: FontWeight.w500),
+                        ),
                       ),
                     ],
                   ),
@@ -3034,7 +2777,7 @@ Thank you for choosing SSA Travels! 🎉
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Selected duration exceeds estimated trip time by $_extraHours hour(s). Extra charges of ₹${_extraHourCharges.toStringAsFixed(0)} will apply.',
+                          'Extra $_extraHours h - ₹${_extraHourCharges.toStringAsFixed(0)}',
                           style: const TextStyle(
                             fontSize: 11,
                             color: Colors.orange,
@@ -3045,112 +2788,8 @@ Thank you for choosing SSA Travels! 🎉
                   ),
                 ),
               ),
-            if (_routeSteps.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Directions: ${_routeSteps.first['instruction']}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTripTypeSection(bool isMobile) {
-    return Padding(
-      padding: EdgeInsets.all(isMobile ? 16 : 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.directions_car, color: widget.themeColor, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'SELECT TRIP TYPE',
-                style: TextStyle(
-                  fontSize: isMobile ? 14 : 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-            ),
-            child: Row(
-              children: ['DROP TRIP', 'ROUND TRIP'].map((type) {
-                bool isSelected = _selectedTripType == type;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (mounted) {
-                        setState(() {
-                          _selectedTripType = type;
-                          if (type == 'DROP TRIP') {
-                            _returnDate = null;
-                          }
-                          _calculateFare();
-                        });
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: isSelected ? widget.themeColor : Colors.white,
-                        borderRadius: type == 'DROP TRIP'
-                            ? const BorderRadius.only(
-                                topLeft: Radius.circular(16),
-                                bottomLeft: Radius.circular(16),
-                              )
-                            : const BorderRadius.only(
-                                topRight: Radius.circular(16),
-                                bottomRight: Radius.circular(16),
-                              ),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            type == 'DROP TRIP'
-                                ? Icons.arrow_right_alt
-                                : Icons.autorenew,
-                            color:
-                                isSelected ? Colors.white : widget.themeColor,
-                            size: 20,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            type,
-                            style: TextStyle(
-                              fontSize: isMobile ? 12 : 14,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.grey.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -3192,8 +2831,6 @@ Thank you for choosing SSA Travels! 🎉
                 isMobile: isMobile,
               ),
               const SizedBox(height: 16),
-              // USE MY CURRENT LOCATION BUTTON REMOVED
-              
               ElevatedButton(
                 onPressed: _calculatingToll ? null : _calculateDistanceAndToll,
                 style: ElevatedButton.styleFrom(
@@ -3221,7 +2858,7 @@ Thank you for choosing SSA Travels! 🎉
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Text('CALCULATING ROUTE & TOLL...'),
+                          const Text('CALCULATING...'),
                         ],
                       )
                     : Row(
@@ -3264,36 +2901,43 @@ Thank you for choosing SSA Travels! 🎉
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    hintText: 'Tap to select location on map',
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
+        GestureDetector(
+          onTap: () => _showMapSelection(isPickup),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 14,
                     ),
-                    prefixIcon:
-                        Icon(Icons.location_on, color: widget.themeColor),
+                    child: Text(
+                      controller.text.isEmpty
+                          ? 'Tap to select location'
+                          : controller.text,
+                      style: TextStyle(
+                        color: controller.text.isEmpty
+                            ? Colors.grey.shade500
+                            : Colors.black87,
+                        fontSize: isMobile ? 14 : 15,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  onTap: () => _showMapSelection(isPickup),
                 ),
-              ),
-              IconButton(
-                icon: Icon(Icons.map, color: widget.themeColor),
-                onPressed: () => _showMapSelection(isPickup),
-              ),
-            ],
+                IconButton(
+                  icon: Icon(Icons.map, color: widget.themeColor),
+                  onPressed: () => _showMapSelection(isPickup),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -3301,17 +2945,17 @@ Thank you for choosing SSA Travels! 🎉
   }
 
   Widget _buildDistanceInfo(bool isMobile) {
-    String durationText = _tripDurationHours > 0
-        ? '$_tripDurationHours hours (${_tripDurationMinutes} mins)'
-        : '${_tripDurationMinutes} minutes';
-
     String selectedText = _selectedHours > 0 || _selectedMinutes > 0
-        ? 'Selected: $_selectedHours h ${_selectedMinutes}m'
+        ? 'Selected: $_selectedHours h $_selectedMinutes m'
         : 'Select duration below';
+
+    String distanceText = '${_distance.toStringAsFixed(1)} km';
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: widget.themeColor.withOpacity(0.1),
@@ -3336,40 +2980,13 @@ Thank you for choosing SSA Travels! 🎉
                     ),
                   ],
                 ),
-                Text(
-                  '${_distance.toStringAsFixed(1)} km',
-                  style: TextStyle(
-                    fontSize: isMobile ? 16 : 18,
-                    fontWeight: FontWeight.bold,
-                    color: widget.themeColor,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.access_time, color: widget.themeColor),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Est. Duration:',
-                      style: TextStyle(
-                        fontSize: isMobile ? 14 : 16,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                  ],
-                ),
                 Expanded(
                   child: Text(
-                    durationText,
+                    distanceText,
                     style: TextStyle(
-                      fontSize: isMobile ? 14 : 16,
+                      fontSize: isMobile ? 14 : 15,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                      color: widget.themeColor,
                     ),
                     textAlign: TextAlign.right,
                   ),
@@ -3400,32 +3017,6 @@ Thank you for choosing SSA Travels! 🎉
                 ],
               ),
             ),
-            if (_extraHours > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.warning, color: Colors.orange, size: 16),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Extra: $_extraHours hrs (₹${_extraHourCharges.toStringAsFixed(0)})',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -3438,7 +3029,6 @@ Thank you for choosing SSA Travels! 🎉
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               Icon(Icons.calendar_today, color: widget.themeColor),
@@ -3454,8 +3044,6 @@ Thank you for choosing SSA Travels! 🎉
             ],
           ),
           const SizedBox(height: 12),
-
-          // PICKUP DATE Field
           _buildDateTimeField(
             title: 'PICKUP DATE',
             value: DateFormat('dd/MM/yyyy').format(_pickupDate),
@@ -3464,8 +3052,6 @@ Thank you for choosing SSA Travels! 🎉
             isMobile: isMobile,
           ),
           const SizedBox(height: 16),
-
-          // PICKUP TIME Field
           _buildDateTimeField(
             title: 'PICKUP TIME',
             value: _pickupTime.format(context),
@@ -3477,23 +3063,17 @@ Thank you for choosing SSA Travels! 🎉
             isMobile: isMobile,
           ),
           const SizedBox(height: 16),
-
-          // RETURN DATE for Round Trip
-          if (_selectedTripType == 'ROUND TRIP') ...[
-            _buildDateTimeField(
-              title: 'RETURN DATE',
-              value: _returnDate != null
-                  ? DateFormat('dd/MM/yyyy').format(_returnDate!)
-                  : 'Select return date',
-              icon: Icons.calendar_today,
-              onTap: _selectReturnDate,
-              isMobile: isMobile,
-              isRequired: true,
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // ========== WARNING MESSAGE (If Extra Hours) ==========
+          _buildDateTimeField(
+            title: 'RETURN DATE (Optional)',
+            value: _returnDate != null
+                ? DateFormat('dd/MM/yyyy').format(_returnDate!)
+                : 'Tap to add return date',
+            icon: Icons.calendar_today,
+            onTap: _selectReturnDate,
+            isMobile: isMobile,
+            isRequired: false,
+          ),
+          const SizedBox(height: 16),
           if (_showExtraHoursWarning && _extraHours > 0) ...[
             Container(
               width: double.infinity,
@@ -3503,18 +3083,35 @@ Thank you for choosing SSA Travels! 🎉
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.orange.shade200),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.warning_amber,
-                      color: Colors.orange[700], size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
+                  Row(
+                    children: [
+                      Icon(Icons.warning_amber,
+                          color: Colors.orange[700], size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _extraHoursMessage,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange[800],
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 32),
                     child: Text(
-                      'If the booking exceeds the allotted time, additional charges will be applicable. The extra amount must be paid as per the defined rate.',
+                      'Extra hour charges: ₹${_extraHourCharges.toStringAsFixed(0)}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.orange[800],
-                        height: 1.4,
+                        fontWeight: FontWeight.bold,
+                        color: widget.themeColor,
                       ),
                     ),
                   ),
@@ -3523,8 +3120,6 @@ Thank you for choosing SSA Travels! 🎉
             ),
             const SizedBox(height: 12),
           ],
-
-          // Night Travel Indicator
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -3548,7 +3143,7 @@ Thank you for choosing SSA Travels! 🎉
                 Expanded(
                   child: Text(
                     _isNightTravel
-                        ? 'Night Travel (10 PM - 6 AM) - Night halt charges apply'
+                        ? 'Night Travel (10 PM - 6 AM)'
                         : 'Day Travel',
                     style: TextStyle(
                       fontSize: 13,
@@ -3625,7 +3220,7 @@ Thank you for choosing SSA Travels! 🎉
     );
   }
 
-  Widget _buildVehicleSection(bool isMobile) {
+  Widget _buildVehicleTypeSection(bool isMobile) {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       child: Column(
@@ -3659,109 +3254,106 @@ Thank you for choosing SSA Travels! 🎉
             ],
           ),
           const SizedBox(height: 12),
-          Column(
-            children: [
-              if (_loadingVehicles)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(),
+          if (_loadingVehicles)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_vehicleTypes.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning, color: Colors.orange),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'No vehicle types available',
+                      style: TextStyle(
+                        color: Colors.grey.shade800,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                )
-              else if (_vehicles.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.shade200),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.warning, color: Colors.orange),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'No vehicles available. Check connection.',
-                          style: TextStyle(
-                            color: Colors.grey.shade800,
-                            fontSize: 12,
-                          ),
+                ],
+              ),
+            )
+          else
+            SizedBox(
+              height: isMobile ? 44 : 48,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _vehicleTypes.length,
+                itemBuilder: (context, index) {
+                  final vehicle = _vehicleTypes[index];
+                  String displayName = vehicle['displayName'] ?? vehicle['id'];
+                  bool isSelected = _selectedVehicleType == vehicle['id'];
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedVehicleType = vehicle['id'];
+                        _selectedModel = null;
+                        _availableModels =
+                            List<String>.from(vehicle['models'] ?? []);
+                        _calculateFare();
+                        _calculateExtraHours();
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? widget.themeColor
+                            : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSelected
+                              ? widget.themeColor
+                              : Colors.grey.shade300,
+                          width: isSelected ? 1.5 : 1,
                         ),
                       ),
-                    ],
-                  ),
-                )
-              else
-                SizedBox(
-                  height: isMobile ? 44 : 48,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _vehicles.length,
-                    itemBuilder: (context, index) {
-                      final vehicle = _vehicles[index];
-                      String displayName = vehicle['displayName'] ?? vehicle['type'];
-                      bool isSelected = _selectedCarType == displayName;
-                      
-                      return GestureDetector(
-                        onTap: () {
-                          if (mounted) {
-                            setState(() {
-                              _selectedCarType = displayName;
-                              _selectedVehicleModel = null;
-                              _calculateFare();
-                              _calculateExtraHours();
-                            });
-                          }
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? widget.themeColor
-                                : Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isSelected
-                                  ? widget.themeColor
-                                  : Colors.grey.shade300,
-                              width: isSelected ? 1.5 : 1,
-                            ),
-                          ),
-                          child: Text(
-                            displayName,
-                            style: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.grey.shade800,
-                              fontWeight: FontWeight.w600,
-                              fontSize: isMobile ? 13 : 14,
-                            ),
-                          ),
+                      child: Text(
+                        displayName,
+                        style: TextStyle(
+                          color:
+                              isSelected ? Colors.white : Colors.grey.shade800,
+                          fontWeight: FontWeight.w600,
+                          fontSize: isMobile ? 13 : 14,
                         ),
-                      );
-                    },
-                  ),
-                ),
-              if (_selectedCarType != null && !_loadingVehicles)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: _buildCapacityWarning(),
-                ),
-            ],
-          ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          if (_selectedVehicleType != null && !_loadingVehicles)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: _buildCapacityWarning(),
+            ),
         ],
       ),
     );
   }
 
   Widget _buildVehicleModelsSection(bool isMobile) {
-    if (_selectedCarType == null) return const SizedBox();
-    
-    List<String> models = _getVehicleModelsForSelectedCar();
-    
+    if (_selectedVehicleType == null) return const SizedBox();
+
+    List<String> models = _getModelsForSelectedVehicle();
+
     if (models.isEmpty) return const SizedBox();
 
     return Padding(
@@ -3770,7 +3362,9 @@ Thank you for choosing SSA Travels! 🎉
         right: isMobile ? 16 : 20,
         bottom: 16,
       ),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
         padding: EdgeInsets.all(isMobile ? 12 : 16),
         decoration: BoxDecoration(
           color: Colors.grey.shade50,
@@ -3786,7 +3380,7 @@ Thank you for choosing SSA Travels! 🎉
                     color: widget.themeColor, size: 18),
                 const SizedBox(width: 8),
                 Text(
-                  'Available Models for $_selectedCarType:',
+                  'Available Models:',
                   style: TextStyle(
                     fontSize: isMobile ? 13 : 14,
                     fontWeight: FontWeight.w600,
@@ -3800,14 +3394,14 @@ Thank you for choosing SSA Travels! 🎉
               spacing: 8,
               runSpacing: 6,
               children: models.map((model) {
-                bool isSelected = _selectedVehicleModel == model;
+                bool isSelected = _selectedModel == model;
                 return GestureDetector(
                   onTap: () {
-                    if (mounted) {
-                      setState(() => _selectedVehicleModel = model);
-                    }
+                    setState(() => _selectedModel = model);
                   },
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
                     padding: EdgeInsets.symmetric(
                       horizontal: isMobile ? 10 : 12,
                       vertical: isMobile ? 6 : 8,
@@ -3846,20 +3440,12 @@ Thank you for choosing SSA Travels! 🎉
   }
 
   Widget _buildCapacityWarning() {
-    // Find the selected vehicle's seating capacity
-    int seats = 4; // Default
-    for (var vehicle in _vehicles) {
-      String displayName = vehicle['displayName'] ?? vehicle['type'];
-      if (displayName == _selectedCarType || 
-          vehicle['type'] == _selectedCarType?.toLowerCase()) {
-        seats = vehicle['data']['seatingCapacity'] ?? 4;
-        break;
-      }
-    }
-    
+    int seats = _getSeatingCapacity(_selectedVehicleType!);
     int totalPassengers = _adults + _children;
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: totalPassengers <= seats
@@ -3882,7 +3468,7 @@ Thank you for choosing SSA Travels! 🎉
           Expanded(
             child: Text(
               totalPassengers <= seats
-                  ? 'Vehicle capacity: $seats passengers | Selected: $totalPassengers'
+                  ? 'Capacity: $seats seats | Selected: $totalPassengers'
                   : 'Capacity exceeded! Max: $seats | Selected: $totalPassengers',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
@@ -3900,7 +3486,7 @@ Thank you for choosing SSA Travels! 🎉
         children: [
           Row(
             children: [
-              Icon(Icons.attach_money, color: widget.themeColor),
+              Icon(Icons.currency_rupee, color: widget.themeColor),
               const SizedBox(width: 8),
               Text(
                 'FARE ESTIMATION',
@@ -3913,7 +3499,7 @@ Thank you for choosing SSA Travels! 🎉
             ],
           ),
           const SizedBox(height: 12),
-          if (_selectedCarType != null && _distance > 0)
+          if (_selectedVehicleType != null && _distance > 0)
             Column(
               children: [
                 _buildDetailedFareBreakdown(isMobile),
@@ -4077,31 +3663,25 @@ Thank you for choosing SSA Travels! 🎉
   }
 
   Widget _buildDetailedFareBreakdown(bool isMobile) {
-    final carRates = _rateCard[_selectedCarType];
+    final carRates = _rateCard[_selectedVehicleType];
     if (carRates == null) return const SizedBox();
 
-    final double effectiveDistance =
-        _selectedTripType == 'ROUND TRIP' ? _distance * 2 : _distance;
+    final double effectiveDistance = _getEffectiveDistanceForCharges();
     final bool isBelow200 = effectiveDistance <= 200;
     final Map<String, dynamic> rateData = (isBelow200
         ? carRates['below200']
         : carRates['above200']) as Map<String, dynamic>;
 
-    String durationText = _tripDurationHours > 0
-        ? '$_tripDurationHours hours'
-        : '${_tripDurationMinutes} mins';
-
-    String selectedText = '$_selectedHours h ${_selectedMinutes}m';
+    String distanceDisplay = '${_distance.toStringAsFixed(1)} km';
+    double baseFare =
+        _kmCharges + _driverAllowance + _driverFoodCharges + _nightHaltCharges;
 
     return Column(
       children: [
-        _buildFareDetailRow('Trip Type', _selectedTripType, ''),
-        _buildFareDetailRow('Vehicle Type', _selectedCarType!, ''),
-        _buildFareDetailRow(
-            'Distance', '${_distance.toStringAsFixed(1)} km', ''),
+        _buildFareDetailRow('Vehicle Type', _selectedVehicleType!, ''),
+        _buildFareDetailRow('Distance', distanceDisplay, ''),
         if (_routeDuration.isNotEmpty)
-          _buildFareDetailRow('Est. Time', durationText, ''),
-        _buildFareDetailRow('Selected Time', selectedText, ''),
+          _buildFareDetailRow('Est. Time', _routeDuration, ''),
         _buildFareDetailRow('Rate per km', '₹${rateData['perKm']}/km',
             '₹${_kmCharges.toStringAsFixed(0)}'),
         if (_driverAllowance > 0)
@@ -4113,18 +3693,63 @@ Thank you for choosing SSA Travels! 🎉
         if (_nightHaltCharges > 0)
           _buildFareDetailRow('Night Halt Charges', '',
               '₹${_nightHaltCharges.toStringAsFixed(0)}'),
+        _buildFareDetailRow('Base Fare', '', '₹${baseFare.toStringAsFixed(0)}',
+            isBold: true),
         if (_tollCharges > 0)
           _buildFareDetailRow(
               'Toll Charges', '', '₹${_tollCharges.toStringAsFixed(0)}'),
         if (_extraHours > 0)
-          _buildFareDetailRow('Extra Hours', '$_extraHours hours',
-              '₹${_extraHourCharges.toStringAsFixed(0)}'),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.timer, color: Colors.orange, size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Extra Hours',
+                        style: TextStyle(
+                            fontSize: 13, color: Colors.grey.shade700),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    '$_extraHours h',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                SizedBox(
+                  width: 70,
+                  child: Text(
+                    '₹${_extraHourCharges.toStringAsFixed(0)}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: widget.themeColor,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              ],
+            ),
+          ),
         const Divider(thickness: 2),
       ],
     );
   }
 
-  Widget _buildFareDetailRow(String label, String value, String amount) {
+  Widget _buildFareDetailRow(String label, String value, String amount,
+      {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -4134,7 +3759,11 @@ Thank you for choosing SSA Travels! 🎉
             flex: 2,
             child: Text(
               label,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade700,
+                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ),
           Expanded(
@@ -4143,7 +3772,7 @@ Thank you for choosing SSA Travels! 🎉
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade800,
-                fontWeight: FontWeight.w500,
+                fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
               ),
               textAlign: TextAlign.right,
             ),
@@ -4155,9 +3784,8 @@ Thank you for choosing SSA Travels! 🎉
                 amount,
                 style: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color:
-                      label.contains('Extra') ? Colors.red : widget.themeColor,
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.bold,
+                  color: widget.themeColor,
                 ),
                 textAlign: TextAlign.right,
               ),
@@ -4188,74 +3816,42 @@ Thank you for choosing SSA Travels! 🎉
             ],
           ),
           const SizedBox(height: 12),
-          if (isMobile)
-            Column(
-              children: [
-                _buildCounter(
+          Row(
+            children: [
+              Expanded(
+                child: _buildCounter(
                   'Adults',
                   _adults,
                   (value) {
-                    if (mounted) setState(() => _adults = value);
+                    setState(() => _adults = value);
                   },
                   isMobile: isMobile,
                 ),
-                const SizedBox(height: 16),
-                _buildCounter(
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildCounter(
                   'Children',
                   _children,
                   (value) {
-                    if (mounted) setState(() => _children = value);
+                    setState(() => _children = value);
                   },
                   isMobile: isMobile,
                 ),
-                const SizedBox(height: 16),
-                _buildCounter(
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildCounter(
                   'Luggage',
                   _luggage,
                   (value) {
-                    if (mounted) setState(() => _luggage = value);
+                    setState(() => _luggage = value);
                   },
                   isMobile: isMobile,
                 ),
-              ],
-            )
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCounter(
-                    'Adults',
-                    _adults,
-                    (value) {
-                      if (mounted) setState(() => _adults = value);
-                    },
-                    isMobile: isMobile,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildCounter(
-                    'Children',
-                    _children,
-                    (value) {
-                      if (mounted) setState(() => _children = value);
-                    },
-                    isMobile: isMobile,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildCounter(
-                    'Luggage',
-                    _luggage,
-                    (value) {
-                      if (mounted) setState(() => _luggage = value);
-                    },
-                    isMobile: isMobile,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
         ],
       ),
     );

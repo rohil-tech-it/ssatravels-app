@@ -25,7 +25,7 @@ class AdminHelpSupportPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Admin FAQ Section (Updated)
+            // Admin FAQ Section
             _buildSection(
               title: 'Admin FAQs',
               children: [
@@ -58,11 +58,6 @@ class AdminHelpSupportPage extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-
-          
-
-            const SizedBox(height: 30),
-
             // Safety Tips (Updated for admin)
             _buildSection(
               title: 'Admin Tips',
@@ -82,7 +77,10 @@ class AdminHelpSupportPage extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 30),            
+            const SizedBox(height: 30),
+            
+            // Contact Support Section
+            _buildContactSection(context),
           ],
         ),
       ),
@@ -138,54 +136,12 @@ class AdminHelpSupportPage extends StatelessWidget {
     );
   }
 
- 
-  Widget _buildToolCard({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF00B14F), size: 24),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSafetyTip({required String tip}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF00B14F).withOpacity(0.1),
+        color: const Color(0xFF00B14F).withValues(alpha: 0.1), // Fixed deprecated withOpacity
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -203,23 +159,88 @@ class AdminHelpSupportPage extends StatelessWidget {
     );
   }
 
- 
+  Widget _buildContactSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Contact Support',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        // Call Support Card
+        _buildContactCard(
+          icon: Icons.phone,
+          title: 'Call Support',
+          description: 'Talk to our support team',
+          onTap: () => _makePhoneCall(context, '18001234567'),
+        ),
+        
+        // WhatsApp Support Card
+        _buildContactCard(
+          icon: Icons.chat,
+          title: 'WhatsApp',
+          description: 'Chat with support team',
+          onTap: () => _openWhatsApp(context, '9876543210'),
+        ),
+        
+        // Email Support Card
+        _buildContactCard(
+          icon: Icons.email,
+          title: 'Email Support',
+          description: 'Send us an email',
+          onTap: () => _sendEmail(context, 'support@ssatravels.com'),
+        ),
+      ],
+    );
+  }
 
-  // Call Functionality
+  Widget _buildContactCard({
+    required IconData icon,
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFF00B14F).withValues(alpha: 0.1), // Fixed deprecated withOpacity
+          child: Icon(icon, color: const Color(0xFF00B14F)),
+        ),
+        title: Text(title),
+        subtitle: Text(description),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
+      ),
+    );
+  }
+
   Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
     final Uri launchUri = Uri(
       scheme: 'tel',
       path: phoneNumber,
     );
 
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
-    } else {
-      _showSnackBar(context, 'Could not launch phone app');
+    try {
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      } else {
+        if (context.mounted) { // Added mounted check
+          _showSnackBar(context, 'Could not launch phone app');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) { // Added mounted check
+        _showSnackBar(context, 'Error launching phone app');
+      }
     }
   }
 
-  // WhatsApp Functionality
   Future<void> _openWhatsApp(BuildContext context, String phoneNumber) async {
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -231,10 +252,40 @@ class AdminHelpSupportPage extends StatelessWidget {
         'https://wa.me/$cleanNumber?text=Hello%20Admin%20Team,%20I%20need%20help';
     final Uri launchUri = Uri.parse(url);
 
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
-    } else {
-      _showSnackBar(context, 'Could not launch WhatsApp');
+    try {
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      } else {
+        if (context.mounted) { // Added mounted check
+          _showSnackBar(context, 'Could not launch WhatsApp');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) { // Added mounted check
+        _showSnackBar(context, 'Error launching WhatsApp');
+      }
+    }
+  }
+
+  Future<void> _sendEmail(BuildContext context, String email) async {
+    final Uri launchUri = Uri(
+      scheme: 'mailto',
+      path: email,
+      query: 'subject=Support Request&body=Hello Support Team,',
+    );
+
+    try {
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      } else {
+        if (context.mounted) { // Added mounted check
+          _showSnackBar(context, 'Could not launch email app');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) { // Added mounted check
+        _showSnackBar(context, 'Error launching email app');
+      }
     }
   }
 
@@ -243,40 +294,6 @@ class AdminHelpSupportPage extends StatelessWidget {
       SnackBar(
         content: Text(message),
         backgroundColor: const Color(0xFF00B14F),
-      ),
-    );
-  }
-}
-
-class _BuildTimingRow extends StatelessWidget {
-  final String day;
-  final String time;
-
-  const _BuildTimingRow(this.day, this.time);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            day,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            time,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF00B14F),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }

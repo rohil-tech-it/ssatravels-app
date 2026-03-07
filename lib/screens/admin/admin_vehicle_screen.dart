@@ -1,50 +1,57 @@
-// lib/screens/admin/admin_vehicle_management.dart
+// lib/screens/admin/admin_vehicle_screen.dart
 import 'package:flutter/material.dart';
-import '../../services/toll_service.dart';
-import '../../models/vehicle_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdminAddVehicleManagement extends StatefulWidget {
+  const AdminAddVehicleManagement({super.key});
+
   @override
   _AdminAddVehicleManagementState createState() =>
       _AdminAddVehicleManagementState();
 }
 
 class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
-  final TollService _tollService = TollService();
   final _formKey = GlobalKey<FormState>();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Controllers - Only three fields
-  final _nameController = TextEditingController(); // Vehicle name
-  final _seatsController = TextEditingController(); // Seats
-  final _modelController = TextEditingController(); // Model (optional)
-
-  // Simple icon for all vehicles
-  IconData _getVehicleIcon() {
-    return Icons.directions_car;
-  }
+  // Controllers
+  final _nameController = TextEditingController();
+  final _seatsController = TextEditingController();
+  
+  // NEW: For managing models
+  List<String> _selectedModels = [];
+  final TextEditingController _newModelController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(
-          'Vehicle Management',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: const Color(0xFF00B14F),
-        elevation: 2,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add_circle_outline, color: Colors.white),
-            onPressed: _showAddVehicleDialog,
-            tooltip: 'Add New Vehicle',
-          ),
-        ],
-      ),
-      body: StreamBuilder<List<VehicleModel>>(
-        stream: _tollService.getAllVehicles(),
+     appBar: AppBar(
+  backgroundColor: const Color(0xFF00B14F),
+  elevation: 2,
+
+  // 👇 Back arrow white
+  iconTheme: const IconThemeData(color: Colors.white),
+
+  // 👇 Title text white
+  title: const Text(
+    'Vehicle Models Management',
+    style: TextStyle(
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+    ),
+  ),
+
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+      onPressed: _showAddVehicleModelDialog,
+      tooltip: 'Add New Vehicle Model',
+    ),
+  ],
+),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection('vehicleModels').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -53,10 +60,7 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                 children: [
                   Icon(Icons.error_outline, size: 60, color: Colors.red),
                   SizedBox(height: 16),
-                  Text(
-                    'Error: ${snapshot.error}',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                  Text('Error: ${snapshot.error}'),
                   SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () => setState(() {}),
@@ -79,9 +83,9 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
             );
           }
 
-          final vehicles = snapshot.data!;
+          final vehicleModels = snapshot.data!.docs;
 
-          if (vehicles.isEmpty) {
+          if (vehicleModels.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -93,26 +97,26 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.directions_car,
+                      Icons.model_training,
                       size: 80,
                       color: const Color(0xFF00B14F),
                     ),
                   ),
                   SizedBox(height: 16),
                   Text(
-                    'No vehicles found',
+                    'No vehicle models found',
                     style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Add your first vehicle to get started',
+                    'Add your first vehicle model to get started',
                     style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   ),
                   SizedBox(height: 20),
                   ElevatedButton.icon(
-                    onPressed: _showAddVehicleDialog,
+                    onPressed: _showAddVehicleModelDialog,
                     icon: Icon(Icons.add),
-                    label: Text('Add First Vehicle'),
+                    label: Text('Add First Model'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00B14F),
                       padding:
@@ -126,9 +130,13 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
 
           return ListView.builder(
             padding: EdgeInsets.all(16),
-            itemCount: vehicles.length,
+            itemCount: vehicleModels.length,
             itemBuilder: (context, index) {
-              final vehicle = vehicles[index];
+              final doc = vehicleModels[index];
+              final data = doc.data() as Map<String, dynamic>;
+              final isActive = data['isActive'] ?? true;
+              final modelsList = List<String>.from(data['models'] ?? []);
+
               return Card(
                 margin: EdgeInsets.only(bottom: 12),
                 elevation: 2,
@@ -139,45 +147,40 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: vehicle.isActive
+                      color: isActive
                           ? const Color(0xFF00B14F).withOpacity(0.3)
                           : Colors.grey.withOpacity(0.2),
                       width: 1,
                     ),
                   ),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(12),
+                  child: ExpansionTile(
                     leading: CircleAvatar(
-                      radius: 28,
-                      backgroundColor: vehicle.isActive
+                      radius: 24,
+                      backgroundColor: isActive
                           ? const Color(0xFF00B14F).withOpacity(0.1)
                           : Colors.grey.shade200,
                       child: Icon(
-                        _getVehicleIcon(),
-                        size: 28,
-                        color: vehicle.isActive
-                            ? const Color(0xFF00B14F)
-                            : Colors.grey,
+                        Icons.model_training,
+                        size: 24,
+                        color: isActive ? const Color(0xFF00B14F) : Colors.grey,
                       ),
                     ),
                     title: Row(
                       children: [
                         Expanded(
                           child: Text(
-                            vehicle.displayName,
+                            data['vehicleType'] ?? doc.id,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
-                              decoration: vehicle.isActive
+                              decoration: isActive
                                   ? TextDecoration.none
                                   : TextDecoration.lineThrough,
-                              color: vehicle.isActive
-                                  ? Colors.black87
-                                  : Colors.grey,
+                              color: isActive ? Colors.black87 : Colors.grey,
                             ),
                           ),
                         ),
-                        if (vehicle.isActive)
+                        if (isActive)
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
@@ -223,70 +226,115 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                                 size: 14, color: Colors.grey[600]),
                             SizedBox(width: 4),
                             Text(
-                              '${vehicle.seatingCapacity} seats',
+                              '${data['seatingCapacity'] ?? 4} seats',
                               style: TextStyle(
                                   color: Colors.grey[600], fontSize: 12),
                             ),
-                            if (vehicle.model != null &&
-                                vehicle.model!.isNotEmpty) ...[
-                              SizedBox(width: 12),
-                              Icon(Icons.model_training,
-                                  size: 14, color: Colors.grey[600]),
-                              SizedBox(width: 4),
-                              Text(
-                                vehicle.model!,
-                                style: TextStyle(
-                                    color: Colors.grey[600], fontSize: 12),
-                              ),
-                            ],
                           ],
                         ),
-                      ],
-                    ),
-                    trailing: PopupMenuButton<String>(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onSelected: (value) {
-                        if (value == 'edit') {
-                          _showEditVehicleDialog(vehicle);
-                        } else if (value == 'toggle') {
-                          _toggleVehicleStatus(vehicle);
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit,
-                                  color: const Color(0xFF00B14F), size: 20),
-                              SizedBox(width: 8),
-                              Text('Edit Vehicle'),
-                            ],
+                        SizedBox(height: 4),
+                        Text(
+                          '${modelsList.length} models available',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
-                        PopupMenuItem(
-                          value: 'toggle',
-                          child: Row(
-                            children: [
-                              Icon(
-                                vehicle.isActive
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: vehicle.isActive
-                                    ? Colors.orange
-                                    : const Color(0xFF00B14F),
-                                size: 20,
-                              ),
-                              SizedBox(width: 8),
+                      ],
+                    ),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Models List
+                            if (modelsList.isNotEmpty) ...[
                               Text(
-                                  vehicle.isActive ? 'Deactivate' : 'Activate'),
+                                'Available Models:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: modelsList.map((model) {
+                                  return Chip(
+                                    label: Text(model),
+                                    deleteIcon: Icon(Icons.close, size: 16),
+                                    onDeleted: () {
+                                      _removeModelFromList(doc.id, modelsList, model);
+                                    },
+                                    backgroundColor: Colors.grey.shade100,
+                                  );
+                                }).toList(),
+                              ),
+                              SizedBox(height: 16),
                             ],
-                          ),
+                            
+                            // Add new model field
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _newModelController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Add new model (e.g., Tata Tiago)',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                IconButton(
+                                  icon: Icon(Icons.add_circle,
+                                      color: Color(0xFF00B14F)),
+                                  onPressed: () {
+                                    _addModelToList(doc.id, modelsList);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton.icon(
+                            onPressed: () => _toggleVehicleStatus(doc.id, isActive),
+                            icon: Icon(
+                              isActive ? Icons.visibility_off : Icons.visibility,
+                              size: 18,
+                              color: isActive ? Colors.orange : Colors.green,
+                            ),
+                            label: Text(
+                              isActive ? 'Deactivate' : 'Activate',
+                              style: TextStyle(
+                                color: isActive ? Colors.orange : Colors.green,
+                              ),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () => _showEditVehicleModelDialog(doc.id, data),
+                            icon: Icon(Icons.edit, size: 18, color: Colors.blue),
+                            label: Text('Edit', style: TextStyle(color: Colors.blue)),
+                          ),
+                          TextButton.icon(
+                            onPressed: () => _showDeleteDialog(doc.id),
+                            icon: Icon(Icons.delete, size: 18, color: Colors.red),
+                            label: Text('Delete', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -297,8 +345,10 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
     );
   }
 
-  void _showAddVehicleDialog() {
-    _clearControllers();
+  void _showAddVehicleModelDialog() {
+    _nameController.clear();
+    _seatsController.clear();
+    _selectedModels.clear();
 
     showDialog(
       context: context,
@@ -307,7 +357,7 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
           children: [
             Icon(Icons.add_circle, color: const Color(0xFF00B14F)),
             SizedBox(width: 8),
-            Text('Add New Vehicle'),
+            Text('Add New Vehicle Model'),
           ],
         ),
         content: Form(
@@ -316,7 +366,7 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Vehicle Name (Required)
+                // Vehicle Type (Required)
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[50],
@@ -325,8 +375,8 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                   child: TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      labelText: 'Vehicle Name *',
-                      hintText: 'e.g., Toyota Innova',
+                      labelText: 'Vehicle Type *',
+                      hintText: 'e.g., hatchback, sedan',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -335,7 +385,7 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Vehicle name is required';
+                        return 'Vehicle type is required';
                       }
                       return null;
                     },
@@ -354,7 +404,7 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: 'Number of Seats *',
-                      hintText: 'e.g., 7',
+                      hintText: 'e.g., 5',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -377,23 +427,24 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                 ),
                 SizedBox(height: 12),
 
-                // Model (Optional)
+                // Info about models
                 Container(
+                  padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: TextFormField(
-                    controller: _modelController,
-                    decoration: InputDecoration(
-                      labelText: 'Model (Optional)',
-                      hintText: 'e.g., 2024, LX, VX',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info, color: Colors.blue, size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'You can add models after creating the vehicle type',
+                          style: TextStyle(fontSize: 12, color: Colors.blue[700]),
+                        ),
                       ),
-                      prefixIcon: Icon(Icons.model_training,
-                          color: const Color(0xFF00B14F)),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -406,72 +457,46 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
             child: Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: _addVehicle,
+            onPressed: _addVehicleModel,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00B14F),
             ),
-            child: Text('Add Vehicle'),
+            child: Text('Create Model'),
           ),
         ],
       ),
     );
   }
 
-  // In admin_vehicle_management.dart, update _addVehicle method:
-
-  Future<void> _addVehicle() async {
+  Future<void> _addVehicleModel() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        // Auto-detect category from vehicle name
-        String vehicleNameLower = _nameController.text.toLowerCase();
-        String category = 'Car'; // Default
+        String vehicleId = _nameController.text.toLowerCase().replaceAll(' ', '_');
 
-        // Map to rateCard keys
-        if (vehicleNameLower.contains('innova')) {
-          category = 'innova';
-        } else if (vehicleNameLower.contains('ertiga')) {
-          category = 'eritga'; // Note: your Firebase has 'eritga' (typo)
-        } else if (vehicleNameLower.contains('hatchback') ||
-            vehicleNameLower.contains('swift') ||
-            vehicleNameLower.contains('i10')) {
-          category = 'hatchback';
-        } else if (vehicleNameLower.contains('sedan') ||
-            vehicleNameLower.contains('dzire') ||
-            vehicleNameLower.contains('verna')) {
-          category = 'sedan';
-        } else if (vehicleNameLower.contains('tavera')) {
-          category = 'tavera';
-        } else if (vehicleNameLower.contains('tempo')) {
-          category = 'tempo';
-        } else if (vehicleNameLower.contains('tourist')) {
-          category = 'tourist van';
-        } else if (vehicleNameLower.contains('van') ||
-            vehicleNameLower.contains('407')) {
-          category = 'van 407';
-        }
-
-        await _tollService.addVehicle(
-          name: _nameController.text.toLowerCase().replaceAll(' ', '_'),
-          displayName: _nameController.text,
-          category: category, // Use detected category
-          seatingCapacity: int.parse(_seatsController.text),
-          baseTollMultiplier: 1.0,
-          model: _modelController.text.isEmpty ? null : _modelController.text,
-        );
+        // Save in vehicleModels collection
+        await _firestore.collection('vehicleModels').doc(vehicleId).set({
+          'vehicleType': _nameController.text,
+          'seatingCapacity': int.parse(_seatsController.text),
+          'models': [],  // Initialize empty models array
+          'isActive': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
 
         Navigator.pop(context);
-        _clearControllers();
-        _showSnackBar('✅ Vehicle added successfully!', Colors.green);
+        _nameController.clear();
+        _seatsController.clear();
+        _showSnackBar('✅ Vehicle model created successfully!', Colors.green);
       } catch (e) {
         _showSnackBar('Error: $e', Colors.red);
       }
     }
   }
 
-  void _showEditVehicleDialog(VehicleModel vehicle) {
-    _nameController.text = vehicle.displayName;
-    _seatsController.text = vehicle.seatingCapacity.toString();
-    _modelController.text = vehicle.model ?? '';
+  void _showEditVehicleModelDialog(String docId, Map<String, dynamic> data) {
+    _nameController.text = data['vehicleType'] ?? '';
+    _seatsController.text = (data['seatingCapacity'] ?? 4).toString();
+    _selectedModels = List<String>.from(data['models'] ?? []);
 
     showDialog(
       context: context,
@@ -480,7 +505,7 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
           children: [
             Icon(Icons.edit, color: const Color(0xFF00B14F)),
             SizedBox(width: 8),
-            Text('Edit Vehicle'),
+            Text('Edit Vehicle Model'),
           ],
         ),
         content: Form(
@@ -497,7 +522,7 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                   child: TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      labelText: 'Vehicle Name *',
+                      labelText: 'Vehicle Type *',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -506,7 +531,7 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Vehicle name is required';
+                        return 'Vehicle type is required';
                       }
                       return null;
                     },
@@ -543,24 +568,6 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
                     },
                   ),
                 ),
-                SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: TextFormField(
-                    controller: _modelController,
-                    decoration: InputDecoration(
-                      labelText: 'Model (Optional)',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      prefixIcon: Icon(Icons.model_training,
-                          color: const Color(0xFF00B14F)),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -571,51 +578,126 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
             child: Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () => _updateVehicle(vehicle.id),
+            onPressed: () => _updateVehicleModel(docId),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00B14F),
             ),
-            child: Text('Update Vehicle'),
+            child: Text('Update'),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _updateVehicle(String vehicleId) async {
+  Future<void> _updateVehicleModel(String docId) async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        await _tollService.updateVehicle(
-          vehicleId: vehicleId,
-          displayName: _nameController.text,
-          seatingCapacity: int.parse(_seatsController.text),
-          model: _modelController.text.isEmpty ? null : _modelController.text,
-          // Keep existing category and multiplier
-        );
+        await _firestore.collection('vehicleModels').doc(docId).update({
+          'vehicleType': _nameController.text,
+          'seatingCapacity': int.parse(_seatsController.text),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
 
         Navigator.pop(context);
-        _clearControllers();
-        _showSnackBar('✅ Vehicle updated successfully!', Colors.green);
+        _nameController.clear();
+        _seatsController.clear();
+        _showSnackBar('✅ Vehicle model updated successfully!', Colors.green);
       } catch (e) {
         _showSnackBar('Error: $e', Colors.red);
       }
     }
-  } // <-- This should be the ONLY closing brace here
+  }
 
-  Future<void> _toggleVehicleStatus(VehicleModel vehicle) async {
+  Future<void> _addModelToList(String docId, List<String> currentModels) async {
+    if (_newModelController.text.trim().isEmpty) {
+      _showSnackBar('Please enter a model name', Colors.orange);
+      return;
+    }
+
+    String newModel = _newModelController.text.trim();
+    
+    if (currentModels.contains(newModel)) {
+      _showSnackBar('Model already exists', Colors.orange);
+      return;
+    }
+
     try {
-      await _tollService.updateVehicle(
-        vehicleId: vehicle.id,
-        isActive: !vehicle.isActive,
-      );
+      List<String> updatedModels = List.from(currentModels)..add(newModel);
+      
+      await _firestore.collection('vehicleModels').doc(docId).update({
+        'models': updatedModels,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      _newModelController.clear();
+      _showSnackBar('✅ Model added successfully', Colors.green);
+    } catch (e) {
+      _showSnackBar('Error: $e', Colors.red);
+    }
+  }
+
+  Future<void> _removeModelFromList(String docId, List<String> currentModels, String modelToRemove) async {
+    try {
+      List<String> updatedModels = List.from(currentModels)
+        ..remove(modelToRemove);
+      
+      await _firestore.collection('vehicleModels').doc(docId).update({
+        'models': updatedModels,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      _showSnackBar('✅ Model removed', Colors.green);
+    } catch (e) {
+      _showSnackBar('Error: $e', Colors.red);
+    }
+  }
+
+  Future<void> _toggleVehicleStatus(String docId, bool currentStatus) async {
+    try {
+      await _firestore.collection('vehicleModels').doc(docId).update({
+        'isActive': !currentStatus,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
       _showSnackBar(
-        vehicle.isActive ? '⭕ Vehicle deactivated' : '✅ Vehicle activated',
-        vehicle.isActive ? Colors.orange : Colors.green,
+        currentStatus ? '⭕ Model deactivated' : '✅ Model activated',
+        currentStatus ? Colors.orange : Colors.green,
       );
     } catch (e) {
       _showSnackBar('Toggle failed: $e', Colors.red);
     }
+  }
+
+  void _showDeleteDialog(String docId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Vehicle Model'),
+        content: Text(
+            'Are you sure you want to delete this vehicle model? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await _firestore.collection('vehicleModels').doc(docId).delete();
+                Navigator.pop(context);
+                _showSnackBar('✅ Vehicle model deleted', Colors.green);
+              } catch (e) {
+                _showSnackBar('Delete failed: $e', Colors.red);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showSnackBar(String message, Color color) {
@@ -624,24 +706,16 @@ class _AdminAddVehicleManagementState extends State<AdminAddVehicleManagement> {
         content: Text(message),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
-  }
-
-  void _clearControllers() {
-    _nameController.clear();
-    _seatsController.clear();
-    _modelController.clear();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _seatsController.dispose();
-    _modelController.dispose();
+    _newModelController.dispose();
     super.dispose();
   }
 }

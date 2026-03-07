@@ -1,231 +1,125 @@
-// lib/screens/admin/admin_price_screen.dart (Fully Updated)
-
+// lib/screens/admin/admin_price_screen.dart - CLEANED VERSION
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ssatravels_app/services/firebase_services.dart';
-import 'package:ssatravels_app/services/toll_service.dart';
 
 class AdminPriceScreen extends StatefulWidget {
   const AdminPriceScreen({super.key});
 
   @override
-  _AdminPriceScreenState createState() => _AdminPriceScreenState();
+  State<AdminPriceScreen> createState() => AdminPriceScreenState(); // State class made public
 }
 
-class _AdminPriceScreenState extends State<AdminPriceScreen> {
-  late Map<String, dynamic> _rateCard = {};
-  bool _isLoading = true;
-  
-  // Dynamic list of vehicles from Firebase
-  List<Map<String, dynamic>> _vehicles = [];
-  
-  // Error state
-  String? _errorMessage;
+class AdminPriceScreenState extends State<AdminPriceScreen> {
+  // Removed unused fields _isLoading and _errorMessage
 
   @override
   void initState() {
     super.initState();
-    _loadData();
-  }
-
-  // Load all data in parallel
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    
-    try {
-      // Load both rate cards and vehicles in parallel
-      await Future.wait([
-        _loadRateCards(),
-        _loadVehiclesFromFirebase(),
-      ]);
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error loading data: ${e.toString()}';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  // Load vehicles directly from Firebase
-  Future<void> _loadVehiclesFromFirebase() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final snapshot = await firestore.collection('vehicles').get();
-      
-      final List<Map<String, dynamic>> vehicles = [];
-      
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        
-        // Only include active vehicles
-        if (data['isActive'] == true) {
-          vehicles.add({
-            'id': doc.id,  // This will be 'access', 'hatchback', etc.
-            'name': data['name'] ?? doc.id,
-            'displayName': data['displayName'] ?? _formatDisplayName(doc.id),
-            'seats': data['seatingCapacity'] ?? 4,
-            'category': data['category'] ?? 'vehicle',
-            'model': data['model'] ?? '',
-            'isActive': data['isActive'] ?? true,
-          });
-        }
-      }
-      
-      // Sort vehicles by displayName
-      vehicles.sort((a, b) => a['displayName'].compareTo(b['displayName']));
-      
-      setState(() {
-        _vehicles = vehicles;
-      });
-      
-      print('✅ Loaded ${vehicles.length} vehicles from Firebase');
-      print('Vehicle IDs: ${vehicles.map((v) => v['id']).toList()}');
-    } catch (e) {
-      print('Error loading vehicles: $e');
-      // Fallback to empty list
-      setState(() {
-        _vehicles = [];
-      });
-      rethrow;
-    }
-  }
-
-  // Format Firebase key to display name if no displayName field
-  String _formatDisplayName(String key) {
-    return key.replaceAll('_', ' ').split(' ').map((word) => 
-      word[0].toUpperCase() + word.substring(1).toLowerCase()
-    ).join(' ');
-  }
-
-  // Load rate cards from Firebase
-  Future<void> _loadRateCards() async {
-    try {
-      final rates = await FirebaseService.getAllRateCards();
-      setState(() {
-        _rateCard = rates;
-      });
-      print('✅ Loaded ${rates.length} rate cards');
-    } catch (e) {
-      print('Error loading rate cards: $e');
-      rethrow;
-    }
-  }
-
-  // Update vehicle rates in Firebase
-  Future<void> _updateVehicleRate(
-      String vehicleId, Map<String, dynamic> newRates) async {
-    try {
-      await FirebaseService.updateRateCard(vehicleId, newRates);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Rates updated successfully!'),
-            backgroundColor: const Color(0xFF00B14F),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-
-      await _loadRateCards(); // Refresh rate card data
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      rethrow;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00C853)))
-          : _errorMessage != null
-              ? _buildErrorWidget()
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header Info
-                        _buildHeaderCard(),
-                        const SizedBox(height: 20),
-                        // List of Vehicles from Firebase
-                        Expanded(
-                          child: _vehicles.isEmpty
-                              ? _buildEmptyState()
-                              : ListView.builder(
-                                  itemCount: _vehicles.length,
-                                  itemBuilder: (context, index) {
-                                    final vehicle = _vehicles[index];
-                                    final vehicleId = vehicle['id']; // Firebase document ID
-                                    final displayName = vehicle['displayName'];
-                                    final seats = vehicle['seats'];
-                                    
-                                    // Get rate card data for this vehicle
-                                    Map<String, dynamic>? vehicleData = _rateCard[vehicleId];
-                                    
-                                    // If no rate card exists, create default structure
-                                    if (vehicleData == null) {
-                                      vehicleData = {
-                                        'seats': seats,
-                                        'below200': _getDefaultBelow200(vehicleId, displayName),
-                                        'above200': _getDefaultAbove200(vehicleId, displayName),
-                                      };
-                                    }
-                                    
-                                    return Card(
-                                      margin: const EdgeInsets.only(bottom: 12),
-                                      elevation: 3,
-                                      child: ExpansionTile(
-                                        leading: const Icon(Icons.directions_car,
-                                            color: Color(0xFF00C853)),
-                                        title: Text(
-                                          displayName,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey.shade800,
-                                          ),
-                                        ),
-                                        subtitle: Text(
-                                          'Seats: ${vehicleData['seats'] ?? seats} | Tap to edit prices',
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(16.0),
-                                            child: _buildRateEditor(vehicle, vehicleData),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('vehicles')
+            .where('isActive', isEqualTo: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text('Error: ${snapshot.error}'),
+                  ElevatedButton(
+                    onPressed: () => setState(() {}),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF00C853)),
+            );
+          }
+
+          final vehicles = snapshot.data!.docs.where((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return data['isActive'] != false;
+          }).toList();
+
+          if (vehicles.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.attach_money, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text('No vehicle rates found'),
+                  const Text('Add vehicles in Vehicle Management first'),
+                ],
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeaderCard(vehicles.length),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: vehicles.length,
+                    itemBuilder: (context, index) {
+                      final doc = vehicles[index];
+                      final data = doc.data() as Map<String, dynamic>;
+                      final vehicleId = doc.id;
+                      final displayName = data['displayName'] ?? vehicleId;
+                      final seats = data['seatingCapacity'] ?? 4;
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 3,
+                        child: ExpansionTile(
+                          leading: const Icon(Icons.directions_car,
+                              color: Color(0xFF00C853)),
+                          title: Text(
+                            displayName,
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(
+                            'Vehicle: ${vehicleId.toUpperCase()} | Seats: $seats | Tap to edit prices',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: _buildRateEditor(vehicleId, data),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildHeaderCard() {
+  Widget _buildHeaderCard(int count) {
     return Card(
       color: const Color(0xFFE8F5E9),
       child: Padding(
@@ -237,33 +131,21 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
               children: [
                 const Icon(Icons.info, color: Color(0xFF00C853)),
                 const SizedBox(width: 8),
-                Text(
+                const Text(
                   'Price Management',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Update prices for vehicles. New vehicles added in Vehicle Management will appear here automatically.',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-            if (_vehicles.isNotEmpty)
+            const Text('Update prices for vehicles. Changes save automatically.'),
+            if (count > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
-                  '${_vehicles.length} vehicles available',
+                  '$count vehicles available',
                   style: const TextStyle(
-                    color: Color(0xFF00C853),
-                    fontWeight: FontWeight.w500,
-                  ),
+                      color: Color(0xFF00C853), fontWeight: FontWeight.w500),
                 ),
               ),
           ],
@@ -272,89 +154,33 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.directions_car, size: 64, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
-          Text(
-            'No Vehicles Available',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Add vehicles in Vehicle Management first',
-            style: TextStyle(color: Colors.grey.shade500),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _loadData,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Refresh'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C853),
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorWidget() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
-          Text(
-            'Error Loading Data',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _errorMessage ?? 'Unknown error occurred',
-            style: const TextStyle(color: Colors.red),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _loadData,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C853),
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Rate Editor Widget
-  Widget _buildRateEditor(Map<String, dynamic> vehicle, Map<String, dynamic> vehicleData) {
-    final vehicleId = vehicle['id'];
-    final displayName = vehicle['displayName'];
-    
+  Widget _buildRateEditor(String vehicleId, Map<String, dynamic> vehicleData) {
+    // Get rate data from vehicle
     Map<String, dynamic> below200 = vehicleData['below200'] ?? {};
     Map<String, dynamic> above200 = vehicleData['above200'] ?? {};
-    int seats = vehicleData['seats'] ?? vehicle['seats'] ?? 4;
+    int seats = vehicleData['seatingCapacity'] ?? 4;
 
-    // Create controllers with current values
+    // Check if vehicle is a "day rent" type (Tourist Van, Tempo Traveller, Van 407)
+    bool isDayRentVehicle = _isDayRentVehicle(vehicleId);
+
+    // Create controllers with 5 fields only
     final below200Controllers = <String, TextEditingController>{};
     final above200Controllers = <String, TextEditingController>{};
+
+    // If no rates exist, use defaults based on vehicle
+    if (below200.isEmpty) {
+      below200 =
+          _getDefaultBelow200(vehicleId, vehicleData['displayName'] ?? '');
+    }
+    if (above200.isEmpty) {
+      above200 =
+          _getDefaultAbove200(vehicleId, vehicleData['displayName'] ?? '');
+    }
+
+    below200 =
+        _filterToFiveFields(below200, isDayRentVehicle, isBelow200: true);
+    above200 =
+        _filterToFiveFields(above200, isDayRentVehicle, isBelow200: false);
 
     below200.forEach((key, value) {
       below200Controllers[key] = TextEditingController(text: value.toString());
@@ -364,25 +190,48 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
       above200Controllers[key] = TextEditingController(text: value.toString());
     });
 
-    // If no controllers created, add default fields based on vehicle type
-    if (below200Controllers.isEmpty) {
-      final defaultBelow200 = _getDefaultBelow200(vehicleId, displayName);
-      defaultBelow200.forEach((key, value) {
-        below200Controllers[key] = TextEditingController(text: value.toString());
-      });
-    }
-    
-    if (above200Controllers.isEmpty) {
-      final defaultAbove200 = _getDefaultAbove200(vehicleId, displayName);
-      defaultAbove200.forEach((key, value) {
-        above200Controllers[key] = TextEditingController(text: value.toString());
-      });
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Seats (editable)
+        // Vehicle Info with Type Indicator
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color:
+                isDayRentVehicle ? Colors.amber.shade50 : Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isDayRentVehicle ? Icons.calendar_today : Icons.access_time,
+                color: isDayRentVehicle
+                    ? Colors.amber.shade700
+                    : Colors.blue.shade700,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isDayRentVehicle
+                      ? 'This vehicle uses DAILY RENT pricing (No hourly rates)'
+                      : 'This vehicle uses HOURLY RATE pricing',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDayRentVehicle
+                        ? Colors.amber.shade700
+                        : Colors.blue.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Seats
         Row(
           children: [
             const Icon(Icons.people, color: Colors.grey, size: 18),
@@ -390,20 +239,20 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
             const Text('Seats Capacity:',
                 style: TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(width: 12),
-            Container(
+            SizedBox(
               width: 80,
               child: TextFormField(
                 initialValue: seats.toString(),
                 onChanged: (value) {
-                  // Update seats in vehicleData
-                  vehicleData['seats'] = int.tryParse(value) ?? seats;
+                  _updateVehicleField(vehicleId, 'seatingCapacity',
+                      int.tryParse(value) ?? seats);
                 },
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      borderRadius: BorderRadius.circular(8)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
               ),
             ),
@@ -412,97 +261,50 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
 
         const SizedBox(height: 20),
 
-        // Below 200 KM Rates
-        _buildRateSection(
+        // Below 200 KM Rates - 5 Fields
+        _buildBelow200Section(
           title: 'BELOW 200 KM RATES',
           controllers: below200Controllers,
-          onSave: () async {
-            // Create updated below200 map
-            final updatedBelow200 = <String, dynamic>{};
-            below200Controllers.forEach((key, controller) {
-              updatedBelow200[key] = double.tryParse(controller.text) ?? 0.0;
-            });
-
-            // Get current vehicle data
-            final currentData = _rateCard[vehicleId] ?? {};
-
-            // Prepare updated data
-            final updatedData = Map<String, dynamic>.from(currentData);
-            updatedData['below200'] = updatedBelow200;
-            updatedData['above200'] = currentData['above200'] ?? above200;
-            updatedData['seats'] = int.tryParse(vehicleData['seats'].toString()) ?? seats;
-            updatedData['updatedAt'] = FieldValue.serverTimestamp();
-
-            // Update in Firebase
-            await _updateVehicleRate(vehicleId, updatedData);
+          isDayRent: isDayRentVehicle,
+          vehicleId: vehicleId,
+          onUpdate: () {
+            _updateRates(vehicleId, 'below200', below200Controllers);
           },
         ),
 
         const SizedBox(height: 24),
 
-        // Above 200 KM Rates
-        _buildRateSection(
+        // Above 200 KM Rates - 5 Fields
+        _buildAbove200Section(
           title: 'ABOVE 200 KM RATES',
           controllers: above200Controllers,
-          onSave: () async {
-            // Create updated above200 map
-            final updatedAbove200 = <String, dynamic>{};
-            above200Controllers.forEach((key, controller) {
-              updatedAbove200[key] = double.tryParse(controller.text) ?? 0.0;
-            });
-
-            // Get current vehicle data
-            final currentData = _rateCard[vehicleId] ?? {};
-
-            // Prepare updated data
-            final updatedData = Map<String, dynamic>.from(currentData);
-            updatedData['below200'] = currentData['below200'] ?? below200;
-            updatedData['above200'] = updatedAbove200;
-            updatedData['seats'] = int.tryParse(vehicleData['seats'].toString()) ?? seats;
-            updatedData['updatedAt'] = FieldValue.serverTimestamp();
-
-            // Update in Firebase
-            await _updateVehicleRate(vehicleId, updatedData);
+          isDayRent: isDayRentVehicle,
+          vehicleId: vehicleId,
+          onUpdate: () {
+            _updateRates(vehicleId, 'above200', above200Controllers);
           },
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
 
-        // Save All Button
+        // Auto-save indicator
         Center(
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              // Create updated below200 map
-              final updatedBelow200 = <String, dynamic>{};
-              below200Controllers.forEach((key, controller) {
-                updatedBelow200[key] = double.tryParse(controller.text) ?? 0.0;
-              });
-
-              // Create updated above200 map
-              final updatedAbove200 = <String, dynamic>{};
-              above200Controllers.forEach((key, controller) {
-                updatedAbove200[key] = double.tryParse(controller.text) ?? 0.0;
-              });
-
-              // Prepare complete updated data
-              final updatedData = <String, dynamic>{};
-              updatedData['below200'] = updatedBelow200;
-              updatedData['above200'] = updatedAbove200;
-              updatedData['seats'] = int.tryParse(vehicleData['seats'].toString()) ?? seats;
-              updatedData['updatedAt'] = FieldValue.serverTimestamp();
-
-              // Update in Firebase
-              await _updateVehicleRate(vehicleId, updatedData);
-            },
-            icon: const Icon(Icons.save, size: 20),
-            label: Text('SAVE ALL CHANGES FOR $displayName'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C853),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.autorenew, size: 16, color: Colors.blue),
+                const SizedBox(width: 4),
+                Text(
+                  'Changes save automatically',
+                  style: TextStyle(fontSize: 12, color: Colors.blue.shade700),
+                ),
+              ],
             ),
           ),
         ),
@@ -510,10 +312,48 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
     );
   }
 
-  Widget _buildRateSection({
+  // Helper method
+  Map<String, dynamic> _filterToFiveFields(
+      Map<String, dynamic> rates, bool isDayRent,
+      {required bool isBelow200}) {
+    if (isBelow200) {
+      if (isDayRent) {
+        // Day Rent vehicles
+        return {
+          'dailyRent': (rates['dailyRent'] ?? 3600.0).toDouble(),
+          'perKm': (rates['perKm'] ?? 16.0).toDouble(),
+          'driverFood': (rates['driverFood'] ?? 100.0).toDouble(),
+          'nightHalt': (rates['nightHalt'] ?? 100.0).toDouble(),
+          'driverAllowance': (rates['driverAllowance'] ?? 500.0).toDouble(),
+        };
+      } else {
+        // Regular vehicles
+        return {
+          'hourlyRate': (rates['hourlyRate'] ?? 100.0).toDouble(),
+          'perKm': (rates['perKm'] ?? 10.0).toDouble(),
+          'driverFood': (rates['driverFood'] ?? 100.0).toDouble(),
+          'nightHalt': (rates['nightHalt'] ?? 100.0).toDouble(),
+          'driverAllowance': (rates['driverAllowance'] ?? 300.0).toDouble(),
+        };
+      }
+    } else {
+      // Above 200 - All vehicles same
+      return {
+        'perKm': (rates['perKm'] ?? 12.0).toDouble(),
+        'driverAllowance': (rates['driverAllowance'] ?? 300.0).toDouble(),
+        'driverFood': (rates['driverFood'] ?? 100.0).toDouble(),
+        'nightHalt': (rates['nightHalt'] ?? 100.0).toDouble(),
+        'hourlyRate': (rates['hourlyRate'] ?? 100.0).toDouble(),
+      };
+    }
+  }
+
+  Widget _buildBelow200Section({
     required String title,
     required Map<String, TextEditingController> controllers,
-    required VoidCallback onSave,
+    required bool isDayRent,
+    required String vehicleId,
+    required VoidCallback onUpdate,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -523,28 +363,29 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
             Expanded(
               child: Text(
                 title,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: isDayRent ? Colors.amber.shade50 : Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                isDayRent ? 'Daily Rent Mode' : 'Hourly Rate Mode',
                 style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade700,
+                  fontSize: 11,
+                  color:
+                      isDayRent ? Colors.amber.shade700 : Colors.green.shade700,
                 ),
               ),
             ),
-            ElevatedButton(
-              onPressed: onSave,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C853),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              ),
-              child: const Text('Save Section'),
-            ),
           ],
         ),
-
         const SizedBox(height: 16),
 
-        // Rate fields in a grid
+        // Rate fields in grid - EXACTLY 5 fields
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -554,20 +395,22 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
             mainAxisSpacing: 12,
             childAspectRatio: 3,
           ),
-          itemCount: controllers.length,
+          itemCount: 5,
           itemBuilder: (context, index) {
             String key = controllers.keys.elementAt(index);
             TextEditingController controller = controllers[key]!;
 
             return TextFormField(
               controller: controller,
+              onChanged: (value) {
+                onUpdate();
+              },
               decoration: InputDecoration(
-                labelText: _getFieldLabel(key),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                labelText: _getBelow200FieldLabel(key, isDayRent),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 prefixText: _isAmountField(key) ? '₹ ' : '',
-                suffixText: _getFieldSuffix(key),
+                suffixText: _getBelow200FieldSuffix(key, isDayRent),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               style: const TextStyle(fontSize: 14),
@@ -578,238 +421,348 @@ class _AdminPriceScreenState extends State<AdminPriceScreen> {
     );
   }
 
-  // Helper methods for field labels
-  String _getFieldLabel(String key) {
-    Map<String, String> labels = {
-      'hourlyRate': 'Hourly Rate',
-      'perKm': 'Rate per KM',
+  Widget _buildAbove200Section({
+    required String title,
+    required Map<String, TextEditingController> controllers,
+    required bool isDayRent,
+    required String vehicleId,
+    required VoidCallback onUpdate,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Rate fields in grid - EXACTLY 5 fields
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 3,
+          ),
+          itemCount: 5,
+          itemBuilder: (context, index) {
+            String key = controllers.keys.elementAt(index);
+            TextEditingController controller = controllers[key]!;
+
+            return TextFormField(
+              controller: controller,
+              onChanged: (value) {
+                onUpdate();
+              },
+              decoration: InputDecoration(
+                labelText: _getAbove200FieldLabel(key, isDayRent),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                prefixText: _isAmountField(key) ? '₹ ' : '',
+                suffixText: _getAbove200FieldSuffix(key),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              style: const TextStyle(fontSize: 14),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  bool _isDayRentVehicle(String vehicleId) {
+    String id = vehicleId.toLowerCase();
+    return id.contains('tourist') ||
+        id.contains('tempo') ||
+        id.contains('van 407') ||
+        id.contains('van_407') ||
+        id.contains('traveller');
+  }
+
+  String _getBelow200FieldLabel(String key, bool isDayRent) {
+    if (isDayRent) {
+      const Map<String, String> dayRentLabels = {
+        'dailyRent': 'Daily Rent',
+        'perKm': 'Per KM',
+        'driverFood': 'Driver Food',
+        'nightHalt': 'Night Halt',
+        'driverAllowance': 'Driver Allowance',
+      };
+      return dayRentLabels[key] ?? key;
+    } else {
+      const Map<String, String> hourlyLabels = {
+        'hourlyRate': 'Hourly Rate',
+        'perKm': 'Per KM',
+        'driverFood': 'Driver Food',
+        'nightHalt': 'Night Halt',
+        'driverAllowance': 'Driver Allowance',
+      };
+      return hourlyLabels[key] ?? key;
+    }
+  }
+
+  String _getBelow200FieldSuffix(String key, bool isDayRent) {
+    if (key == 'perKm') return '/km';
+    if (key == 'hourlyRate') return '/hour';
+    return '';
+  }
+
+  String _getAbove200FieldLabel(String key, bool isDayRent) {
+    const Map<String, String> labels = {
+      'perKm': 'Per KM',
+      'driverAllowance': 'Driver Allowance',
       'driverFood': 'Driver Food',
       'nightHalt': 'Night Halt',
-      'minHours': 'Minimum Hours',
-      'dailyRent': 'Daily Rent',
-      'includedKm': 'Included KM',
-      'extraPerKm': 'Extra per KM',
-      'driverAllowance': 'Driver Allowance',
+      'hourlyRate': 'Hourly Rate',
     };
     return labels[key] ?? key;
   }
 
-  String _getFieldSuffix(String key) {
-    if (key == 'perKm' || key == 'extraPerKm') return '/km';
+  String _getAbove200FieldSuffix(String key) {
+    if (key == 'perKm') return '/km';
     if (key == 'hourlyRate') return '/hour';
-    if (key == 'minHours') return ' hours';
-    if (key == 'includedKm') return ' km';
     return '';
   }
 
   bool _isAmountField(String key) {
-    List<String> amountFields = [
-      'hourlyRate',
+    return const [
       'perKm',
       'driverFood',
       'nightHalt',
-      'dailyRent',
-      'extraPerKm',
-      'driverAllowance'
-    ];
-    return amountFields.contains(key);
+      'hourlyRate',
+      'driverAllowance',
+      'dailyRent'
+    ].contains(key);
   }
 
-  // Default values based on vehicle ID or display name
-  Map<String, dynamic> _getDefaultBelow200(String vehicleId, String displayName) {
-    final String key = vehicleId.toLowerCase();
-    
-    // Hatchback/Access
-    if (key.contains('access') || key.contains('hatchback') || displayName.contains('Access')) {
+  Map<String, dynamic> _getDefaultBelow200(
+      String vehicleId, String displayName) {
+    String key = vehicleId.toLowerCase();
+
+    // Tourist Van, Tempo Traveller, Van 407 - DAY RENT based
+    if (key.contains('tourist') ||
+        key.contains('tempo') ||
+        key.contains('van') ||
+        key.contains('traveller')) {
+      if (key.contains('tourist')) {
+        return {
+          'dailyRent': 3600.0,
+          'perKm': 16.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'driverAllowance': 500.0,
+        };
+      } else if (key.contains('tempo')) {
+        return {
+          'dailyRent': 3600.0,
+          'perKm': 16.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'driverAllowance': 500.0,
+        };
+      } else if (key.contains('van')) {
+        return {
+          'dailyRent': 3800.0,
+          'perKm': 18.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'driverAllowance': 500.0,
+        };
+      }
+    }
+
+    // Regular vehicles
+    if (key.contains('hatchback') || key.contains('access')) {
       return {
         'hourlyRate': 100.0,
         'perKm': 9.0,
         'driverFood': 100.0,
         'nightHalt': 100.0,
-        'minHours': 8,
+        'driverAllowance': 300.0,
       };
     }
-    // Zest
-    else if (key.contains('zest') || displayName.contains('Zest')) {
+    if (key.contains('zest')) {
       return {
         'hourlyRate': 100.0,
         'perKm': 9.0,
         'driverFood': 100.0,
         'nightHalt': 100.0,
-        'minHours': 8,
+        'driverAllowance': 300.0,
       };
     }
-    // Sedan
-    else if (key.contains('sedan')) {
+    if (key.contains('sedan')) {
       return {
         'hourlyRate': 150.0,
         'perKm': 9.0,
         'driverFood': 100.0,
         'nightHalt': 100.0,
-        'minHours': 8,
+        'driverAllowance': 300.0,
       };
     }
-    // Innova
-    else if (key.contains('innova')) {
+    if (key.contains('innova')) {
       return {
         'hourlyRate': 240.0,
         'perKm': 40.0,
         'driverFood': 0.0,
         'nightHalt': 100.0,
-        'minHours': 8,
+        'driverAllowance': 300.0,
       };
     }
-    // Tavera
-    else if (key.contains('tavera')) {
-      return {
-        'hourlyRate': 240.0,
-        'perKm': 90.0,
-        'driverFood': 0.0,
-        'nightHalt': 100.0,
-        'minHours': 8,
-      };
-    }
-    // Ertiga
-    else if (key.contains('ertiga')) {
+    if (key.contains('ertiga')) {
       return {
         'hourlyRate': 270.0,
-        'perKm': 9.0,
-        'driverFood': 0.0,
-        'nightHalt': 100.0,
-        'minHours': 8,
-      };
-    }
-    // Tempo Traveller
-    else if (key.contains('tempo')) {
-      return {
-        'dailyRent': 3600.0,
-        'includedKm': 40.0,
-        'extraPerKm': 16.0,
+        'perKm': 45.0,
         'driverFood': 100.0,
         'nightHalt': 100.0,
+        'driverAllowance': 350.0,
       };
     }
-    // Tourist Van
-    else if (key.contains('tourist')) {
-      return {
-        'dailyRent': 3600.0,
-        'includedKm': 340.0,
-        'extraPerKm': 16.0,
-        'driverFood': 100.0,
-        'nightHalt': 100.0,
-      };
-    }
-    // Van 407
-    else if (key.contains('van') || key.contains('407')) {
-      return {
-        'dailyRent': 3800.0,
-        'extraPerKm': 18.0,
-        'driverFood': 100.0,
-        'nightHalt': 100.0,
-      };
-    }
-    
+
     // Default
     return {
       'hourlyRate': 100.0,
       'perKm': 10.0,
       'driverFood': 100.0,
       'nightHalt': 100.0,
-      'minHours': 8,
+      'driverAllowance': 300.0,
     };
   }
 
-  Map<String, dynamic> _getDefaultAbove200(String vehicleId, String displayName) {
-    final String key = vehicleId.toLowerCase();
-    
-    // Hatchback/Access
-    if (key.contains('access') || key.contains('hatchback') || displayName.contains('Access')) {
+  Map<String, dynamic> _getDefaultAbove200(
+      String vehicleId, String displayName) {
+    String key = vehicleId.toLowerCase();
+
+    // Tourist Van, Tempo Traveller, Van 407
+    if (key.contains('tourist') ||
+        key.contains('tempo') ||
+        key.contains('van') ||
+        key.contains('traveller')) {
+      if (key.contains('tourist') || key.contains('tempo')) {
+        return {
+          'perKm': 25.0,
+          'driverAllowance': 500.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'hourlyRate': 0.0,
+        };
+      }
+      if (key.contains('van')) {
+        return {
+          'perKm': 27.0,
+          'driverAllowance': 500.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'hourlyRate': 0.0,
+        };
+      }
+    }
+
+    // Regular vehicles
+    if (key.contains('hatchback') ||
+        key.contains('access') ||
+        key.contains('zest')) {
       return {
         'perKm': 10.0,
         'driverAllowance': 300.0,
         'driverFood': 100.0,
         'nightHalt': 100.0,
+        'hourlyRate': 100.0,
       };
     }
-    // Zest
-    else if (key.contains('zest') || displayName.contains('Zest')) {
-      return {
-        'perKm': 10.0,
-        'driverAllowance': 300.0,
-        'driverFood': 100.0,
-        'nightHalt': 100.0,
-      };
-    }
-    // Sedan
-    else if (key.contains('sedan')) {
+    if (key.contains('sedan')) {
       return {
         'perKm': 11.0,
         'driverAllowance': 300.0,
         'driverFood': 100.0,
         'nightHalt': 100.0,
+        'hourlyRate': 150.0,
       };
     }
-    // Innova
-    else if (key.contains('innova')) {
+    if (key.contains('innova')) {
       return {
         'perKm': 15.0,
         'driverAllowance': 300.0,
         'driverFood': 100.0,
         'nightHalt': 100.0,
+        'hourlyRate': 240.0,
       };
     }
-    // Tavera
-    else if (key.contains('tavera')) {
+    if (key.contains('ertiga')) {
       return {
-        'perKm': 15.0,
-        'driverAllowance': 300.0,
+        'perKm': 18.0,
+        'driverAllowance': 350.0,
         'driverFood': 100.0,
         'nightHalt': 100.0,
+        'hourlyRate': 270.0,
       };
     }
-    // Ertiga
-    else if (key.contains('ertiga')) {
-      return {
-        'perKm': 16.0,
-        'driverAllowance': 300.0,
-        'driverFood': 100.0,
-        'nightHalt': 100.0,
-      };
-    }
-    // Tempo Traveller
-    else if (key.contains('tempo')) {
-      return {
-        'perKm': 25.0,
-        'driverAllowance': 300.0,
-        'driverFood': 100.0,
-        'nightHalt': 100.0,
-      };
-    }
-    // Tourist Van
-    else if (key.contains('tourist')) {
-      return {
-        'perKm': 25.0,
-        'driverAllowance': 500.0,
-        'driverFood': 100.0,
-        'nightHalt': 100.0,
-      };
-    }
-    // Van 407
-    else if (key.contains('van') || key.contains('407')) {
-      return {
-        'perKm': 27.0,
-        'driverAllowance': 500.0,
-        'driverFood': 100.0,
-        'nightHalt': 100.0,
-      };
-    }
-    
-    // Default
+
     return {
       'perKm': 12.0,
       'driverAllowance': 300.0,
       'driverFood': 100.0,
       'nightHalt': 100.0,
+      'hourlyRate': 100.0,
     };
+  }
+
+  Future<void> _updateRates(
+    String vehicleId,
+    String rateType,
+    Map<String, TextEditingController> controllers,
+  ) async {
+    try {
+      Map<String, dynamic> updatedRates = {};
+      controllers.forEach((key, controller) {
+        updatedRates[key] = double.tryParse(controller.text) ?? 0.0;
+      });
+
+      await FirebaseFirestore.instance
+          .collection('vehicles')
+          .doc(vehicleId)
+          .update({
+        rateType: updatedRates,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      _showSnackBar('✅ Rates updated for $vehicleId', Colors.green);
+    } catch (e) {
+      _showSnackBar('Error: $e', Colors.red);
+    }
+  }
+
+  Future<void> _updateVehicleField(
+      String vehicleId, String field, dynamic value) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('vehicles')
+          .doc(vehicleId)
+          .update({
+        field: value,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      _showSnackBar('Error updating $field: $e', Colors.red);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }

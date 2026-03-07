@@ -9,7 +9,6 @@ class PhoneAuthService {
   // Login with phone number (by finding email from Firestore)
   Future<User?> loginWithPhoneNumber(String phoneNumber, String password) async {
     try {
-      print('🔍 Searching for phone number: $phoneNumber');
       
       // Step 1: Clean the phone number (remove +91 if present)
       String cleanPhone = phoneNumber.replaceAll('+91', '').replaceAll(' ', '').trim();
@@ -23,7 +22,6 @@ class PhoneAuthService {
 
       // Check if user exists
       if (querySnapshot.docs.isEmpty) {
-        print('❌ No user found with phone: $cleanPhone');
         return null;
       }
 
@@ -32,11 +30,9 @@ class PhoneAuthService {
       final email = userData['email'];
 
       if (email == null || email.isEmpty) {
-        print('❌ Email not found for this user');
         return null;
       }
 
-      print('✅ Found email: $email for phone: $cleanPhone');
 
       // Step 4: Sign in with email and password
       UserCredential result = await _auth.signInWithEmailAndPassword(
@@ -44,11 +40,9 @@ class PhoneAuthService {
         password: password,
       );
       
-      print('✅ Login successful for user: ${result.user?.uid}');
       return result.user;
       
     } on FirebaseAuthException catch (e) {
-      print('❌ Firebase Auth error: ${e.code} - ${e.message}');
       if (e.code == 'wrong-password') {
         throw Exception('Wrong password');
       } else if (e.code == 'user-not-found') {
@@ -57,7 +51,6 @@ class PhoneAuthService {
         throw Exception('Authentication failed: ${e.message}');
       }
     } catch (e) {
-      print('❌ Phone login error: $e');
       throw Exception('Login failed: $e');
     }
   }
@@ -75,7 +68,6 @@ class PhoneAuthService {
 
       return querySnapshot.docs.isNotEmpty;
     } catch (e) {
-      print('Error checking phone: $e');
       return false;
     }
   }

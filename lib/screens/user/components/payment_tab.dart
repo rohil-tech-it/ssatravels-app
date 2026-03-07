@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Add this for Clipboard
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:ssatravels_app/screens/user/user_home_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:developer' as developer; // For debugPrint
 
 class PaymentScreen extends StatefulWidget {
   final String? bookingId;
@@ -16,21 +15,18 @@ class PaymentScreen extends StatefulWidget {
   });
 
   @override
-  _PaymentScreenState createState() => _PaymentScreenState();
+  State<PaymentScreen> createState() => PaymentScreenState(); // State class made public
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
+class PaymentScreenState extends State<PaymentScreen> {
   final String _upiId = "syedsahina18-1@okaxis";
-  final String _gpayNumber = "9751867879"; // Updated to your number
-  final String _whatsappNumber = "9751867879"; // WhatsApp number
-  final String _bankName = "Federal Bank";
-  final String _accountSuffix = "3931";
+  final String _gpayNumber = "7548880074";
+  final String _whatsappNumber = "9751867879";
   final Color _primaryGreen = const Color(0xFF00B14F);
 
-  int _selectedIndex = 0; // 0: QR Code, 1: GPay Number, 2: UPI ID
+  int _selectedIndex = 0;
   bool _paymentSuccess = false;
 
-  // Updated tab names
   final List<String> _tabs = ['QR Code', 'GPay', 'UPI'];
   final List<IconData> _tabIcons = [
     Icons.qr_code,
@@ -38,7 +34,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     Icons.payment
   ];
 
-  // Helper method to copy text to clipboard
   Future<void> _copyToClipboard(String text, String message) async {
     await Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
@@ -58,26 +53,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.width < 360;
-
     return _paymentSuccess
         ? _buildSuccessScreen()
-        : _buildPaymentScreen(isSmallScreen);
+        : _buildPaymentScreen();
   }
 
-  Widget _buildPaymentScreen(bool isSmallScreen) {
-    final screenSize = MediaQuery.of(context).size;
+  Widget _buildPaymentScreen() {
+    final isSmallScreen = MediaQuery.of(context).size.width < 360;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            // Header removed - now only SafeArea with no header
             const SizedBox(height: 20),
 
-            // Segmented Control with Icons on top and text below
+            // Segmented Control with Icons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
@@ -87,7 +78,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05), // Fixed
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -160,7 +151,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05), // Fixed
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -236,7 +227,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08), // Fixed
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
@@ -266,7 +257,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         horizontal: isSmallScreen ? 12 : 16,
                         vertical: isSmallScreen ? 6 : 8),
                     decoration: BoxDecoration(
-                      color: _primaryGreen.withOpacity(0.1),
+                      color: _primaryGreen.withValues(alpha: 0.1), // Fixed
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Row(
@@ -297,7 +288,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             _buildInfoCard(
               icon: Icons.account_balance,
               title: 'Bank Account',
-              value: 'Federal Bank $_accountSuffix',
+              value: 'Federal Bank 3931',
               isSmallScreen: isSmallScreen,
             ),
             SizedBox(height: isSmallScreen ? 10 : 12),
@@ -319,10 +310,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
               width: double.infinity,
               padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
               decoration: BoxDecoration(
-                color: _primaryGreen.withOpacity(0.05),
+                color: _primaryGreen.withValues(alpha: 0.05), // Fixed
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: _primaryGreen.withOpacity(0.3),
+                  color: _primaryGreen.withValues(alpha: 0.3), // Fixed
                   width: 1,
                 ),
               ),
@@ -331,7 +322,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Container(
                     padding: EdgeInsets.all(isSmallScreen ? 8 : 10),
                     decoration: BoxDecoration(
-                      color: _primaryGreen.withOpacity(0.2),
+                      color: _primaryGreen.withValues(alpha: 0.2), // Fixed
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -384,7 +375,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: _primaryGreen.withOpacity(0.3),
+                    color: _primaryGreen.withValues(alpha: 0.3), // Fixed
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
@@ -396,7 +387,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Container(
                     padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2), // Fixed
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -488,7 +479,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08), // Fixed
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
@@ -501,7 +492,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Container(
                     padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                     decoration: BoxDecoration(
-                      color: _primaryGreen.withOpacity(0.1),
+                      color: _primaryGreen.withValues(alpha: 0.1), // Fixed
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -547,7 +538,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             _buildInfoCard(
               icon: Icons.account_balance,
               title: 'Bank Account',
-              value: 'Federal Bank $_accountSuffix',
+              value: 'Federal Bank 3931',
               isSmallScreen: isSmallScreen,
             ),
 
@@ -594,7 +585,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03), // Fixed
             blurRadius: 10,
             spreadRadius: 1,
             offset: const Offset(0, 4),
@@ -607,7 +598,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           Container(
             padding: EdgeInsets.all(isSmallScreen ? 8 : 10),
             decoration: BoxDecoration(
-              color: _primaryGreen.withOpacity(0.1),
+              color: _primaryGreen.withValues(alpha: 0.1), // Fixed
               borderRadius: BorderRadius.circular(12),
             ),
             child:
@@ -640,7 +631,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           if (showCopy && onCopy != null)
             Container(
               decoration: BoxDecoration(
-                color: _primaryGreen.withOpacity(0.1),
+                color: _primaryGreen.withValues(alpha: 0.1), // Fixed
                 borderRadius: BorderRadius.circular(10),
               ),
               child: IconButton(
@@ -721,7 +712,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: _primaryGreen.withOpacity(0.1),
+                  color: _primaryGreen.withValues(alpha: 0.1), // Fixed
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -752,7 +743,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     width: isSmallScreen ? 22 : 24,
                     height: isSmallScreen ? 22 : 24,
                     decoration: BoxDecoration(
-                      color: _primaryGreen.withOpacity(0.1),
+                      color: _primaryGreen.withValues(alpha: 0.1), // Fixed
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
@@ -787,8 +778,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildSuccessScreen() {
-    final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.width < 360;
+    final isSmallScreen = MediaQuery.of(context).size.width < 360;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -811,7 +801,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: _primaryGreen.withOpacity(0.3),
+                        color: _primaryGreen.withValues(alpha: 0.3), // Fixed
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -844,7 +834,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 SizedBox(height: isSmallScreen ? 30 : 40),
 
-                // Payment Details Card - Simplified like your image
+                // Payment Details Card
                 Container(
                   width: double.infinity,
                   padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
@@ -946,8 +936,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   child: ElevatedButton(
                     onPressed: _sharePaymentOnWhatsApp,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(0xFF25D366), // WhatsApp green
+                      backgroundColor: const Color(0xFF25D366),
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(
                           vertical: isSmallScreen ? 16 : 18),
@@ -1012,7 +1001,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  // WhatsApp sharing function - Fixed to work properly with the phone number
   Future<void> _sharePaymentOnWhatsApp() async {
     String bookingId =
         widget.bookingId ?? 'SSA-${DateTime.now().millisecondsSinceEpoch}';
@@ -1020,7 +1008,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
         widget.amount != null ? '₹${widget.amount!.toStringAsFixed(2)}' : '';
     String dateTime = DateTime.now().formatTime();
 
-    // Format the message
     String message = '''
 *SSA Travels*
 
@@ -1038,7 +1025,6 @@ Payment Method
 Google Pay
 ''';
 
-    // Add amount if available
     if (widget.amount != null) {
       message += '''
     
@@ -1050,16 +1036,12 @@ $amount''';
 
 Thank you for choosing SSA Travels!''';
 
-    // Clean the phone number - remove any spaces or special characters
     String phoneNumber = _whatsappNumber.replaceAll(RegExp(r'[^0-9]'), '');
 
-    // For Indian numbers, ensure it has +91
-    // If the number starts with 91, add +, otherwise add +91
     if (phoneNumber.length == 10) {
-      phoneNumber = '91$phoneNumber'; // Add India code for 10-digit numbers
+      phoneNumber = '91$phoneNumber';
     }
 
-    // Create multiple URL schemes for better compatibility
     final urls = [
       'whatsapp://send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}',
       'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}',
@@ -1078,18 +1060,15 @@ Thank you for choosing SSA Travels!''';
           }
         } catch (e) {
           debugPrint('Error launching $url: $e');
-          // Continue to next URL
         }
       }
     }
 
     if (!launched) {
-      // If WhatsApp couldn't be opened, show a dialog with instructions
       _showWhatsAppInstructions();
     }
   }
 
-// Show instructions dialog when WhatsApp can't be opened
   void _showWhatsAppInstructions() {
     showDialog(
       context: context,
@@ -1184,7 +1163,6 @@ Thank you for choosing SSA Travels!''';
     );
   }
 
-// Helper method for instruction steps
   Widget _buildInstructionStep(int step, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -1195,7 +1173,7 @@ Thank you for choosing SSA Travels!''';
             width: 22,
             height: 22,
             decoration: BoxDecoration(
-              color: _primaryGreen.withOpacity(0.1),
+              color: _primaryGreen.withValues(alpha: 0.1), // Fixed
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -1218,53 +1196,6 @@ Thank you for choosing SSA Travels!''';
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDetailRow({
-    required IconData icon,
-    required String label,
-    required String value,
-    Color? valueColor,
-    FontWeight? valueWeight,
-    required bool isSmallScreen,
-  }) {
-    return Row(
-      children: [
-        Container(
-          padding: EdgeInsets.all(isSmallScreen ? 6 : 8),
-          decoration: BoxDecoration(
-            color: _primaryGreen.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child:
-              Icon(icon, color: _primaryGreen, size: isSmallScreen ? 18 : 20),
-        ),
-        SizedBox(width: isSmallScreen ? 10 : 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 11 : 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 14 : 16,
-                  fontWeight: valueWeight ?? FontWeight.w500,
-                  color: valueColor ?? Colors.black87,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

@@ -11,6 +11,7 @@ import 'components/user_drawer.dart';
 import 'components/profile_tab.dart';
 import 'components/booking_tab.dart';
 import 'components/payment_tab.dart';
+import 'components/booking_history_page.dart'; // Add this import
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -32,7 +33,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
   bool _isLoadingLocation = true;
   bool _isLocationPermissionGranted = false;
   bool _isLocationServiceEnabled = true;
-  
+
   // Real-time location tracking
   StreamSubscription<Position>? _positionStreamSubscription;
   bool _isTrackingLocation = false;
@@ -43,63 +44,59 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     target: LatLng(9.5879, 77.9616),
     zoom: 14.0,
   );
-  
+
   // Map markers
   final Set<Marker> _markers = {};
 
   // ================ UI STATE ================
   int _currentIndex = 0;
+  List<int> _tabHistory = [0]; // Track tab navigation history
   String _userName = "";
-  String _userEmail = "";
-  String _userPhone = "";
   bool _isUserDataLoading = true;
-  
+
   // Responsive variables
   late double _screenWidth;
-  late double _screenHeight;
   late bool _isSmallScreen;
-  late bool _isMediumScreen;
   late bool _isLargeScreen;
 
-  // ================ RIDE TYPES ================
-  final List<Map<String, dynamic>> _rideTypes = [
-    {'name': 'City Ride', 'icon': FontAwesomeIcons.route, 'color': 0xFF00B14F},
-    {'name': 'Outstation', 'icon': FontAwesomeIcons.taxi, 'color': 0xFF2196F3},
-    {
-      'name': 'Airport',
-      'icon': FontAwesomeIcons.planeArrival,
-      'color': 0xFFFF9800
-    },
-    {'name': 'Rental', 'icon': FontAwesomeIcons.clock, 'color': 0xFF9C27B0},
-  ];
-  
   // ================ QUICK ACTIONS ================
-  final List<Map<String, dynamic>> _quickActions = [
+  final List<Map<String, dynamic>> _quickActions = const [
     {
       'icon': Icons.book_online,
       'label': 'Book Now',
       'color': 0xFF00B14F,
-      'tab': 1
+      'tab': 1 // Booking tab
     },
-    {'icon': Icons.history, 'label': 'History', 'color': 0xFF2196F3, 'tab': 2},
+    {
+      'icon': Icons.history,
+      'label': 'History',
+      'color': 0xFF2196F3,
+      'tab': 3 // Ride History tab (new index)
+    },
     {
       'icon': Icons.payment,
       'label': 'Payment',
       'color': 0xFFFF9800,
-      'tab': 3
+      'tab': 2 // Payment tab
     },
     {
       'icon': Icons.support_agent,
       'label': 'Support',
       'color': 0xFF9C27B0,
-      'tab': 4
+      'tab': 4 // Profile/Support tab
     },
   ];
 
   // ================ TIMEOUT CONSTANTS ================
-  static const int LOCATION_TIMEOUT = 15;
-  static const int GEOCODING_TIMEOUT = 10;
-  static const LocationAccuracy DESIRED_ACCURACY = LocationAccuracy.best;
+  static const int _locationTimeout = 15;
+  static const int _geocodingTimeout = 10;
+
+  // ================ BACK BUTTON HANDLING ================
+  DateTime? _lastBackPress;
+
+  // ================ CAR MOVEMENT ANIMATION ================
+  late AnimationController _carController;
+  late Animation<double> _carAnimation;
 
   @override
   void initState() {
@@ -107,6 +104,22 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     WidgetsBinding.instance.addObserver(this);
     _loadUserData();
     _initializeLocation();
+    _initializeCarAnimation();
+  }
+
+  void _initializeCarAnimation() {
+    _carController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat(reverse: false);
+
+    _carAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _carController,
+      curve: Curves.linear,
+    ));
   }
 
   @override
@@ -118,9 +131,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
   void _updateScreenSize() {
     final size = MediaQuery.of(context).size;
     _screenWidth = size.width;
-    _screenHeight = size.height;
     _isSmallScreen = _screenWidth < 360;
-    _isMediumScreen = _screenWidth >= 360 && _screenWidth < 600;
     _isLargeScreen = _screenWidth >= 600;
   }
 
@@ -161,25 +172,19 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             final userData = userDoc.data() as Map<String, dynamic>;
             setState(() {
               _userName = userData['fullName'] ?? user.displayName ?? 'User';
-              _userEmail = userData['email'] ?? user.email ?? '';
-              _userPhone = userData['phoneNumber'] ?? user.phoneNumber ?? '';
               _isUserDataLoading = false;
             });
           } else {
             setState(() {
               _userName = user.displayName ?? 'User';
-              _userEmail = user.email ?? '';
-              _userPhone = user.phoneNumber ?? '';
               _isUserDataLoading = false;
             });
           }
         } catch (e) {
-          print('Firestore error: $e');
+          debugPrint('Firestore error: $e');
           if (mounted) {
             setState(() {
               _userName = user.displayName ?? 'User';
-              _userEmail = user.email ?? '';
-              _userPhone = user.phoneNumber ?? '';
               _isUserDataLoading = false;
             });
           }
@@ -188,19 +193,15 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         if (mounted) {
           setState(() {
             _userName = 'Guest';
-            _userEmail = '';
-            _userPhone = '';
             _isUserDataLoading = false;
           });
         }
       }
     } catch (e) {
-      print('User data error: $e');
+      debugPrint('User data error: $e');
       if (mounted) {
         setState(() {
           _userName = 'User';
-          _userEmail = '';
-          _userPhone = '';
           _isUserDataLoading = false;
         });
       }
@@ -268,9 +269,13 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     setState(() => _isLoadingLocation = true);
 
     try {
+      final locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.best,
+        timeLimit: Duration(seconds: _locationTimeout),
+      );
+
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: DESIRED_ACCURACY,
-        timeLimit: Duration(seconds: LOCATION_TIMEOUT),
+        locationSettings: locationSettings,
       );
 
       final newLocation = LatLng(position.latitude, position.longitude);
@@ -285,7 +290,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       await _updateAddressWithTimeout(position);
       _animateToUserLocation();
     } catch (e) {
-      print("Location error: $e");
+      debugPrint("Location error: $e");
       if (mounted) {
         setState(() {
           _currentAddress = "Unable to get location";
@@ -314,9 +319,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     if (_isTrackingLocation) return;
 
     const LocationSettings locationSettings = LocationSettings(
-      accuracy: DESIRED_ACCURACY,
+      accuracy: LocationAccuracy.best,
       distanceFilter: 10,
-      timeLimit: null,
     );
 
     _positionStreamSubscription = Geolocator.getPositionStream(
@@ -324,23 +328,22 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     ).listen(
       (Position position) {
         if (!mounted) return;
-        
+
         final newLocation = LatLng(position.latitude, position.longitude);
-        
-        if (_currentLocation == null || 
+
+        if (_currentLocation == null ||
             _calculateDistance(_currentLocation!, newLocation) > 10) {
-          
           setState(() {
             _currentLocation = newLocation;
             _updateMarker(newLocation);
           });
-          
+
           _updateAddressSilently(position);
           _animateToUserLocation();
         }
       },
       onError: (error) {
-        print("Location stream error: $error");
+        debugPrint("Location stream error: $error");
       },
     );
 
@@ -349,9 +352,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
 
   double _calculateDistance(LatLng start, LatLng end) {
     return Geolocator.distanceBetween(
-      start.latitude, start.longitude,
-      end.latitude, end.longitude
-    );
+        start.latitude, start.longitude, end.latitude, end.longitude);
   }
 
   Future<void> _updateAddressSilently(Position position) async {
@@ -373,7 +374,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
 
         String city = locality.isNotEmpty ? locality : administrativeArea;
         String area = subLocality.isNotEmpty ? subLocality : name;
-        
+
         String address = "";
         if (street.isNotEmpty && area.isNotEmpty) {
           address = "$street, $area";
@@ -405,11 +406,11 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     try {
       await Future.any([
         _updateAddress(position),
-        Future.delayed(Duration(seconds: GEOCODING_TIMEOUT),
+        Future.delayed(Duration(seconds: _geocodingTimeout),
             () => throw TimeoutException('Geocoding timeout'))
       ]);
     } catch (e) {
-      print('Address update timeout or error: $e');
+      debugPrint('Address update timeout or error: $e');
       if (mounted) {
         setState(() {
           _currentAddress = "Location detected";
@@ -438,7 +439,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
 
         String city = locality.isNotEmpty ? locality : administrativeArea;
         String area = subLocality.isNotEmpty ? subLocality : name;
-        
+
         String address = "";
         if (street.isNotEmpty && area.isNotEmpty) {
           address = "$street, $area";
@@ -496,7 +497,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
           ),
         );
       } catch (e) {
-        print('Camera animation error: $e');
+        debugPrint('Camera animation error: $e');
       }
     }
   }
@@ -515,15 +516,19 @@ class _UserHomeScreenState extends State<UserHomeScreen>
   Future<void> _getLocationWithGPS() async {
     try {
       bool isGpsEnabled = await Geolocator.isLocationServiceEnabled();
-      
+
       if (!isGpsEnabled) {
         _showLocationServiceDialog();
         return;
       }
 
+      final locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        timeLimit: Duration(seconds: _locationTimeout),
+      );
+
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.bestForNavigation,
-        timeLimit: Duration(seconds: LOCATION_TIMEOUT),
+        locationSettings: locationSettings,
       );
 
       final newLocation = LatLng(position.latitude, position.longitude);
@@ -538,7 +543,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       await _updateAddressWithTimeout(position);
       _animateToUserLocation();
     } catch (e) {
-      print("GPS error: $e");
+      debugPrint("GPS error: $e");
     }
   }
 
@@ -551,8 +556,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text("Location Services Disabled"),
-        content:
-            const Text("Please enable location services (GPS) to find nearby cabs accurately."),
+        content: const Text(
+            "Please enable location services (GPS) to find nearby cabs accurately."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -612,7 +617,41 @@ class _UserHomeScreenState extends State<UserHomeScreen>
   void _navigateToBooking() {
     setState(() {
       _currentIndex = 1;
+      _tabHistory.add(1);
     });
+  }
+
+  // Handle back button press
+  Future<bool> _onWillPop() async {
+    // If we have more than one tab in history, go back to previous tab
+    if (_tabHistory.length > 1) {
+      setState(() {
+        _tabHistory.removeLast();
+        _currentIndex = _tabHistory.last;
+      });
+      return false; // Don't close the app
+    }
+
+    // If we're on the first tab, show exit confirmation or just close
+    if (_currentIndex == 0) {
+      DateTime now = DateTime.now();
+      if (_lastBackPress == null ||
+          now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
+        _lastBackPress = now;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Press back again to exit'),
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Color(0xFF00B14F),
+          ),
+        );
+        return false; // Don't close yet
+      }
+      return true; // Close app on double back press
+    }
+
+    return true; // Default behavior
   }
 
   String _getAppBarTitle() {
@@ -624,6 +663,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       case 2:
         return 'Payment';
       case 3:
+        return 'Booking History';
+      case 4:
         return 'Profile';
       default:
         return 'Home';
@@ -636,6 +677,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     WidgetsBinding.instance.removeObserver(this);
     _positionStreamSubscription?.cancel();
     _mapController?.dispose();
+    _carController.dispose();
     super.dispose();
   }
 
@@ -643,21 +685,27 @@ class _UserHomeScreenState extends State<UserHomeScreen>
   @override
   Widget build(BuildContext context) {
     _updateScreenSize();
-    
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: _buildAppBar(),
-      drawer: UserDrawer(
-        currentIndex: _currentIndex,
-        userName: _userName,
-        onIndexChanged: (i) {
-          if (mounted) {
-            setState(() => _currentIndex = i);
-          }
-        },
+
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        appBar: _buildAppBar(),
+        drawer: UserDrawer(
+          currentIndex: _currentIndex,
+          userName: _userName,
+          onIndexChanged: (i) {
+            if (mounted) {
+              setState(() {
+                _currentIndex = i;
+                _tabHistory.add(i);
+              });
+            }
+          },
+        ),
+        body: _buildBody(),
+        bottomNavigationBar: _buildBottomNavigationBar(),
       ),
-      body: _buildBody(),
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -671,6 +719,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         case 2:
           return const PaymentScreen();
         case 3:
+          return const BookingHistoryPage();
+        case 4:
           return ProfileTab(
             userName: _userName,
           );
@@ -678,7 +728,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
           return _buildHomeContent();
       }
     } catch (e) {
-      print('Error building tab: $e');
+      debugPrint('Error building tab: $e');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -701,7 +751,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     return AppBar(
       title: Row(
         children: [
-          Container(
+          SizedBox(
             height: _isSmallScreen ? 40 : 50,
             width: _isSmallScreen ? 40 : 50,
             child: Image.asset(
@@ -714,7 +764,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                   height: _isSmallScreen ? 40 : 50,
                   width: _isSmallScreen ? 40 : 50,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -741,19 +791,6 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       backgroundColor: const Color(0xFF00B14F),
       elevation: 0,
       iconTheme: const IconThemeData(color: Colors.white),
-      actions: [
-        Padding(
-          padding: EdgeInsets.only(right: _isSmallScreen ? 8 : 12),
-          child: IconButton(
-            icon: Icon(
-              Icons.notifications_none,
-              size: _isSmallScreen ? 22 : 24,
-            ),
-            onPressed: () {},
-            color: Colors.white,
-          ),
-        ),
-      ],
       toolbarHeight: _isSmallScreen ? 60 : 70,
     );
   }
@@ -768,16 +805,10 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             child: _buildWelcomeBanner(),
           ),
           SliverToBoxAdapter(
-            child: _buildSSABranding(),
+            child: _buildSSABranding(), // Updated with light green background
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: getResponsivePadding(16),
-                vertical: getResponsivePadding(16),
-              ),
-              child: _buildRideTypeGrid(),
-            ),
+            child: _buildMovingCarSection(), // Simple car-side animation
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -814,7 +845,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                   Container(
                     padding: EdgeInsets.all(getResponsivePadding(6)),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00B14F).withOpacity(0.1),
+                      color: const Color(0xFF00B14F).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -855,6 +886,109 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     );
   }
 
+  // Simple moving car section with FontAwesomeIcons.carSide
+  Widget _buildMovingCarSection() {
+    return Container(
+      height: 100,
+      margin: EdgeInsets.symmetric(
+        horizontal: getResponsivePadding(16),
+        vertical: getResponsivePadding(8),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: Stack(
+          children: [
+            // Simple road line
+            Positioned(
+              bottom: 25,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 2,
+                color: const Color(0xFF00B14F).withValues(alpha: 0.3),
+              ),
+            ),
+
+            // Moving car-side icon
+            AnimatedBuilder(
+              animation: _carAnimation,
+              builder: (context, child) {
+                return Positioned(
+                  left: (MediaQuery.of(context).size.width - 100) *
+                      _carAnimation.value,
+                  top: 20,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00B14F).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      FontAwesomeIcons.carSide, // Using car-side icon
+                      color: const Color(0xFF00B14F),
+                      size: 35,
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // "On the Move" text
+            Positioned(
+              top: 10,
+              right: 15,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00B14F).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: const Color(0xFF00B14F).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF00B14F),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'On the Move',
+                      style: TextStyle(
+                        fontSize: getResponsiveFontSize(10),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF00B14F),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildWelcomeBanner() {
     return Container(
       width: double.infinity,
@@ -867,7 +1001,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00B14F).withOpacity(0.3),
+            color: const Color(0xFF00B14F).withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -879,7 +1013,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             width: _isSmallScreen ? 45 : 55,
             height: _isSmallScreen ? 45 : 55,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 2),
             ),
@@ -908,7 +1042,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                         width: 100,
                         height: _isSmallScreen ? 20 : 24,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       )
@@ -925,41 +1059,44 @@ class _UserHomeScreenState extends State<UserHomeScreen>
               ],
             ),
           ),
-          Container(
-            padding: EdgeInsets.all(getResponsivePadding(6)),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.notifications_none,
-              color: Colors.white,
-              size: _isSmallScreen ? 18 : 22,
-            ),
-          ),
         ],
       ),
     );
   }
 
+  // Updated SSA Branding with Light Green Background
   Widget _buildSSABranding() {
     return Container(
       margin: EdgeInsets.all(getResponsivePadding(16)),
       padding: EdgeInsets.all(getResponsivePadding(20)),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF00B14F), Color(0xFF008537)],
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFE8F5E9), // Very light green
+            const Color(0xFFC8E6C9), // Light green
+            const Color(0xFFA5D6A7), // Medium light green
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00B14F).withOpacity(0.4),
+            color: const Color(0xFF00B14F).withValues(alpha: 0.15),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.5),
+            blurRadius: 10,
+            offset: const Offset(-2, -2),
+            spreadRadius: 1,
+          ),
         ],
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.8),
+          width: 1.5,
+        ),
       ),
       child: Column(
         children: [
@@ -968,8 +1105,22 @@ class _UserHomeScreenState extends State<UserHomeScreen>
               Container(
                 padding: EdgeInsets.all(getResponsivePadding(10)),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF00B14F),
+                      const Color(0xFF00B14F).withValues(alpha: 0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00B14F).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   Icons.directions_car,
@@ -987,7 +1138,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       style: TextStyle(
                         fontSize: getResponsiveFontSize(20),
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: const Color(0xFF004D40), // Dark teal for contrast
+                        letterSpacing: 1,
                       ),
                     ),
                     SizedBox(height: _isSmallScreen ? 2 : 4),
@@ -995,7 +1147,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       'Safe • Secure • Reliable',
                       style: TextStyle(
                         fontSize: getResponsiveFontSize(12),
-                        color: Colors.white70,
+                        color: const Color(0xFF1B5E20), // Dark green
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -1010,15 +1163,33 @@ class _UserHomeScreenState extends State<UserHomeScreen>
               horizontal: getResponsivePadding(16),
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.9),
+                  Colors.white.withValues(alpha: 0.7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: const Color(0xFF00B14F).withValues(alpha: 0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00B14F).withValues(alpha: 0.1),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Text(
               'Book Your Ride, Anytime, Anywhere!',
               style: TextStyle(
                 fontSize: getResponsiveFontSize(12),
-                color: Colors.white,
                 fontWeight: FontWeight.w600,
+                color: const Color(0xFF004D40), // Dark teal
               ),
             ),
           ),
@@ -1034,7 +1205,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1047,7 +1218,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             Container(
               padding: EdgeInsets.all(getResponsivePadding(8)),
               decoration: BoxDecoration(
-                color: const Color(0xFF00B14F).withOpacity(0.1),
+                color: const Color(0xFF00B14F).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -1103,7 +1274,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             Container(
               padding: EdgeInsets.all(getResponsivePadding(6)),
               decoration: BoxDecoration(
-                color: const Color(0xFF00B14F).withOpacity(0.1),
+                color: const Color(0xFF00B14F).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
@@ -1136,7 +1307,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00B14F).withOpacity(0.4),
+            color: const Color(0xFF00B14F).withValues(alpha: 0.4),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1174,49 +1345,6 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     );
   }
 
-  Widget _buildRideTypeGrid() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: _rideTypes.map((ride) {
-        return _buildRideTypeItem(
-          ride['icon'],
-          ride['name'],
-          Color(ride['color']),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildRideTypeItem(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        Container(
-          width: _isSmallScreen ? 50 : 60,
-          height: _isSmallScreen ? 50 : 60,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            shape: BoxShape.circle,
-            border: Border.all(color: color.withOpacity(0.3), width: 2),
-          ),
-          child: Icon(
-            icon,
-            color: color,
-            size: _isSmallScreen ? 22 : 28,
-          ),
-        ),
-        SizedBox(height: _isSmallScreen ? 6 : 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: getResponsiveFontSize(11),
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildQuickActionsGrid() {
     return GridView.builder(
       shrinkWrap: true,
@@ -1238,6 +1366,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             if (mounted) {
               setState(() {
                 _currentIndex = action['tab'];
+                _tabHistory.add(action['tab']);
               });
             }
           },
@@ -1246,8 +1375,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     );
   }
 
-  Widget _buildQuickActionCard(IconData icon, String label, Color color,
-      VoidCallback onTap) {
+  Widget _buildQuickActionCard(
+      IconData icon, String label, Color color, VoidCallback onTap) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1259,7 +1388,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -1271,7 +1400,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
               Container(
                 padding: EdgeInsets.all(getResponsivePadding(8)),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -1304,7 +1433,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -1341,7 +1470,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 10,
                   ),
                 ],
@@ -1358,7 +1487,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                             CameraUpdate.zoomIn(),
                           );
                         } catch (e) {
-                          print('Zoom in error: $e');
+                          debugPrint('Zoom in error: $e');
                         }
                       }
                     },
@@ -1378,7 +1507,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                             CameraUpdate.zoomOut(),
                           );
                         } catch (e) {
-                          print('Zoom out error: $e');
+                          debugPrint('Zoom out error: $e');
                         }
                       }
                     },
@@ -1418,13 +1547,14 @@ class _UserHomeScreenState extends State<UserHomeScreen>
               top: 16,
               left: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 5,
                     ),
                   ],
@@ -1475,7 +1605,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -1490,7 +1620,10 @@ class _UserHomeScreenState extends State<UserHomeScreen>
           currentIndex: _currentIndex,
           onTap: (index) {
             if (mounted) {
-              setState(() => _currentIndex = index);
+              setState(() {
+                _currentIndex = index;
+                _tabHistory.add(index);
+              });
             }
           },
           type: BottomNavigationBarType.fixed,
@@ -1534,6 +1667,17 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                 size: _isSmallScreen ? 22 : 24,
               ),
               label: 'Payment',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.history_outlined,
+                size: _isSmallScreen ? 22 : 24,
+              ),
+              activeIcon: Icon(
+                Icons.history,
+                size: _isSmallScreen ? 22 : 24,
+              ),
+              label: 'Ride History',
             ),
             BottomNavigationBarItem(
               icon: Icon(

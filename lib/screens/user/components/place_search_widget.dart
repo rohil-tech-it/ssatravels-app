@@ -11,13 +11,13 @@ class PlaceSearchWidget extends StatefulWidget {
   final Color themeColor;
 
   const PlaceSearchWidget({
-    Key? key,
+    super.key,
     required this.routeService,
     required this.onPlaceSelected,
     required this.hintText,
     this.prefixIcon = Icons.search,
     this.themeColor = const Color(0xFF00C853),
-  }) : super(key: key);
+  });
 
   @override
   State<PlaceSearchWidget> createState() => _PlaceSearchWidgetState();
@@ -50,17 +50,17 @@ class _PlaceSearchWidgetState extends State<PlaceSearchWidget> {
 
   void _onSearchChanged(String query) {
     _debounce?.cancel();
-    
+
     if (query.length < 3) {
       setState(() => _predictions.clear());
       return;
     }
-    
+
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       setState(() => _isLoading = true);
-      
+
       final results = await widget.routeService.searchPlaces(query);
-      
+
       if (mounted) {
         setState(() {
           _predictions = results;
@@ -72,16 +72,17 @@ class _PlaceSearchWidgetState extends State<PlaceSearchWidget> {
 
   Future<void> _selectPlace(Map<String, dynamic> prediction) async {
     setState(() => _isLoading = true);
-    
-    final details = await widget.routeService.getPlaceDetails(prediction['place_id']);
-    
+
+    final details =
+        await widget.routeService.getPlaceDetails(prediction['place_id']);
+
     if (details != null && mounted) {
       widget.onPlaceSelected(details);
       _controller.text = details['address'] ?? details['name'] ?? '';
       setState(() => _predictions.clear());
       _focusNode.unfocus();
     }
-    
+
     setState(() => _isLoading = false);
   }
 
@@ -97,7 +98,7 @@ class _PlaceSearchWidgetState extends State<PlaceSearchWidget> {
             border: Border.all(color: Colors.grey.shade300),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -137,7 +138,6 @@ class _PlaceSearchWidgetState extends State<PlaceSearchWidget> {
             ),
           ),
         ),
-        
         if (_predictions.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(top: 8),
@@ -147,7 +147,7 @@ class _PlaceSearchWidgetState extends State<PlaceSearchWidget> {
               border: Border.all(color: Colors.grey.shade200),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),

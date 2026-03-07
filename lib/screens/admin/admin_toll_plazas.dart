@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/toll_service.dart';
 import '../../models/toll_plaza_model.dart';
 
 class AdminTollPlazas extends StatefulWidget {
+  const AdminTollPlazas({super.key});
+
   @override
-  _AdminTollPlazasState createState() => _AdminTollPlazasState();
+  State<AdminTollPlazas> createState() => AdminTollPlazasState();
 }
 
-class _AdminTollPlazasState extends State<AdminTollPlazas> {
+class AdminTollPlazasState extends State<AdminTollPlazas> {
   final TollService _tollService = TollService();
   final _formKey = GlobalKey<FormState>();
 
@@ -19,22 +20,18 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
   final _highwayController = TextEditingController();
   final _latitudeController = TextEditingController();
   final _longitudeController = TextEditingController();
-  final _amountController = TextEditingController(); // NEW: Simple amount
+  final _amountController = TextEditingController();
   final _searchController = TextEditingController();
-
-  // REMOVED ALL vehicle type controllers
 
   List<String> _districts = [];
   String _selectedDistrict = 'All';
   String _searchQuery = '';
-  bool _isLoading = false;
 
   // Admin theme colors
   final Color _primaryColor = const Color(0xFF00B14F);
 
   // Responsive variables
   late bool _isMobile;
-  late bool _isTablet;
   late double _screenWidth;
 
   @override
@@ -53,11 +50,11 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
   // Helper method to display info rows
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Icon(icon, size: 16, color: Colors.grey[600]),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             '$label: ',
             style: TextStyle(
@@ -85,7 +82,6 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
   Widget build(BuildContext context) {
     _screenWidth = MediaQuery.of(context).size.width;
     _isMobile = _screenWidth < 600;
-    _isTablet = _screenWidth >= 600 && _screenWidth < 1200;
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -113,8 +109,7 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                       children: [
                         // Import Button
                         IconButton(
-                          icon:
-                              Icon(Icons.cloud_download, color: _primaryColor),
+                          icon: Icon(Icons.cloud_download, color: _primaryColor),
                           onPressed: _showImportDialog,
                           tooltip: 'Import from Local Data',
                         ),
@@ -128,20 +123,20 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                     ),
                   ],
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 // Search and Filter
                 _isMobile
                     ? Column(
                         children: [
                           _buildSearchField(),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           _buildDistrictFilter(),
                         ],
                       )
                     : Row(
                         children: [
                           Expanded(flex: 3, child: _buildSearchField()),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           _buildDistrictFilter(),
                         ],
                       ),
@@ -165,11 +160,11 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.error_outline, size: 60, color: Colors.red),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text('Error: ${snapshot.error}'),
                         ElevatedButton(
                           onPressed: () => setState(() {}),
-                          child: Text('Retry'),
+                          child: const Text('Retry'),
                         ),
                       ],
                     ),
@@ -199,16 +194,16 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.location_off, size: 80, color: Colors.grey),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           'No toll plazas found',
                           style: TextStyle(fontSize: 18, color: Colors.grey),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         ElevatedButton.icon(
                           onPressed: _showAddTollPlazaDialog,
-                          icon: Icon(Icons.add),
-                          label: Text('Add First Toll Plaza'),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add First Toll Plaza'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _primaryColor,
                           ),
@@ -231,7 +226,7 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                       ),
                       child: ExpansionTile(
                         leading: CircleAvatar(
-                          backgroundColor: _primaryColor.withOpacity(0.1),
+                          backgroundColor: _primaryColor.withValues(alpha: 0.1),
                           child: Icon(Icons.location_on, color: _primaryColor),
                         ),
                         title: Text(
@@ -284,17 +279,17 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                                   '${plaza.latitude.toStringAsFixed(4)}, ${plaza.longitude.toStringAsFixed(4)}',
                                 ),
 
-                                SizedBox(height: 16),
+                                const SizedBox(height: 16),
 
-                                // SIMPLE AMOUNT DISPLAY - Just one rate
+                                // SIMPLE AMOUNT DISPLAY
                                 Container(
                                   width: double.infinity,
-                                  padding: EdgeInsets.all(16),
+                                  padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: _primaryColor.withOpacity(0.05),
+                                    color: _primaryColor.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                        color: _primaryColor.withOpacity(0.3)),
+                                        color: _primaryColor.withValues(alpha: 0.3)),
                                   ),
                                   child: Column(
                                     crossAxisAlignment:
@@ -307,23 +302,22 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                                           color: Colors.grey[600],
                                         ),
                                       ),
-                                      SizedBox(height: 8),
+                                      const SizedBox(height: 8),
                                       Text(
-                                        '₹${plaza.amount?.toStringAsFixed(0) ?? '0'}', // ✅ Fixed: single curly brace with $
+                                        '₹${plaza.amount?.toStringAsFixed(0) ?? '0'}',
                                         style: TextStyle(
                                           fontSize: 32,
                                           fontWeight: FontWeight.bold,
                                           color: _primaryColor,
                                         ),
                                       ),
-                                      SizedBox(height: 4),
+                                      const SizedBox(height: 4),
                                       Text(
                                         'Single rate for all vehicles',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey[500],
-                                          fontStyle: FontStyle
-                                              .italic, // ✅ Fixed: correct property and spelling
+                                          fontStyle: FontStyle.italic,
                                         ),
                                       ),
                                     ],
@@ -399,7 +393,7 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
             _selectedDistrict = newValue!;
           });
         },
-        underline: SizedBox(),
+        underline: const SizedBox(),
         icon: Icon(Icons.arrow_drop_down, color: _primaryColor),
         style: TextStyle(
           color: Colors.grey[800],
@@ -407,7 +401,7 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
         ),
         isExpanded: true,
         items: [
-          DropdownMenuItem(
+          const DropdownMenuItem(
             value: 'All',
             child: Text('All Districts'),
           ),
@@ -431,7 +425,7 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
           title: Row(
             children: [
               Icon(Icons.cloud_download, color: _primaryColor),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Import Toll Plazas',
@@ -444,7 +438,7 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
               ),
             ],
           ),
-          content: Container(
+          content: SizedBox(
             width: _isMobile ? double.maxFinite : 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -454,9 +448,9 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                   'This will import all toll plazas from local data to Firestore.',
                   style: TextStyle(fontSize: _isMobile ? 13 : 14),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Container(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.amber.shade50,
                     borderRadius: BorderRadius.circular(8),
@@ -464,8 +458,8 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.warning, color: Colors.amber, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(Icons.warning, color: Colors.amber, size: 20),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'This may create duplicate entries if toll plazas already exist.',
@@ -491,14 +485,14 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
             ),
             ElevatedButton(
               onPressed: () async {
-                Navigator.pop(context);
+                Navigator.pop(context); // Close dialog immediately
                 await _performImport();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primaryColor,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Import'),
+              child: const Text('Import'),
             ),
           ],
         );
@@ -507,20 +501,21 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
   }
 
   Future<void> _performImport() async {
-    setState(() => _isLoading = true);
-
     // Show loading dialog
+    if (!mounted) return;
+    BuildContext? loadingContext;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
+        loadingContext = dialogContext;
         return AlertDialog(
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               CircularProgressIndicator(color: _primaryColor),
-              SizedBox(height: 16),
-              Text('Importing toll plazas...'),
+              const SizedBox(height: 16),
+              const Text('Importing toll plazas...'),
             ],
           ),
         );
@@ -530,45 +525,47 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
     try {
       await _tollService.initializeTollPlazasToFirestore();
 
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
+      if (mounted && loadingContext != null && Navigator.canPop(loadingContext!)) {
+        Navigator.pop(loadingContext!);
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 8),
-              Expanded(child: Text('✅ Toll plazas imported successfully!')),
-            ],
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('✅ Toll plazas imported successfully!')),
+              ],
+            ),
+            backgroundColor: _primaryColor,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
           ),
-          backgroundColor: _primaryColor,
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 3),
-        ),
-      );
+        );
+      }
     } catch (e) {
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
+      if (mounted && loadingContext != null && Navigator.canPop(loadingContext!)) {
+        Navigator.pop(loadingContext!);
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.error, color: Colors.white),
-              SizedBox(width: 8),
-              Expanded(child: Text('❌ Error: $e')),
-            ],
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('❌ Error: $e')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
           ),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 5),
-        ),
-      );
-    } finally {
-      setState(() => _isLoading = false);
+        );
+      }
     }
   }
 
@@ -579,8 +576,8 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Add New Toll Plaza'),
-        content: Container(
+        title: const Text('Add New Toll Plaza'),
+        content: SizedBox(
           width: _isMobile ? double.maxFinite : 400,
           child: SingleChildScrollView(
             child: Form(
@@ -591,29 +588,29 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                   // Basic Details
                   TextFormField(
                     controller: _nameController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Toll Plaza Name',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Please enter name' : null,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _locationController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Location',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Please enter location' : null,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _districtController.text.isNotEmpty
+                    initialValue: _districtController.text.isNotEmpty
                         ? _districtController.text
                         : null,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'District',
                       border: OutlineInputBorder(),
                     ),
@@ -629,24 +626,24 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                     validator: (value) =>
                         value == null ? 'Please select district' : null,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _highwayController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Highway',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Please enter highway' : null,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: TextFormField(
                           controller: _latitudeController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Latitude',
                             border: OutlineInputBorder(),
                           ),
@@ -654,12 +651,12 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                               value?.isEmpty ?? true ? 'Required' : null,
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
                           controller: _longitudeController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Longitude',
                             border: OutlineInputBorder(),
                           ),
@@ -670,26 +667,26 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                     ],
                   ),
 
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                  // SIMPLE AMOUNT FIELD - Just one rate
+                  // SIMPLE AMOUNT FIELD
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _primaryColor.withOpacity(0.05),
+                      color: _primaryColor.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Toll Amount',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'Single rate for all vehicles',
                           style: TextStyle(
@@ -697,11 +694,11 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                             color: Colors.grey[600],
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         TextFormField(
                           controller: _amountController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Amount (₹)',
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.currency_rupee, size: 18),
@@ -727,14 +724,14 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: _addTollPlaza,
             style: ElevatedButton.styleFrom(
               backgroundColor: _primaryColor,
             ),
-            child: Text('Add Toll Plaza'),
+            child: const Text('Add Toll Plaza'),
           ),
         ],
       ),
@@ -754,24 +751,27 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
         highway: _highwayController.text,
         latitude: double.parse(_latitudeController.text),
         longitude: double.parse(_longitudeController.text),
-        amount: double.parse(_amountController.text), // Simple amount
+        amount: double.parse(_amountController.text),
       );
 
-      Navigator.pop(context);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✅ Toll plaza added successfully!'),
-          backgroundColor: _primaryColor,
-        ),
-      );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('✅ Toll plaza added successfully!'),
+            backgroundColor: _primaryColor,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -783,13 +783,13 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
     _highwayController.text = plaza.highway;
     _latitudeController.text = plaza.latitude.toString();
     _longitudeController.text = plaza.longitude.toString();
-    _amountController.text = plaza.amount.toString(); // Simple amount
+    _amountController.text = plaza.amount.toString();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Edit Toll Plaza'),
-        content: Container(
+        title: const Text('Edit Toll Plaza'),
+        content: SizedBox(
           width: _isMobile ? double.maxFinite : 400,
           child: SingleChildScrollView(
             child: Form(
@@ -800,27 +800,27 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                   // Basic Details
                   TextFormField(
                     controller: _nameController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Toll Plaza Name',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Please enter name' : null,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _locationController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Location',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Please enter location' : null,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _districtController.text,
-                    decoration: InputDecoration(
+                    initialValue: _districtController.text,
+                    decoration: const InputDecoration(
                       labelText: 'District',
                       border: OutlineInputBorder(),
                     ),
@@ -836,24 +836,24 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                     validator: (value) =>
                         value == null ? 'Please select district' : null,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _highwayController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Highway',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Please enter highway' : null,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: TextFormField(
                           controller: _latitudeController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Latitude',
                             border: OutlineInputBorder(),
                           ),
@@ -861,12 +861,12 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                               value?.isEmpty ?? true ? 'Required' : null,
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
                           controller: _longitudeController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Longitude',
                             border: OutlineInputBorder(),
                           ),
@@ -877,26 +877,26 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                     ],
                   ),
 
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
                   // SIMPLE AMOUNT FIELD
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _primaryColor.withOpacity(0.05),
+                      color: _primaryColor.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Toll Amount',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'Single rate for all vehicles',
                           style: TextStyle(
@@ -904,11 +904,11 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
                             color: Colors.grey[600],
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         TextFormField(
                           controller: _amountController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Amount (₹)',
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.currency_rupee, size: 18),
@@ -934,14 +934,14 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () => _updateTollPlaza(plaza.id),
             style: ElevatedButton.styleFrom(
               backgroundColor: _primaryColor,
             ),
-            child: Text('Update Toll Plaza'),
+            child: const Text('Update Toll Plaza'),
           ),
         ],
       ),
@@ -962,24 +962,27 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
         highway: _highwayController.text,
         latitude: double.parse(_latitudeController.text),
         longitude: double.parse(_longitudeController.text),
-        amount: double.parse(_amountController.text), // Simple amount
+        amount: double.parse(_amountController.text),
       );
 
-      Navigator.pop(context);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✅ Toll plaza updated successfully!'),
-          backgroundColor: _primaryColor,
-        ),
-      );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('✅ Toll plaza updated successfully!'),
+            backgroundColor: _primaryColor,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -988,37 +991,41 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Toll Plaza'),
+        title: const Text('Delete Toll Plaza'),
         content: Text('Are you sure you want to delete "${plaza.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
               try {
                 await _tollService.deleteTollPlaza(plaza.id);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('✅ ${plaza.name} deleted successfully!'),
-                    backgroundColor: _primaryColor,
-                  ),
-                );
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('✅ ${plaza.name} deleted successfully!'),
+                      backgroundColor: _primaryColor,
+                    ),
+                  );
+                }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: Text('Delete'),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -1032,7 +1039,7 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
     _highwayController.clear();
     _latitudeController.clear();
     _longitudeController.clear();
-    _amountController.clear(); // Clear amount
+    _amountController.clear();
   }
 
   @override
@@ -1043,7 +1050,7 @@ class _AdminTollPlazasState extends State<AdminTollPlazas> {
     _highwayController.dispose();
     _latitudeController.dispose();
     _longitudeController.dispose();
-    _amountController.dispose(); // Dispose amount
+    _amountController.dispose();
     _searchController.dispose();
     super.dispose();
   }

@@ -20,14 +20,16 @@ class BookingModel {
   final String paymentStatus;
   final String bookingStatus;
   final DateTime bookingDate;
-  
-  // New toll-related fields
+  final DateTime? createdAt;
+
+  // Toll fields
   final List<Map<String, dynamic>>? tollPlazas;
   final String? routeKey;
   final int? totalTollPlazas;
 
   BookingModel({
     this.id,
+    this.createdAt,
     required this.userId,
     required this.userName,
     required this.userEmail,
@@ -51,7 +53,8 @@ class BookingModel {
     this.totalTollPlazas,
   });
 
-  Map<String, dynamic> toMap() {
+  // 🔥 Convert to Firestore Map
+  Map<String, dynamic> toMap({bool useServerTimestamp = false}) {
     return {
       'userId': userId,
       'userName': userName,
@@ -74,9 +77,15 @@ class BookingModel {
       'tollPlazas': tollPlazas,
       'routeKey': routeKey,
       'totalTollPlazas': totalTollPlazas,
+
+      // 🔥 Server timestamp support
+      'createdAt': useServerTimestamp
+          ? FieldValue.serverTimestamp()
+          : (createdAt != null ? Timestamp.fromDate(createdAt!) : null),
     };
   }
 
+  // 🔥 Convert from Firestore Map
   factory BookingModel.fromMap(String id, Map<String, dynamic> map) {
     return BookingModel(
       id: id,
@@ -87,26 +96,28 @@ class BookingModel {
       fromLocation: map['fromLocation'] ?? '',
       toLocation: map['toLocation'] ?? '',
       travelDate: (map['travelDate'] as Timestamp).toDate(),
-      returnDate: map['returnDate'] != null 
-          ? (map['returnDate'] as Timestamp).toDate() 
+      returnDate: map['returnDate'] != null
+          ? (map['returnDate'] as Timestamp).toDate()
           : null,
       vehicleType: map['vehicleType'] ?? '',
       vehicleNumber: map['vehicleNumber'] ?? '',
       passengers: map['passengers'] ?? 1,
       baseFare: (map['baseFare'] ?? 0).toDouble(),
-      tollAmount: map['tollAmount'] != null 
-          ? (map['tollAmount']).toDouble() 
-          : null,
+      tollAmount:
+          map['tollAmount'] != null ? (map['tollAmount']).toDouble() : null,
       totalAmount: (map['totalAmount'] ?? 0).toDouble(),
       paymentMethod: map['paymentMethod'] ?? '',
       paymentStatus: map['paymentStatus'] ?? 'pending',
       bookingStatus: map['bookingStatus'] ?? 'pending',
       bookingDate: (map['bookingDate'] as Timestamp).toDate(),
-      tollPlazas: map['tollPlazas'] != null 
-          ? List<Map<String, dynamic>>.from(map['tollPlazas']) 
+      tollPlazas: map['tollPlazas'] != null
+          ? List<Map<String, dynamic>>.from(map['tollPlazas'])
           : null,
       routeKey: map['routeKey'],
       totalTollPlazas: map['totalTollPlazas'],
+      createdAt: map['createdAt'] != null
+          ? (map['createdAt'] as Timestamp).toDate()
+          : null,
     );
   }
 }

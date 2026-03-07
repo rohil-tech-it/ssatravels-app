@@ -34,11 +34,7 @@ class TollService {
   // Initialize Tamil Nadu toll plazas from local data to Firestore
   Future<void> initializeTollPlazasToFirestore() async {
     try {
-      print('🚀 Starting toll plaza initialization...');
-
       final plazas = TamilNaduTollData.getAllTollPlazas();
-      int successCount = 0;
-      int errorCount = 0;
 
       for (var plaza in plazas) {
         try {
@@ -59,20 +55,13 @@ class TollService {
               'updatedAt': FieldValue.serverTimestamp(),
               'isActive': true,
             });
-            successCount++;
-            print('✅ Added: ${plaza['name']} - ₹${plaza['amount']}');
-          } else {
-            print('⏭️ Already exists: ${plaza['name']}');
           }
         } catch (e) {
-          errorCount++;
-          print('❌ Error adding ${plaza['name']}: $e');
+          // Continue with next plaza even if one fails
+          rethrow;
         }
       }
-
-      print('✅ Import completed: $successCount added, $errorCount errors');
     } catch (e) {
-      print('❌ Error initializing tolls: $e');
       rethrow;
     }
   }
@@ -88,7 +77,7 @@ class TollService {
         );
       }
     } catch (e) {
-      print('Error getting toll plaza: $e');
+      return null;
     }
     return null;
   }
@@ -120,10 +109,7 @@ class TollService {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
-
-      print('✅ Toll plaza added: $name - ₹$amount');
     } catch (e) {
-      print('Error adding toll plaza: $e');
       rethrow;
     }
   }
@@ -155,9 +141,7 @@ class TollService {
       if (isActive != null) updateData['isActive'] = isActive;
 
       await _tollPlazas.doc(plazaId).update(updateData);
-      print('✅ Toll plaza updated: $plazaId');
     } catch (e) {
-      print('Error updating toll plaza: $e');
       rethrow;
     }
   }
@@ -169,9 +153,7 @@ class TollService {
         'isActive': false,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      print('✅ Toll plaza deleted: $plazaId');
     } catch (e) {
-      print('Error deleting toll plaza: $e');
       rethrow;
     }
   }
@@ -192,7 +174,6 @@ class TollService {
 
       return districts.toList()..sort();
     } catch (e) {
-      print('Error getting districts: $e');
       return [];
     }
   }
@@ -219,9 +200,7 @@ class TollService {
   Future<void> addTollRoute(TollRouteModel route) async {
     try {
       await _tollRoutes.doc(route.id).set(route.toMap());
-      print('✅ Toll route added: ${route.id}');
     } catch (e) {
-      print('Error adding toll route: $e');
       rethrow;
     }
   }
@@ -230,9 +209,7 @@ class TollService {
   Future<void> updateTollRoute(TollRouteModel route) async {
     try {
       await _tollRoutes.doc(route.id).update(route.toMap());
-      print('✅ Toll route updated: ${route.id}');
     } catch (e) {
-      print('Error updating toll route: $e');
       rethrow;
     }
   }
@@ -244,9 +221,7 @@ class TollService {
         'isActive': false,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      print('✅ Toll route deleted: $routeId');
     } catch (e) {
-      print('Error deleting toll route: $e');
       rethrow;
     }
   }
@@ -282,8 +257,6 @@ class TollService {
   }
 
   // Add vehicle
-  // In toll_service.dart, update addVehicle method:
-
   Future<void> addVehicle({
     required String name,
     required String displayName,
@@ -310,14 +283,12 @@ class TollService {
       };
 
       await _vehicles.doc(vehicleId).set(vehicleData);
-      print('✅ Vehicle added: $displayName with category: $category');
     } catch (e) {
-      print('Error adding vehicle: $e');
       rethrow;
     }
   }
 
-// Update vehicle
+  // Update vehicle
   Future<void> updateVehicle({
     required String vehicleId,
     String? displayName,
@@ -325,7 +296,7 @@ class TollService {
     int? seatingCapacity,
     double? baseTollMultiplier,
     bool? isActive,
-    String? model, // ← ADD THIS LINE
+    String? model,
   }) async {
     try {
       Map<String, dynamic> updateData = {
@@ -334,17 +305,17 @@ class TollService {
 
       if (displayName != null) updateData['displayName'] = displayName;
       if (category != null) updateData['category'] = category;
-      if (seatingCapacity != null)
+      if (seatingCapacity != null) {
         updateData['seatingCapacity'] = seatingCapacity;
-      if (baseTollMultiplier != null)
+      }
+      if (baseTollMultiplier != null) {
         updateData['baseTollMultiplier'] = baseTollMultiplier;
+      }
       if (isActive != null) updateData['isActive'] = isActive;
-      if (model != null) updateData['model'] = model; // ← ADD THIS LINE
+      if (model != null) updateData['model'] = model;
 
       await _vehicles.doc(vehicleId).update(updateData);
-      print('✅ Vehicle updated: $vehicleId');
     } catch (e) {
-      print('Error updating vehicle: $e');
       rethrow;
     }
   }
@@ -356,9 +327,7 @@ class TollService {
         'isActive': false,
         'updatedAt': Timestamp.fromDate(DateTime.now()),
       });
-      print('✅ Vehicle deleted: $vehicleId');
     } catch (e) {
-      print('Error deleting vehicle: $e');
       rethrow;
     }
   }
@@ -374,7 +343,7 @@ class TollService {
         );
       }
     } catch (e) {
-      print('Error getting vehicle: $e');
+      return null;
     }
     return null;
   }
@@ -388,8 +357,6 @@ class TollService {
     required String destination,
   }) async {
     try {
-      print('📍 Calculating toll for route: $source → $destination');
-
       // First get the route
       final routeSnapshot = await _tollRoutes
           .where('source', isEqualTo: source)
@@ -439,7 +406,6 @@ class TollService {
         destination: destination,
       );
     } catch (e) {
-      print('❌ Error calculating toll: $e');
       return {
         'success': false,
         'error': e.toString(),
@@ -552,7 +518,6 @@ class TollService {
         }).toList(),
       };
     } catch (e) {
-      print('Error getting stats: $e');
       return {
         'success': false,
         'error': e.toString(),

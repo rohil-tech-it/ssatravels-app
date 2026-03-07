@@ -6,16 +6,28 @@ import 'package:ssatravels_app/screens/auth/login_screen.dart';
 import 'package:ssatravels_app/screens/user/components/about_page.dart';
 import 'package:ssatravels_app/screens/user/components/help_support_page.dart';
 import 'package:ssatravels_app/screens/user/components/privacy_policy_page.dart';
-import 'package:ssatravels_app/screens/user/components/ride_history_page.dart';
+import 'package:ssatravels_app/screens/user/components/booking_history_page.dart';
 import 'package:ssatravels_app/screens/user/components/settings_page.dart';
 import 'package:ssatravels_app/screens/user/components/terms_conditions_page.dart';
 
 class UserDrawer extends StatelessWidget {
   final int currentIndex;
-  final String userName; // ✅ ADD THIS
+  final String userName;
   final Function(int) onIndexChanged;
 
-  // ✅ CALL FUNCTION – HERE
+  // Responsive breakpoints
+  static const double mobileBreakpoint = 600;
+  static const double tabletBreakpoint = 900;
+  static const double desktopBreakpoint = 1200;
+
+  const UserDrawer({
+    super.key,
+    required this.currentIndex,
+    required this.userName,
+    required this.onIndexChanged,
+  });
+
+  // CALL FUNCTION – HERE
   Future<void> _callContactNumber() async {
     final Uri phoneUri = Uri(
       scheme: 'tel',
@@ -29,51 +41,84 @@ class UserDrawer extends StatelessWidget {
     }
   }
 
-  const UserDrawer({
-    super.key,
-    required this.currentIndex,
-    required this.userName, // ✅ ADD THIS
-    required this.onIndexChanged,
-  });
+  // Get responsive font size based on screen width
+  double _getResponsiveFontSize(BuildContext context,
+      {double mobile = 14, double tablet = 16, double desktop = 18}) {
+    double width = MediaQuery.of(context).size.width;
+    if (width >= desktopBreakpoint) return desktop;
+    if (width >= tabletBreakpoint) return tablet;
+    return mobile;
+  }
+
+  // Get responsive padding based on screen width
+  EdgeInsets _getResponsivePadding(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+
+    if (width >= desktopBreakpoint) {
+      return EdgeInsets.symmetric(horizontal: width * 0.03, vertical: 16);
+    } else if (width >= tabletBreakpoint) {
+      return EdgeInsets.symmetric(horizontal: width * 0.04, vertical: 12);
+    } else {
+      return EdgeInsets.symmetric(horizontal: width * 0.05, vertical: 8);
+    }
+  }
+
+  // Get responsive drawer width
+  double _getDrawerWidth(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+
+    if (width >= desktopBreakpoint) {
+      return width * 0.25; // 25% of screen width for desktop
+    } else if (width >= tabletBreakpoint) {
+      return width * 0.4; // 40% of screen width for tablet
+    } else if (width >= mobileBreakpoint) {
+      return width * 0.7; // 70% of screen width for large phones
+    } else {
+      return width * 0.85; // 85% of screen width for small phones
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: Colors.white,
-      child: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, authSnapshot) {
-          final user = authSnapshot.data;
-          final isLoggedIn = user != null;
+    return SizedBox(
+      width: _getDrawerWidth(context),
+      child: Drawer(
+        backgroundColor: Colors.white,
+        child: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, authSnapshot) {
+            final user = authSnapshot.data;
+            final isLoggedIn = user != null;
 
-          if (!isLoggedIn) {
-            return _buildGuestView(context);
-          }
+            if (!isLoggedIn) {
+              return _buildGuestView(context);
+            }
 
-          return StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .snapshots(),
-            builder: (context, userSnapshot) {
-              final userData =
-                  userSnapshot.data?.data() as Map<String, dynamic>?;
-              final fullName =
-                  userData?['fullName'] ?? user.displayName ?? 'User';
-              final email = userData?['email'] ?? user.email ?? 'No email';
-              final phoneNumber =
-                  userData?['phoneNumber'] ?? user.phoneNumber ?? '';
+            return StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .snapshots(),
+              builder: (context, userSnapshot) {
+                final userData =
+                    userSnapshot.data?.data() as Map<String, dynamic>?;
+                final fullName =
+                    userData?['fullName'] ?? user.displayName ?? 'User';
+                final email = userData?['email'] ?? user.email ?? 'No email';
+                final phoneNumber =
+                    userData?['phoneNumber'] ?? user.phoneNumber ?? '';
 
-              return _buildLoggedInView(
-                context,
-                fullName,
-                email,
-                phoneNumber,
-                user.photoURL,
-              );
-            },
-          );
-        },
+                return _buildLoggedInView(
+                  context,
+                  fullName,
+                  email,
+                  phoneNumber,
+                  user.photoURL,
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -124,10 +169,9 @@ class UserDrawer extends StatelessWidget {
         _drawerItem(
           context,
           Icons.history,
-          'Ride History',
+          'Booking History',
           null,
           onTap: () {
-            // Show login prompt for guests
             _showLoginPrompt(context);
           },
         ),
@@ -137,8 +181,8 @@ class UserDrawer extends StatelessWidget {
           'Contact Us',
           7,
           onTap: () {
-            Navigator.pop(context); // close drawer
-            _callContactNumber(); // make call
+            Navigator.pop(context);
+            _callContactNumber();
           },
         ),
 
@@ -154,7 +198,6 @@ class UserDrawer extends StatelessWidget {
           onTap: () => _navigateToPage(context, const LoginScreen()),
         ),
 
-        // Footer with "Developed by Rohil Technologies"
         _buildFooter(context),
       ],
     );
@@ -173,7 +216,7 @@ class UserDrawer extends StatelessWidget {
       children: [
         _buildUserHeader(context, fullName, email, phoneNumber, photoURL),
 
-        // Main navigation - Use isDrawerItem: true to change tabs
+        // Main navigation
         _drawerItem(context, Icons.home, 'Home', 0, isDrawerItem: true),
         _drawerItem(context, Icons.directions_car, 'Book Trip', 1,
             isDrawerItem: true),
@@ -212,9 +255,9 @@ class UserDrawer extends StatelessWidget {
         _drawerItem(
           context,
           Icons.history,
-          'Ride History',
+          'Booking History',
           null,
-          onTap: () => _navigateToPage(context, const RideHistoryPage()),
+          onTap: () => _navigateToPage(context, const BookingHistoryPage()),
         ),
         _drawerItem(
           context,
@@ -222,19 +265,18 @@ class UserDrawer extends StatelessWidget {
           'Contact Us',
           7,
           onTap: () {
-            Navigator.pop(context); // close drawer
-            _callContactNumber(); // make call
+            Navigator.pop(context);
+            _callContactNumber();
           },
         ),
 
         if (FirebaseAuth.instance.currentUser != null) ...[
           const Divider(height: 1),
-          // PROFILE - This will navigate to profile tab (index 3)
           _drawerItem(
             context,
             Icons.person_outline,
             'My Profile',
-            3, // Changed from null to 3 to match bottom nav
+            3,
             isDrawerItem: true,
           ),
           _drawerItem(
@@ -258,7 +300,6 @@ class UserDrawer extends StatelessWidget {
           onTap: () => _handleLogout(context),
         ),
 
-        // Footer with "Developed by Rohil Technologies"
         _buildFooter(context),
       ],
     );
@@ -266,40 +307,39 @@ class UserDrawer extends StatelessWidget {
 
   // ================= FOOTER SECTION =================
   Widget _buildFooter(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
       margin: EdgeInsets.only(
-        top: 20,
-        bottom: 20 + MediaQuery.of(context).padding.bottom,
+        top: screenHeight * 0.02,
+        bottom: screenHeight * 0.02 + MediaQuery.of(context).padding.bottom,
       ),
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           Divider(color: Colors.grey[300], height: 1),
-          SizedBox(height: 20),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.code,
                 color: Colors.grey[600],
-                size: screenWidth * 0.04,
+                size: 16,
               ),
-              SizedBox(width: 8),
-              Column(
-                children: [
-                  Text(
-                    'Developed by Rohil Technologies',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.03, // small font
-                      color: Colors.grey[600], // light grey
-                      fontWeight: FontWeight.w400, // normal
-                    ),
-                    textAlign: TextAlign.center,
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  'Developed by Rohil Technologies',
+                  style: TextStyle(
+                    fontSize: _getResponsiveFontSize(context,
+                        mobile: 11, tablet: 12, desktop: 13),
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w400,
                   ),
-                  const SizedBox(height: 4),
-                ],
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -310,7 +350,7 @@ class UserDrawer extends StatelessWidget {
 
   // ================= NAVIGATION HELPERS =================
   void _navigateToPage(BuildContext context, Widget page) {
-    Navigator.pop(context); // Close drawer
+    Navigator.pop(context);
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => page),
@@ -318,12 +358,12 @@ class UserDrawer extends StatelessWidget {
   }
 
   void _showLoginPrompt(BuildContext context) {
-    Navigator.pop(context); // Close drawer
+    Navigator.pop(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Login Required'),
-        content: const Text('Please login to view your ride history.'),
+        content: const Text('Please login to view your booking history.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -349,16 +389,16 @@ class UserDrawer extends StatelessWidget {
 
   // ================= HEADER SECTIONS =================
   Widget _buildGuestHeader(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
       color: const Color(0xFF00B14F),
       padding: EdgeInsets.only(
-        top: screenHeight * 0.05,
-        bottom: 20,
-        left: 16,
-        right: 16,
+        top: screenHeight * 0.04,
+        bottom: screenHeight * 0.02,
+        left: screenWidth * 0.04,
+        right: screenWidth * 0.04,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,24 +406,25 @@ class UserDrawer extends StatelessWidget {
           Row(
             children: [
               SizedBox(
-                width: screenWidth * 0.12,
-                height: screenWidth * 0.12,
+                width: screenWidth * 0.1,
+                height: screenWidth * 0.1,
                 child: Center(
                   child: Image.asset(
                     'assets/ssa-logo.png',
-                    height: screenWidth * 0.08,
+                    height: screenWidth * 0.06,
                     fit: BoxFit.contain,
                     color: Colors.white,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: screenWidth * 0.02),
               Expanded(
                 child: Text(
                   'Travels Virudhunagar',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: screenWidth * 0.042,
+                    fontSize: _getResponsiveFontSize(context,
+                        mobile: 16, tablet: 18, desktop: 20),
                     fontWeight: FontWeight.w700,
                   ),
                   maxLines: 2,
@@ -392,36 +433,30 @@ class UserDrawer extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenHeight * 0.015),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: screenWidth * 0.18,
-                height: screenWidth * 0.18,
+                width: screenWidth * 0.15,
+                height: screenWidth * 0.15,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
-                  border: Border.all(color: Colors.white, width: 2.5),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 8,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
                 child: Center(
                   child: Text(
                     'G',
                     style: TextStyle(
-                      fontSize: screenWidth * 0.07,
+                      fontSize: screenWidth * 0.06,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF00B14F),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: screenWidth * 0.03),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,28 +464,30 @@ class UserDrawer extends StatelessWidget {
                     Text(
                       'Hello Guest!',
                       style: TextStyle(
-                        fontSize: screenWidth * 0.035,
+                        fontSize: _getResponsiveFontSize(context,
+                            mobile: 12, tablet: 13, desktop: 14),
                         color: Colors.white70,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: screenHeight * 0.005),
                     Text(
                       'Welcome to SSA Travels',
                       style: TextStyle(
-                        fontSize: screenWidth * 0.045,
+                        fontSize: _getResponsiveFontSize(context,
+                            mobile: 16, tablet: 17, desktop: 18),
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        height: 1.1,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: screenHeight * 0.005),
                     Text(
                       'Please login to book rides',
                       style: TextStyle(
-                        fontSize: screenWidth * 0.032,
+                        fontSize: _getResponsiveFontSize(context,
+                            mobile: 11, tablet: 12, desktop: 13),
                         color: Colors.white70,
                       ),
                     ),
@@ -459,9 +496,12 @@ class UserDrawer extends StatelessWidget {
               ),
             ],
           ),
+          SizedBox(height: screenHeight * 0.015),
           Container(
-            margin: const EdgeInsets.only(top: 20),
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            padding: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.01,
+              horizontal: screenWidth * 0.03,
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFF008E3C),
               borderRadius: BorderRadius.circular(8),
@@ -471,15 +511,16 @@ class UserDrawer extends StatelessWidget {
                 Icon(
                   Icons.local_taxi_outlined,
                   color: Colors.white70,
-                  size: screenWidth * 0.04,
+                  size: screenWidth * 0.035,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: screenWidth * 0.02),
                 Expanded(
                   child: Text(
                     '24/7 Taxi Service Available',
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: screenWidth * 0.032,
+                      fontSize: _getResponsiveFontSize(context,
+                          mobile: 11, tablet: 12, desktop: 13),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -488,7 +529,8 @@ class UserDrawer extends StatelessWidget {
                   'v1.0.0',
                   style: TextStyle(
                     color: Colors.white60,
-                    fontSize: screenWidth * 0.03,
+                    fontSize: _getResponsiveFontSize(context,
+                        mobile: 10, tablet: 11, desktop: 12),
                   ),
                 ),
               ],
@@ -506,18 +548,16 @@ class UserDrawer extends StatelessWidget {
     String phoneNumber,
     String? photoURL,
   ) {
-    final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-
-    final double avatarSize = screenWidth * 0.18;
+    final double screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
       color: const Color(0xFF00B14F),
       padding: EdgeInsets.only(
-        top: screenHeight * 0.05,
-        bottom: 20,
-        left: 16,
-        right: 16,
+        top: screenHeight * 0.04,
+        bottom: screenHeight * 0.02,
+        left: screenWidth * 0.04,
+        right: screenWidth * 0.04,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -525,24 +565,25 @@ class UserDrawer extends StatelessWidget {
           Row(
             children: [
               SizedBox(
-                width: screenWidth * 0.12,
-                height: screenWidth * 0.12,
+                width: screenWidth * 0.1,
+                height: screenWidth * 0.1,
                 child: Center(
                   child: Image.asset(
                     'assets/ssa-logo.png',
-                    height: screenWidth * 0.08,
+                    height: screenWidth * 0.06,
                     fit: BoxFit.contain,
                     color: Colors.white,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: screenWidth * 0.02),
               Expanded(
                 child: Text(
                   'Travels Virudhunagar',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: screenWidth * 0.042,
+                    fontSize: _getResponsiveFontSize(context,
+                        mobile: 16, tablet: 18, desktop: 20),
                     fontWeight: FontWeight.w700,
                   ),
                   maxLines: 2,
@@ -551,15 +592,12 @@ class UserDrawer extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenHeight * 0.015),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Stack(
-                children: [
-                  _buildUserAvatar(photoURL, avatarSize, fullName),
-                ],
-              ),
-              const SizedBox(width: 16),
+              _buildUserAvatar(context, photoURL, screenWidth * 0.15, fullName),
+              SizedBox(width: screenWidth * 0.03),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -567,39 +605,42 @@ class UserDrawer extends StatelessWidget {
                     Text(
                       'Welcome Back!',
                       style: TextStyle(
-                        fontSize: screenWidth * 0.035,
+                        fontSize: _getResponsiveFontSize(context,
+                            mobile: 12, tablet: 13, desktop: 14),
                         color: Colors.white70,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: screenHeight * 0.005),
                     Text(
                       fullName,
                       style: TextStyle(
-                        fontSize: screenWidth * 0.045,
+                        fontSize: _getResponsiveFontSize(context,
+                            mobile: 16, tablet: 17, desktop: 18),
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        height: 1.1,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: screenHeight * 0.005),
                     Text(
                       email,
                       style: TextStyle(
-                        fontSize: screenWidth * 0.032,
+                        fontSize: _getResponsiveFontSize(context,
+                            mobile: 11, tablet: 12, desktop: 13),
                         color: Colors.white70,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (phoneNumber.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                      SizedBox(height: screenHeight * 0.002),
                       Text(
                         phoneNumber,
                         style: TextStyle(
-                          fontSize: screenWidth * 0.03,
+                          fontSize: _getResponsiveFontSize(context,
+                              mobile: 10, tablet: 11, desktop: 12),
                           color: Colors.white60,
                         ),
                       ),
@@ -609,9 +650,12 @@ class UserDrawer extends StatelessWidget {
               ),
             ],
           ),
+          SizedBox(height: screenHeight * 0.015),
           Container(
-            margin: const EdgeInsets.only(top: 20),
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            padding: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.01,
+              horizontal: screenWidth * 0.03,
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFF008E3C),
               borderRadius: BorderRadius.circular(8),
@@ -621,15 +665,16 @@ class UserDrawer extends StatelessWidget {
                 Icon(
                   Icons.local_taxi_outlined,
                   color: Colors.white70,
-                  size: screenWidth * 0.04,
+                  size: screenWidth * 0.035,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: screenWidth * 0.02),
                 Expanded(
                   child: Text(
                     '24/7 Taxi Service Available',
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: screenWidth * 0.032,
+                      fontSize: _getResponsiveFontSize(context,
+                          mobile: 11, tablet: 12, desktop: 13),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -638,7 +683,8 @@ class UserDrawer extends StatelessWidget {
                   'v1.0.0',
                   style: TextStyle(
                     color: Colors.white60,
-                    fontSize: screenWidth * 0.03,
+                    fontSize: _getResponsiveFontSize(context,
+                        mobile: 10, tablet: 11, desktop: 12),
                   ),
                 ),
               ],
@@ -650,14 +696,15 @@ class UserDrawer extends StatelessWidget {
   }
 
   // ================= AVATAR =================
-  Widget _buildUserAvatar(String? photoURL, double size, String fullName) {
+  Widget _buildUserAvatar(
+      BuildContext context, String? photoURL, double size, String fullName) {
     if (photoURL != null && photoURL.isNotEmpty) {
       return Container(
         width: size,
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2.5),
+          border: Border.all(color: Colors.white, width: 2),
           boxShadow: const [
             BoxShadow(
               color: Colors.black26,
@@ -688,7 +735,7 @@ class UserDrawer extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white,
-        border: Border.all(color: Colors.white, width: 2.5),
+        border: Border.all(color: Colors.white, width: 2),
         boxShadow: const [
           BoxShadow(
             color: Colors.black26,
@@ -710,7 +757,7 @@ class UserDrawer extends StatelessWidget {
     );
   }
 
-  // ================= DRAWER ITEM (UPDATED) =================
+  // ================= DRAWER ITEM =================
   Widget _drawerItem(
     BuildContext context,
     IconData icon,
@@ -721,7 +768,6 @@ class UserDrawer extends StatelessWidget {
     bool isDrawerItem = false,
   }) {
     final bool isSelected = index != null && currentIndex == index;
-    final double screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
       decoration: BoxDecoration(
@@ -740,28 +786,29 @@ class UserDrawer extends StatelessWidget {
           icon,
           color: color ??
               (isSelected ? const Color(0xFF00B14F) : Colors.grey[700]),
-          size: screenWidth * 0.06,
+          size: _getResponsiveFontSize(context,
+              mobile: 20, tablet: 22, desktop: 24),
         ),
         title: Text(
           title,
           style: TextStyle(
-            fontSize: screenWidth * 0.038,
+            fontSize: _getResponsiveFontSize(context,
+                mobile: 14, tablet: 15, desktop: 16),
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             color: color ??
                 (isSelected ? const Color(0xFF00B14F) : Colors.grey[800]),
           ),
+          overflow: TextOverflow.ellipsis,
         ),
         trailing: index != null
             ? Icon(
                 Icons.chevron_right_rounded,
-                size: screenWidth * 0.042,
+                size: _getResponsiveFontSize(context,
+                    mobile: 18, tablet: 20, desktop: 22),
                 color: Colors.grey[400],
               )
             : null,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.05,
-          vertical: screenWidth * 0.02,
-        ),
+        contentPadding: _getResponsivePadding(context),
         onTap: onTap ??
             () {
               if (index != null && isDrawerItem) {
@@ -809,10 +856,15 @@ class UserDrawer extends StatelessWidget {
           );
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Logged out successfully'),
-              backgroundColor: Color(0xFF00B14F),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(
+                'Logged out successfully',
+                style: TextStyle(
+                    fontSize: _getResponsiveFontSize(context,
+                        mobile: 14, tablet: 15, desktop: 16)),
+              ),
+              backgroundColor: const Color(0xFF00B14F),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -820,7 +872,12 @@ class UserDrawer extends StatelessWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Logout failed: $e'),
+              content: Text(
+                'Logout failed: $e',
+                style: TextStyle(
+                    fontSize: _getResponsiveFontSize(context,
+                        mobile: 14, tablet: 15, desktop: 16)),
+              ),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 3),
             ),

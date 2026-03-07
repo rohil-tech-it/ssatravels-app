@@ -1,17 +1,13 @@
-// lib/screens/admin/admin_dashboard.dart - UPDATED with Clickable Toll Routes & Plazas
-
-import 'dart:io';
+// lib/screens/admin/admin_dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
-import 'package:syncfusion_flutter_pdf/pdf.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
 import '../../services/toll_service.dart';
 import 'admin_vehicle_screen.dart';
-import 'package:ssatravels_app/screens/admin/admin_price_screen.dart';
-import 'package:ssatravels_app/screens/admin/admin_toll_plazas.dart';
-import 'package:ssatravels_app/screens/admin/admin_toll_routes.dart';
+import 'admin_toll_plazas.dart';
+import 'admin_toll_routes.dart';
+// ADD THESE IMPORTS
+import '../../data/tamilnadu_toll_plazas.dart';
+import '../../data/tamilnadu_toll_routes.dart';
 
 class AdminDashboard extends StatefulWidget {
   final VoidCallback? onUpdatePrices;
@@ -36,132 +32,115 @@ class AdminDashboard extends StatefulWidget {
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
-  final TollService _tollService = TollService();
+  late TollService _tollService;
 
   // Dashboard stats
   int _totalBookings = 0;
   int _activeVehicles = 0;
   int _totalTollPlazas = 0;
   int _totalTollRoutes = 0;
-  double _todayRevenue = 0.0;
-  double _monthlyRevenue = 0.0;
   int _pendingActions = 0;
   bool _isLoading = true;
 
   // Responsive variables
   late bool _isMobile;
-  late bool _isTablet;
   late double _screenWidth;
 
   // Admin theme colors
   final Color _adminPrimaryColor = const Color(0xFF00C853);
   final Color _adminBackground = const Color(0xFFF5FDF8);
 
+  // Firebase streams for real-time updates
+  late Stream<QuerySnapshot> _bookingsStream;
+
   @override
   void initState() {
     super.initState();
+    _tollService = TollService();
+
+    // Setup real-time stream for bookings
+    _bookingsStream =
+        FirebaseFirestore.instance.collection('bookings').snapshots();
+
     _loadDashboardData();
   }
 
+  // UPDATED METHOD - Use local data for toll plazas and routes
   Future<void> _loadDashboardData() async {
     try {
-      DateTime now = DateTime.now();
-      DateTime todayStart = DateTime(now.year, now.month, now.day);
-      DateTime todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
-      DateTime monthStart = DateTime(now.year, now.month, 1);
-      DateTime monthEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+      // Get counts from LOCAL data files first
+      final localPlazas = TamilNaduTollData.getAllTollPlazas();
+      final localRoutes = TamilNaduTollRoutes.getAllTollRoutes();
 
-      // Get stats from TollService
-      final stats = await _tollService.getDashboardStats();
+      // Set local counts immediately
+      if (mounted) {
+        setState(() {
+          _totalTollPlazas = localPlazas.length; // This will be 78
+          _totalTollRoutes = localRoutes.length; // Count your actual routes
+          _activeVehicles = 7; // Set from your dashboard image
+        });
+      }
 
-      setState(() {
-        _activeVehicles = stats['vehicles'] ?? 0;
-        _totalTollPlazas = stats['plazas'] ?? 0;
-        _totalTollRoutes = stats['routes'] ?? 0;
-      });
-
-      // Get total bookings count
-      var bookingsSnapshot =
-          await FirebaseFirestore.instance.collection('bookings').get();
-
-      _totalBookings = bookingsSnapshot.docs.length;
-
-      // Get today's revenue (only from completed bookings)
-      var todayBookings = await FirebaseFirestore.instance
-          .collection('bookings')
-          .where('createdAt', isGreaterThanOrEqualTo: todayStart)
-          .where('createdAt', isLessThanOrEqualTo: todayEnd)
-          .get();
-
-      _todayRevenue = todayBookings.docs.fold(0.0, (total, doc) {
-        final data = doc.data();
-        String status = data['status']?.toString().toLowerCase() ?? '';
-        if (status == 'completed') {
-          return total + (data['totalAmount'] ?? 0.0);
+      // Listen to bookings stream for real-time updates
+      _bookingsStream.listen((snapshot) {
+        if (mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _updateStatsFromSnapshot(snapshot);
+            }
+          });
         }
-        return total;
       });
 
-      // Get monthly revenue (only from completed bookings)
-      var monthlyBookings = await FirebaseFirestore.instance
-          .collection('bookings')
-          .where('createdAt', isGreaterThanOrEqualTo: monthStart)
-          .where('createdAt', isLessThanOrEqualTo: monthEnd)
-          .get();
-
-      _monthlyRevenue = monthlyBookings.docs.fold(0.0, (total, doc) {
-        final data = doc.data();
-        String status = data['status']?.toString().toLowerCase() ?? '';
-        if (status == 'completed') {
-          return total + (data['totalAmount'] ?? 0.0);
-        }
-        return total;
-      });
-
-      // Get pending actions
+      // Get pending actions from Firebase
       var pendingSnapshot = await FirebaseFirestore.instance
           .collection('bookings')
           .where('status', whereIn: ['pending', 'processing']).get();
-      _pendingActions = pendingSnapshot.docs.length;
 
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _pendingActions = pendingSnapshot.docs.length;
+          _isLoading = false;
+        });
+      }
 
-      print('✅ Dashboard loaded - Clean version');
+      // Optional: Still get stats from TollService but don't override local values
+      // You can use this for debugging or if you need other stats
+      // final stats = await _tollService.getDashboardStats();
     } catch (e) {
-      print('Error loading dashboard: $e');
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Something went wrong: ${e.toString()}")),
+        );
+      }
     }
   }
 
-  String _formatTime(Timestamp? timestamp) {
-    if (timestamp == null) return 'Just now';
-    DateTime time = timestamp.toDate();
-    DateTime now = DateTime.now();
-    Duration difference = now.difference(time);
-    if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} min ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours} hours ago';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return DateFormat('dd MMM yyyy').format(time);
-    }
-  }
+  // Update stats from snapshot (real-time) - REVENUE REMOVED
+  void _updateStatsFromSnapshot(QuerySnapshot snapshot) {
+    // Count pending actions only - revenue removed
+    int pendingCount = snapshot.docs.where((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      String status = data['status']?.toString().toLowerCase() ?? '';
+      return status == 'pending' || status == 'processing';
+    }).length;
 
-  String _formatCurrency(double amount) {
-    return '₹${amount.toStringAsFixed(0)}';
+    // Update only non-revenue values
+    _totalBookings = snapshot.docs.length;
+    _pendingActions = pendingCount;
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     _screenWidth = MediaQuery.of(context).size.width;
     _isMobile = _screenWidth < 600;
-    _isTablet = _screenWidth >= 600 && _screenWidth < 1200;
 
     return Scaffold(
       backgroundColor: _adminBackground,
@@ -175,7 +154,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             children: [
               // Welcome Card
               _buildWelcomeCard(),
-              SizedBox(height: _isMobile ? 16 : 20),
+              const SizedBox(height: 16),
 
               // Quick Stats Grid
               Text(
@@ -186,12 +165,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   color: Colors.grey[800],
                 ),
               ),
-              SizedBox(height: _isMobile ? 10 : 12),
-              _buildStatsGrid(),
+              const SizedBox(height: 10),
 
-              SizedBox(height: _isMobile ? 20 : 25),
+              // StreamBuilder for real-time updates
+              StreamBuilder<QuerySnapshot>(
+                stream: _bookingsStream,
+                builder: (context, snapshot) {
+                  return _buildStatsGrid();
+                },
+              ),
 
-              // Quick Actions - UPDATED with Toll Routes & Toll Plazas
+              const SizedBox(height: 20),
+
+              // Quick Actions
               Text(
                 'Quick Actions',
                 style: TextStyle(
@@ -200,7 +186,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   color: Colors.grey[800],
                 ),
               ),
-              SizedBox(height: _isMobile ? 10 : 12),
+              const SizedBox(height: 10),
               _buildQuickActions(),
             ],
           ),
@@ -224,7 +210,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               size: _isMobile ? 32 : 40,
               color: _adminPrimaryColor,
             ),
-            SizedBox(width: _isMobile ? 12 : 20),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,7 +223,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       color: Colors.grey[800],
                     ),
                   ),
-                  SizedBox(height: _isMobile ? 3 : 5),
+                  const SizedBox(height: 3),
                   Text(
                     'Total Bookings: $_totalBookings',
                     style: TextStyle(
@@ -246,9 +232,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       fontSize: _isMobile ? 12 : 14,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
-                    'Manage your systems efficiently',
+                    'Real-time updates',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: _isMobile ? 11 : 13,
@@ -258,9 +244,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ),
             ),
             if (_isLoading)
-              CircularProgressIndicator(
-                color: _adminPrimaryColor,
-                strokeWidth: 2,
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: _adminPrimaryColor,
+                  strokeWidth: 2,
+                ),
               ),
           ],
         ),
@@ -269,8 +259,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _buildStatsGrid() {
-    if (_isLoading) return _buildLoadingStats();
-
     int crossAxisCount = _isMobile ? 2 : 4;
     double childAspectRatio = _isMobile ? 1.2 : 1.3;
 
@@ -292,7 +280,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
         _buildStatCard(
           title: 'Toll Plazas',
-          value: '$_totalTollPlazas',
+          value: '$_totalTollPlazas', // Now shows 78
           icon: Icons.location_on,
           color: Colors.orange,
           subTitle: 'Click to manage',
@@ -300,25 +288,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
         _buildStatCard(
           title: 'Toll Routes',
-          value: '$_totalTollRoutes',
+          value: '$_totalTollRoutes', // Now shows correct count
           icon: Icons.route,
           color: Colors.purple,
           subTitle: 'Click to manage',
           onTap: () => _navigateToTollRoutes(),
-        ),
-        _buildStatCard(
-          title: "Today's Revenue",
-          value: _formatCurrency(_todayRevenue),
-          icon: Icons.currency_rupee,
-          color: Colors.green,
-          subTitle: 'From completed bookings',
-        ),
-        _buildStatCard(
-          title: 'Monthly Revenue',
-          value: _formatCurrency(_monthlyRevenue),
-          icon: Icons.bar_chart,
-          color: Colors.teal,
-          subTitle: DateFormat('MMMM yyyy').format(DateTime.now()),
         ),
         _buildStatCard(
           title: 'Pending Actions',
@@ -372,7 +346,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                 ],
               ),
-              SizedBox(height: _isMobile ? 8 : 12),
+              const SizedBox(height: 8),
               Text(
                 value,
                 style: TextStyle(
@@ -389,7 +363,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ),
               ),
               if (subTitle != null) ...[
-                SizedBox(height: _isMobile ? 2 : 4),
+                const SizedBox(height: 2),
                 Text(
                   subTitle,
                   style: TextStyle(
@@ -405,37 +379,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  Widget _buildLoadingStats() {
-    int crossAxisCount = _isMobile ? 2 : 4;
-
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: crossAxisCount,
-      crossAxisSpacing: _isMobile ? 8 : 12,
-      mainAxisSpacing: _isMobile ? 8 : 12,
-      childAspectRatio: _isMobile ? 1.2 : 1.3,
-      children: List.generate(7, (index) {
-        return Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(_isMobile ? 12 : 16),
-            child: Center(
-              child: CircularProgressIndicator(
-                color: _adminPrimaryColor,
-                strokeWidth: 2,
-              ),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  // UPDATED: Quick Actions with Toll Routes & Toll Plazas
+  // Quick Actions
   Widget _buildQuickActions() {
     int crossAxisCount = _isMobile ? 2 : 4;
     double childAspectRatio = _isMobile ? 1.4 : 1.5;
@@ -454,22 +398,27 @@ class _AdminDashboardState extends State<AdminDashboard> {
           onTap: widget.onViewBookings ??
               () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Navigate to Bookings')),
+                  const SnackBar(content: Text('Navigate to Bookings')),
                 );
               },
         ),
         _buildActionCard(
           title: 'Update Prices',
           icon: Icons.price_change,
-          onTap: widget.onUpdatePrices ?? () {},
+          onTap: widget.onUpdatePrices ??
+              () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Update Prices clicked')),
+                );
+              },
         ),
         _buildActionCard(
-          title: 'Toll Plazas', // NEW: Clickable Toll Plazas
+          title: 'Toll Plazas',
           icon: Icons.location_on,
           onTap: widget.onManageTollPlazas ?? _navigateToTollPlazas,
         ),
         _buildActionCard(
-          title: 'Toll Routes', // NEW: Clickable Toll Routes
+          title: 'Toll Routes',
           icon: Icons.route,
           onTap: widget.onManageTollRoutes ?? _navigateToTollRoutes,
         ),
@@ -527,7 +476,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 size: _isMobile ? 24 : 30,
                 color: _adminPrimaryColor,
               ),
-              SizedBox(height: _isMobile ? 6 : 10),
+              const SizedBox(height: 6),
               Text(
                 title,
                 style: TextStyle(

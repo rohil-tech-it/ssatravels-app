@@ -16,9 +16,8 @@ Future<void> main() async {
   // Load environment variables
   try {
     await dotenv.load(fileName: ".env");
-    print('✅ .env loaded successfully');
   } catch (e) {
-    print('❌ Error loading .env: $e');
+    return;
   }
 
   // ✅ FIX: Check if Firebase is already initialized
@@ -27,12 +26,11 @@ Future<void> main() async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-      print('✅ Firebase initialized successfully');
     } else {
-      print('✅ Firebase already initialized');
+      return;
     }
   } catch (e) {
-    print('❌ Firebase initialization error: $e');
+    return; 
   }
 
   runApp(const MyApp());

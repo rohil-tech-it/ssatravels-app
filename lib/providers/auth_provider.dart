@@ -357,9 +357,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // ============================================
-  // PASSWORD RESET METHOD - UPDATED WITH BETTER FEEDBACK
-  // ============================================
   Future<bool> sendPasswordResetEmail({
     required String phoneNumber,
   }) async {
@@ -393,21 +390,16 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      // 2. Get user's REAL EMAIL from Firestore (for display)
-      final userData = userQuery.docs.first.data();
-      String? realEmail = userData['email'];
-
-      // 3. Get phone-email for Firebase Auth
+      // 2. Get phone-email for Firebase Auth
       String phoneEmail = '$cleanPhone@ssatravels.com';
 
-      // 4. Send password reset to phone-email
+      // 3. Send password reset to phone-email
       await _auth.sendPasswordResetEmail(email: phoneEmail);
 
       _isLoading = false;
       _error = null;
       notifyListeners();
 
-      // Return true with real email for display in UI
       return true;
     } on FirebaseAuthException catch (e) {
       _error = _getPasswordResetErrorMessage(e.code);

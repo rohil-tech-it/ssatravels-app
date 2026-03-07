@@ -16,7 +16,6 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      print('Sign in error: $e');
       return null;
     }
   }
@@ -30,7 +29,6 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      print('Registration error: $e');
       return null;
     }
   }
@@ -40,8 +38,8 @@ class AuthService {
     try {
       await _auth.signOut();
     } catch (e) {
-      print('Sign out error: $e');
-    }
+      return;
+      }
   }
 
   // Stream of user changes

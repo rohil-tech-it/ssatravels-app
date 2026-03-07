@@ -4,213 +4,164 @@ import '../config/admin_config.dart';
 
 class FirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // ========== COLLECTION REFERENCES ==========
-  static CollectionReference get rateCard =>
-      FirebaseFirestore.instance.collection('rateCard');
+  static CollectionReference get vehicles =>
+      FirebaseFirestore.instance.collection('vehicles');
+  static CollectionReference get vehicleModels =>
+      FirebaseFirestore.instance.collection('vehicleModels');
   static CollectionReference get tollDatabase =>
       FirebaseFirestore.instance.collection('tollDatabase');
   static CollectionReference get cities =>
       FirebaseFirestore.instance.collection('cities');
   static CollectionReference get routeDistances =>
       FirebaseFirestore.instance.collection('routeDistances');
-  static CollectionReference get vehicleModels =>
-      FirebaseFirestore.instance.collection('vehicleModels');
+  static CollectionReference get bookings =>
+      FirebaseFirestore.instance.collection('bookings');
+  static CollectionReference get users =>
+      FirebaseFirestore.instance.collection('users');
 
   // ========== AUTH METHODS ==========
   Future<void> init() async {
     // Initialize if needed
-    await _initializeDefaultVehicles(); // ADD THIS LINE
+    await _initializeDefaultVehicles();
   }
 
-  // ========== NEW: INITIALIZE DEFAULT 8 VEHICLES ==========
+  // ========== NEW: INITIALIZE DEFAULT 8 VEHICLES IN VEHICLES COLLECTION ==========
   Future<void> _initializeDefaultVehicles() async {
     try {
       // Check if vehicles already exist
-      final snapshot = await rateCard.get();
+      final snapshot = await vehicles.get();
 
       // If less than 8 vehicles exist, create default 8 vehicles
       if (snapshot.docs.length < 8) {
-        // Delete existing vehicles first to avoid duplicates
-        for (var doc in snapshot.docs) {
-          await rateCard.doc(doc.id).delete();
-        }
-
-        // COMPLETE LIST OF 8 VEHICLES
+        // COMPLETE LIST OF 8 VEHICLES for vehicles collection
         final List<Map<String, dynamic>> defaultVehicles = [
           {
-            'vehicleName': 'Hatchback',
-            'displayName': 'Hatchback',
-            'seats': 5,
+            // Document ID: hatchback
             'vehicleType': 'hatchback',
-            'below200': {
-              'hourlyRate': 100.0,
-              'perKm': 9.0,
-              'driverFood': 100.0,
-              'nightHalt': 100.0,
-              'minHours': 8,
-            },
-            'above200': {
-              'perKm': 10.0,
-              'driverAllowance': 300.0,
-              'driverFood': 100.0,
-              'nightHalt': 100.0,
-            },
+            'displayName': 'Hatchback',
+            'model': 'Swift/Tiago',
+            'seatingCapacity': 5,
+            'baseRate': 9.0,
+            'driverFood': 100.0,
+            'nightHalt': 100.0,
+            'minHours': 8,
+            'extraHourRate': 100.0,
+            'driverAllowance': 300.0,
+            'above200Rate': 10.0,
             'isActive': true,
             'createdAt': FieldValue.serverTimestamp(),
           },
           {
-            'vehicleName': 'Sedan',
-            'displayName': 'Sedan',
-            'seats': 5,
+            // Document ID: sedan
             'vehicleType': 'sedan',
-            'below200': {
-              'hourlyRate': 150.0,
-              'perKm': 9.0,
-              'driverFood': 100.0,
-              'nightHalt': 100.0,
-              'minHours': 8,
-            },
-            'above200': {
-              'perKm': 11.0,
-              'driverAllowance': 300.0,
-              'driverFood': 100.0,
-              'nightHalt': 100.0,
-            },
+            'displayName': 'Sedan',
+            'model': 'Honda City',
+            'seatingCapacity': 5,
+            'baseRate': 9.0,
+            'driverFood': 100.0,
+            'nightHalt': 100.0,
+            'minHours': 8,
+            'extraHourRate': 100.0,
+            'driverAllowance': 300.0,
+            'above200Rate': 11.0,
             'isActive': true,
             'createdAt': FieldValue.serverTimestamp(),
           },
           {
-            'vehicleName': 'Innova',
-            'displayName': 'Innova',
-            'seats': 7,
+            // Document ID: innova
             'vehicleType': 'innova',
-            'below200': {
-              'hourlyRate': 240.0,
-              'perKm': 40.0,
-              'driverFood': 0.0,
-              'nightHalt': 100.0,
-              'minHours': 8,
-            },
-            'above200': {
-              'perKm': 15.0,
-              'driverAllowance': 300.0,
-              'driverFood': 100.0,
-              'nightHalt': 100.0,
-            },
+            'displayName': 'Innova',
+            'model': 'Toyota Innova',
+            'seatingCapacity': 7,
+            'baseRate': 40.0,
+            'driverFood': 0.0,
+            'nightHalt': 100.0,
+            'minHours': 8,
+            'extraHourRate': 150.0,
+            'driverAllowance': 300.0,
+            'above200Rate': 15.0,
             'isActive': true,
             'createdAt': FieldValue.serverTimestamp(),
           },
           {
-            'vehicleName': 'Tavera',
-            'displayName': 'Tavera',
-            'seats': 9,
+            // Document ID: tavera
             'vehicleType': 'tavera',
-            'below200': {
-              'hourlyRate': 240.0,
-              'perKm': 90.0,
-              'driverFood': 0.0,
-              'nightHalt': 100.0,
-              'minHours': 8,
-            },
-            'above200': {
-              'perKm': 15.0,
-              'driverAllowance': 300.0,
-              'driverFood': 100.0,
-              'nightHalt': 100.0,
-            },
+            'displayName': 'Tavera',
+            'model': 'Chevrolet Tavera',
+            'seatingCapacity': 9,
+            'baseRate': 90.0,
+            'driverFood': 0.0,
+            'nightHalt': 100.0,
+            'minHours': 8,
+            'extraHourRate': 150.0,
+            'driverAllowance': 300.0,
+            'above200Rate': 15.0,
             'isActive': true,
             'createdAt': FieldValue.serverTimestamp(),
           },
-          // Document ID: ertiga
           {
-            // Basic Info
+            // Document ID: ertiga
             'vehicleType': 'ertiga',
-            'vehicleTypeName': 'Ertiga',
-            'seats': 7,
-
-            // Below 200 KM Rates
-            'below200': {
-              'hourlyRate': 280.0,
-              'perKm': 45.0,
-              'driverFood': 100.0,
-              'nightHalt': 100.0,
-              'minHours': 8,
-            },
-
-            // Above 200 KM Rates
-            'above200': {
-              'perKm': 18.0,
-              'driverAllowance': 350.0,
-              'driverFood': 100.0,
-              'nightHalt': 100.0,
-            },
-
-            // Metadata
+            'displayName': 'Ertiga',
+            'model': 'Maruti Ertiga',
+            'seatingCapacity': 7,
+            'baseRate': 45.0,
+            'driverFood': 100.0,
+            'nightHalt': 100.0,
+            'minHours': 8,
+            'extraHourRate': 150.0,
+            'driverAllowance': 350.0,
+            'above200Rate': 18.0,
             'isActive': true,
             'createdAt': FieldValue.serverTimestamp(),
           },
           {
-            'vehicleName': 'Tempo Traveller',
-            'displayName': 'Tempo Traveller',
-            'seats': 14,
+            // Document ID: tempo
             'vehicleType': 'tempo',
-            'below200': {
-              'hourlyRate': 320.0,
-              'perKm': 50.0,
-              'driverFood': 100.0,
-              'nightHalt': 150.0,
-              'minHours': 8,
-            },
-            'above200': {
-              'perKm': 20.0,
-              'driverAllowance': 400.0,
-              'driverFood': 100.0,
-              'nightHalt': 150.0,
-            },
+            'displayName': 'Tempo Traveller',
+            'model': 'Tempo Traveller',
+            'seatingCapacity': 14,
+            'baseRate': 50.0,
+            'driverFood': 100.0,
+            'nightHalt': 150.0,
+            'minHours': 8,
+            'extraHourRate': 200.0,
+            'driverAllowance': 400.0,
+            'above200Rate': 20.0,
             'isActive': true,
             'createdAt': FieldValue.serverTimestamp(),
           },
           {
-            'vehicleName': 'Tourist Van',
-            'displayName': 'Tourist Van',
-            'seats': 18,
+            // Document ID: tourist_van
             'vehicleType': 'tourist_van',
-            'below200': {
-              'hourlyRate': 380.0,
-              'perKm': 55.0,
-              'driverFood': 100.0,
-              'nightHalt': 150.0,
-              'minHours': 8,
-            },
-            'above200': {
-              'perKm': 22.0,
-              'driverAllowance': 450.0,
-              'driverFood': 100.0,
-              'nightHalt': 150.0,
-            },
+            'displayName': 'Tourist Van',
+            'model': 'Tourist Van',
+            'seatingCapacity': 18,
+            'baseRate': 55.0,
+            'driverFood': 100.0,
+            'nightHalt': 150.0,
+            'minHours': 8,
+            'extraHourRate': 200.0,
+            'driverAllowance': 450.0,
+            'above200Rate': 22.0,
             'isActive': true,
             'createdAt': FieldValue.serverTimestamp(),
           },
           {
-            'vehicleName': 'Van 407',
-            'displayName': 'Van 407',
-            'seats': 25,
+            // Document ID: van_407
             'vehicleType': 'van_407',
-            'below200': {
-              'hourlyRate': 450.0,
-              'perKm': 60.0,
-              'driverFood': 150.0,
-              'nightHalt': 200.0,
-              'minHours': 8,
-            },
-            'above200': {
-              'perKm': 25.0,
-              'driverAllowance': 500.0,
-              'driverFood': 150.0,
-              'nightHalt': 200.0,
-            },
+            'displayName': 'Van 407',
+            'model': 'Van 407',
+            'seatingCapacity': 25,
+            'baseRate': 60.0,
+            'driverFood': 150.0,
+            'nightHalt': 200.0,
+            'minHours': 8,
+            'extraHourRate': 250.0,
+            'driverAllowance': 500.0,
+            'above200Rate': 25.0,
             'isActive': true,
             'createdAt': FieldValue.serverTimestamp(),
           },
@@ -218,56 +169,70 @@ class FirebaseService {
 
         // Add all vehicles to Firebase
         for (var vehicle in defaultVehicles) {
-          await rateCard.doc(vehicle['vehicleType']).set(vehicle);
+          final docId = vehicle['vehicleType'];
+          await vehicles.doc(docId).set(vehicle);
         }
       } else {}
 
       // Initialize vehicle models if empty or missing
-      final modelsSnapshot = await vehicleModels.get();
-
-      // Check if hatchback and sedan documents exist
-      final hasHatchback =
-          modelsSnapshot.docs.any((doc) => doc.id == 'hatchback');
-      final hasSedan = modelsSnapshot.docs.any((doc) => doc.id == 'sedan');
-
-      if (!hasHatchback || !hasSedan) {
-        await _initializeVehicleModels();
-      }
-    } catch (_) {
-      // ignored
+      await _initializeVehicleModels();
+    } catch (e) {
+      return;
     }
   }
 
-  // ========== NEW: INITIALIZE VEHICLE MODELS ==========
+  // ========== INITIALIZE VEHICLE MODELS ==========
   Future<void> _initializeVehicleModels() async {
     try {
+      final modelsSnapshot = await vehicleModels.get();
+
       // Hatchback Models
-      await vehicleModels.doc('hatchback').set({
-        'vehicleType': 'Hatchback',
-        'models': [
-          'Tata Tiago',
-          'Swift Dzire, Hyundai Santro',
-          'Tata Zest, Tata Indica',
-          'Toyota Liva',
-        ],
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      if (!modelsSnapshot.docs.any((doc) => doc.id == 'hatchback')) {
+        await vehicleModels.doc('hatchback').set({
+          'vehicleType': 'Hatchback',
+          'models': [
+            'Tata Tiago',
+            'Swift Dzire',
+            'Hyundai Santro',
+            'Tata Zest',
+            'Toyota Liva',
+          ],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
 
       // Sedan Models
-      await vehicleModels.doc('sedan').set({
-        'vehicleType': 'Sedan',
-        'models': [
-          'Swift Dzire',
-          'Toyota Etios',
-          'Tata Zest',
-          'Honda Amaze',
-        ],
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      if (!modelsSnapshot.docs.any((doc) => doc.id == 'sedan')) {
+        await vehicleModels.doc('sedan').set({
+          'vehicleType': 'Sedan',
+          'models': [
+            'Honda City',
+            'Toyota Yaris',
+            'Hyundai Verna',
+            'Swift Dzire',
+            'Toyota Etios',
+            'Tata Zest',
+            'Honda Amaze',
+          ],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      // Innova Models
+      if (!modelsSnapshot.docs.any((doc) => doc.id == 'innova')) {
+        await vehicleModels.doc('innova').set({
+          'vehicleType': 'Innova',
+          'models': [
+            'Toyota Innova Crysta',
+            'Toyota Innova',
+            'Toyota Innova HyCross',
+          ],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
 
       // Other vehicle types with empty models (admin can add later)
       final otherTypes = [
-        'innova',
         'tavera',
         'ertiga',
         'tempo',
@@ -275,40 +240,60 @@ class FirebaseService {
         'van_407'
       ];
       for (var type in otherTypes) {
-        await vehicleModels.doc(type).set({
-          'vehicleType': type.replaceAll('_', ' ').toUpperCase(),
-          'models': [],
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
+        if (!modelsSnapshot.docs.any((doc) => doc.id == type)) {
+          await vehicleModels.doc(type).set({
+            'vehicleType': type.replaceAll('_', ' ').toUpperCase(),
+            'models': [],
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
       }
-    } catch (_) {
-      // ignored
+    } catch (e) {
+      return;
     }
   }
 
-  // ========== NEW: GET ACTIVE VEHICLES ONLY ==========
+  // ========== GET ACTIVE VEHICLES FROM VEHICLES COLLECTION ==========
   static Future<List<Map<String, dynamic>>> getActiveVehicles() async {
     try {
-      final snapshot = await rateCard.where('isActive', isEqualTo: true).get();
+      final snapshot = await vehicles.where('isActive', isEqualTo: true).get();
 
-      List<Map<String, dynamic>> vehicles = [];
+      List<Map<String, dynamic>> vehiclesList = [];
       for (var doc in snapshot.docs) {
-        vehicles.add({
+        final data = doc.data() as Map<String, dynamic>;
+        vehiclesList.add({
           'id': doc.id,
-          ...doc.data() as Map<String, dynamic>,
+          ...data,
         });
       }
 
-      // Sort by vehicle type or seats
-      vehicles.sort((a, b) => a['seats'].compareTo(b['seats']));
+      // Sort by seating capacity
+      vehiclesList.sort((a, b) =>
+          (a['seatingCapacity'] ?? 0).compareTo(b['seatingCapacity'] ?? 0));
 
-      return vehicles;
+      return vehiclesList;
     } catch (e) {
       return [];
     }
   }
 
-  // ========== NEW: GET VEHICLE MODELS ==========
+  // ========== GET VEHICLE BY ID ==========
+  static Future<Map<String, dynamic>?> getVehicleById(String vehicleId) async {
+    try {
+      final doc = await vehicles.doc(vehicleId.toLowerCase()).get();
+      if (doc.exists) {
+        return {
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        };
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ========== GET VEHICLE MODELS ==========
   static Future<List<String>> getVehicleModels(String vehicleType) async {
     try {
       final doc = await vehicleModels.doc(vehicleType.toLowerCase()).get();
@@ -323,7 +308,7 @@ class FirebaseService {
     }
   }
 
-  // ========== NEW: ADD VEHICLE MODEL (Admin) ==========
+  // ========== ADD VEHICLE MODEL (Admin) ==========
   static Future<void> addVehicleModel(String vehicleType, String model) async {
     try {
       final docRef = vehicleModels.doc(vehicleType.toLowerCase());
@@ -348,28 +333,54 @@ class FirebaseService {
         });
       }
     } catch (e) {
-      throw Exception('Failed to add vehicle model');
+      throw Exception('Failed to add vehicle model: $e');
     }
   }
 
-  // ========== MODIFIED: GET ALL RATE CARDS (ACTIVE ONLY) ==========
+  // ========== GET ALL RATE CARDS (FROM VEHICLES COLLECTION) ==========
   static Future<Map<String, dynamic>> getAllRateCards() async {
     try {
-      final snapshot = await rateCard.where('isActive', isEqualTo: true).get();
+      final snapshot = await vehicles.where('isActive', isEqualTo: true).get();
 
-      Map<String, dynamic> activeRates = {};
+      Map<String, dynamic> rateCards = {};
 
       for (var doc in snapshot.docs) {
-        activeRates[doc.id] = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
+
+        // Convert vehicle document to rate card format
+        rateCards[doc.id] = {
+          'seats': data['seatingCapacity'] ?? 4,
+          'below200': {
+            'perKm': data['baseRate'] ?? 9.0,
+            'driverFood': data['driverFood'] ?? 100.0,
+            'nightHalt': data['nightHalt'] ?? 100.0,
+            'minHours': data['minHours'] ?? 8,
+            'extraHourRate': data['extraHourRate'] ?? 100.0,
+          },
+          'above200': {
+            'perKm': data['above200Rate'] ?? (data['baseRate'] ?? 10.0) * 1.1,
+            'driverAllowance': data['driverAllowance'] ?? 300.0,
+            'driverFood': data['driverFood'] ?? 100.0,
+            'nightHalt': data['nightHalt'] ?? 100.0,
+            'minHours': data['minHours'] ?? 12,
+            'extraHourRate': data['extraHourRate'] ?? 150.0,
+          },
+        };
       }
 
-      return activeRates;
+      return rateCards;
     } catch (e) {
       return {};
     }
   }
 
-  // ========== MODIFIED: ADD NEW VEHICLE TYPE ==========
+  // ========== GET ALL RATE CARDS LEGACY (BACKWARD COMPATIBILITY) ==========
+  static Future<Map<String, dynamic>> getAllRateCardsLegacy() async {
+    // Just call the same method - no separate rateCard collection needed
+    return getAllRateCards();
+  }
+
+  // ========== ADD NEW VEHICLE TYPE ==========
   static Future<void> addNewVehicleType(
     String vehicleName,
     int seats,
@@ -379,13 +390,27 @@ class FirebaseService {
     try {
       final vehicleType = vehicleName.toLowerCase().replaceAll(' ', '_');
 
-      await rateCard.doc(vehicleType).set({
-        'vehicleName': vehicleName,
-        'displayName': vehicleName,
-        'seats': seats,
+      // Extract values from below200 and above200 maps
+      final baseRate = below200['perKm'] ?? 9.0;
+      final above200Rate = above200['perKm'] ?? baseRate * 1.1;
+      final driverFood = below200['driverFood'] ?? 100.0;
+      final nightHalt = below200['nightHalt'] ?? 100.0;
+      final minHours = below200['minHours'] ?? 8;
+      final extraHourRate = below200['extraHourRate'] ?? 100.0;
+      final driverAllowance = above200['driverAllowance'] ?? 300.0;
+
+      await vehicles.doc(vehicleType).set({
         'vehicleType': vehicleType,
-        'below200': below200,
-        'above200': above200,
+        'displayName': vehicleName,
+        'model': '',
+        'seatingCapacity': seats,
+        'baseRate': baseRate,
+        'above200Rate': above200Rate,
+        'driverFood': driverFood,
+        'nightHalt': nightHalt,
+        'minHours': minHours,
+        'extraHourRate': extraHourRate,
+        'driverAllowance': driverAllowance,
         'isActive': true,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -399,50 +424,110 @@ class FirebaseService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      throw Exception('Failed to add vehicle type');
+      throw Exception('Failed to add vehicle type: $e');
     }
   }
 
-  // ========== MODIFIED: GET SPECIFIC RATE ==========
-  static Future<Map<String, dynamic>?> getRateCard(String vehicleType) async {
+  // ========== UPDATE VEHICLE RATES ==========
+  static Future<void> updateVehicleRates(
+    String vehicleType,
+    Map<String, dynamic> newRates,
+  ) async {
     try {
-      final doc = await rateCard
-          .where('vehicleType', isEqualTo: vehicleType.toLowerCase())
-          .where('isActive', isEqualTo: true)
-          .get();
+      final docRef = vehicles.doc(vehicleType.toLowerCase());
+      final doc = await docRef.get();
 
-      if (doc.docs.isNotEmpty) {
-        return doc.docs.first.data() as Map<String, dynamic>;
+      if (!doc.exists) {
+        throw Exception('Vehicle not found');
       }
-      return null;
+
+      // Extract rate data from the nested structure
+      final below200 = newRates['below200'] as Map<String, dynamic>?;
+      final above200 = newRates['above200'] as Map<String, dynamic>?;
+      final seats = newRates['seats'];
+
+      Map<String, dynamic> updateData = {
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (seats != null) {
+        updateData['seatingCapacity'] = seats;
+      }
+
+      if (below200 != null) {
+        if (below200.containsKey('perKm')) {
+          updateData['baseRate'] = below200['perKm'];
+        }
+        if (below200.containsKey('driverFood')) {
+          updateData['driverFood'] = below200['driverFood'];
+        }
+        if (below200.containsKey('nightHalt')) {
+          updateData['nightHalt'] = below200['nightHalt'];
+        }
+        if (below200.containsKey('minHours')) {
+          updateData['minHours'] = below200['minHours'];
+        }
+        if (below200.containsKey('extraHourRate')) {
+          updateData['extraHourRate'] = below200['extraHourRate'];
+        }
+      }
+
+      if (above200 != null) {
+        if (above200.containsKey('perKm')) {
+          updateData['above200Rate'] = above200['perKm'];
+        }
+        if (above200.containsKey('driverAllowance')) {
+          updateData['driverAllowance'] = above200['driverAllowance'];
+        }
+      }
+
+      await docRef.update(updateData);
     } catch (e) {
-      return null;
+      throw Exception('Failed to update vehicle rates: $e');
     }
   }
 
-  // ========== MODIFIED: UPDATE VEHICLE ACTIVITY ==========
+  // ========== UPDATE RATE CARD (ALIAS FOR updateVehicleRates) ==========
+  static Future<void> updateRateCard(
+    String vehicleType,
+    Map<String, dynamic> newRates,
+  ) async {
+    return updateVehicleRates(vehicleType, newRates);
+  }
+
+  // ========== UPDATE VEHICLE ACTIVITY ==========
   static Future<void> updateVehicleActivity(
       String vehicleType, bool isActive) async {
     try {
-      await rateCard.doc(vehicleType.toLowerCase()).update({
+      await vehicles.doc(vehicleType.toLowerCase()).update({
         'isActive': isActive,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      throw Exception('Failed to update vehicle activity');
+      throw Exception('Failed to update vehicle activity: $e');
     }
   }
 
-  // ========== NEW: GET VEHICLE SEATING CAPACITIES ==========
+  // ========== DELETE VEHICLE TYPE ==========
+  static Future<void> deleteVehicleType(String vehicleType) async {
+    try {
+      await vehicles.doc(vehicleType.toLowerCase()).delete();
+      await vehicleModels.doc(vehicleType.toLowerCase()).delete();
+    } catch (e) {
+      throw Exception('Failed to delete vehicle type: $e');
+    }
+  }
+
+  // ========== GET VEHICLE SEATING CAPACITIES ==========
   static Future<Map<String, int>> getVehicleSeating() async {
     try {
-      final snapshot = await rateCard.where('isActive', isEqualTo: true).get();
+      final snapshot = await vehicles.where('isActive', isEqualTo: true).get();
 
       Map<String, int> seating = {};
 
       for (var doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
-        seating[data['vehicleName']] = data['seats'];
+        seating[data['displayName'] ?? doc.id] = data['seatingCapacity'] ?? 4;
       }
 
       return seating;
@@ -451,7 +536,271 @@ class FirebaseService {
     }
   }
 
-  // ========== AUTH & USER METHODS ==========
+  // ========== GET SPECIFIC RATE CARD ==========
+  static Future<Map<String, dynamic>?> getRateCard(String vehicleType) async {
+    try {
+      final doc = await vehicles.doc(vehicleType.toLowerCase()).get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        // Convert to rate card format
+        return {
+          'seats': data['seatingCapacity'] ?? 4,
+          'below200': {
+            'perKm': data['baseRate'] ?? 9.0,
+            'driverFood': data['driverFood'] ?? 100.0,
+            'nightHalt': data['nightHalt'] ?? 100.0,
+            'minHours': data['minHours'] ?? 8,
+            'extraHourRate': data['extraHourRate'] ?? 100.0,
+          },
+          'above200': {
+            'perKm': data['above200Rate'] ?? (data['baseRate'] ?? 10.0) * 1.1,
+            'driverAllowance': data['driverAllowance'] ?? 300.0,
+            'driverFood': data['driverFood'] ?? 100.0,
+            'nightHalt': data['nightHalt'] ?? 100.0,
+            'minHours': data['minHours'] ?? 12,
+            'extraHourRate': data['extraHourRate'] ?? 150.0,
+          },
+        };
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ========== TOLL DATABASE METHODS ==========
+  static Future<Map<String, dynamic>> getTollDatabase() async {
+    try {
+      final snapshot = await tollDatabase.get();
+      Map<String, dynamic> tolls = {};
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        tolls[doc.id] = data;
+      }
+
+      return tolls;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getTollForRoute(String route) async {
+    try {
+      final doc = await tollDatabase.doc(route).get();
+      return doc.data() as Map<String, dynamic>?;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<void> updateToll(
+      String route, Map<String, dynamic> tollData) async {
+    try {
+      String formattedRoute =
+          route.replaceAll(' ', '_').replaceAll('-', '_').toLowerCase();
+
+      await tollDatabase.doc(formattedRoute).set({
+        ...tollData,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to update toll: $e');
+    }
+  }
+
+  // ========== ROUTE DISTANCES METHODS ==========
+  static Future<Map<String, Map<String, double>>> getRouteDistances() async {
+    try {
+      final snapshot = await routeDistances.get();
+      Map<String, Map<String, double>> routes = {};
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        Map<String, double> distances = {};
+
+        data.forEach((key, value) {
+          if (key != 'createdAt' && key != 'updatedAt' && value != null) {
+            try {
+              distances[key] = (value as num).toDouble();
+            } catch (_) {
+              // ignored
+            }
+          }
+        });
+
+        routes[doc.id] = distances;
+      }
+
+      return routes;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  static Future<double?> getDistanceBetweenCities(
+      String fromCity, String toCity) async {
+    try {
+      final doc = await routeDistances.doc(fromCity).get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>?;
+        final distance = data?[toCity];
+        if (distance != null) {
+          return (distance as num).toDouble();
+        }
+      }
+
+      // Try reverse
+      final reverseDoc = await routeDistances.doc(toCity).get();
+      if (reverseDoc.exists) {
+        final data = reverseDoc.data() as Map<String, dynamic>?;
+        final distance = data?[fromCity];
+        if (distance != null) {
+          return (distance as num).toDouble();
+        }
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<void> updateRouteDistance(
+    String fromCity,
+    String toCity,
+    double distance,
+  ) async {
+    try {
+      await routeDistances.doc(fromCity).set({
+        toCity: distance,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      // Also add reverse route
+      await routeDistances.doc(toCity).set({
+        fromCity: distance,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      throw Exception('Failed to update route distance: $e');
+    }
+  }
+
+  // ========== CITIES METHODS ==========
+  static Future<Map<String, Map<String, dynamic>>> getCities() async {
+    try {
+      final snapshot = await cities.get();
+      Map<String, Map<String, dynamic>> cityMap = {};
+
+      for (var doc in snapshot.docs) {
+        cityMap[doc.id] = doc.data() as Map<String, dynamic>;
+      }
+
+      return cityMap;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getCityCoordinates(
+      String cityName) async {
+    try {
+      final doc = await cities.doc(cityName).get();
+      return doc.data() as Map<String, dynamic>?;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<void> updateCity(
+      String cityName, double lat, double lng) async {
+    try {
+      await cities.doc(cityName).set({
+        'lat': lat,
+        'lng': lng,
+        'name': cityName,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to update city: $e');
+    }
+  }
+
+  // ========== BOOKING METHODS ==========
+  static Future<void> saveBooking(Map<String, dynamic> bookingData) async {
+    try {
+      await bookings.add({
+        ...bookingData,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'status': 'pending',
+      });
+    } catch (e) {
+      throw Exception('Failed to save booking: $e');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getUserBookings(
+      String phoneNumber) async {
+    try {
+      final snapshot = await bookings
+          .where('userPhone', isEqualTo: phoneNumber)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      List<Map<String, dynamic>> userBookings = [];
+      for (var doc in snapshot.docs) {
+        userBookings.add({
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        });
+      }
+
+      return userBookings;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllBookings() async {
+    try {
+      final snapshot =
+          await bookings.orderBy('createdAt', descending: true).get();
+
+      List<Map<String, dynamic>> allBookings = [];
+      for (var doc in snapshot.docs) {
+        allBookings.add({
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        });
+      }
+
+      return allBookings;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<void> updateBookingStatus(
+    String bookingId,
+    String status,
+    String? driverId,
+  ) async {
+    try {
+      await bookings.doc(bookingId).update({
+        'status': status,
+        if (driverId != null) 'driverId': driverId,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to update booking status: $e');
+    }
+  }
+
+  // ========== USER METHODS ==========
   Future<bool> isLoggedIn() async {
     return _auth.currentUser != null;
   }
@@ -464,11 +813,10 @@ class FirebaseService {
     if (phoneNumber == null) return false;
 
     try {
-      final userDoc =
-          await _firestore.collection('users').doc(phoneNumber).get();
+      final userDoc = await users.doc(phoneNumber).get();
 
       if (userDoc.exists) {
-        final userData = userDoc.data();
+        final userData = userDoc.data() as Map<String, dynamic>?;
         return userData?['isAdmin'] == true;
       }
       return false;
@@ -483,9 +831,8 @@ class FirebaseService {
 
   Future<Map<String, dynamic>?> getUserData(String phoneNumber) async {
     try {
-      final doc = await _firestore.collection('users').doc(phoneNumber).get();
-
-      return doc.data();
+      final doc = await users.doc(phoneNumber).get();
+      return doc.data() as Map<String, dynamic>?;
     } catch (e) {
       return null;
     }
@@ -501,8 +848,7 @@ class FirebaseService {
         formattedPhone = '+91$formattedPhone';
       }
 
-      final userDoc =
-          await _firestore.collection('users').doc(formattedPhone).get();
+      final userDoc = await users.doc(formattedPhone).get();
 
       if (!userDoc.exists) {
         return {
@@ -511,7 +857,7 @@ class FirebaseService {
         };
       }
 
-      final userData = userDoc.data()!;
+      final userData = userDoc.data() as Map<String, dynamic>;
       final storedPassword = userData['password'] as String?;
       final isAdmin = userData['isAdmin'] == true;
 
@@ -553,8 +899,7 @@ class FirebaseService {
         formattedPhone = '+91$formattedPhone';
       }
 
-      final existingDoc =
-          await _firestore.collection('users').doc(formattedPhone).get();
+      final existingDoc = await users.doc(formattedPhone).get();
 
       if (existingDoc.exists) {
         throw Exception('User already exists with this phone number');
@@ -575,7 +920,7 @@ class FirebaseService {
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      await _firestore.collection('users').doc(formattedPhone).set(userData);
+      await users.doc(formattedPhone).set(userData);
 
       try {
         await _auth.signInAnonymously();
@@ -591,344 +936,63 @@ class FirebaseService {
     await _auth.signOut();
   }
 
-  // ========== BOOKING DATA METHODS ==========
-
-  // 1. GET ALL RATE CARDS (LEGACY - INCLUDES INACTIVE)
-  static Future<Map<String, dynamic>> getAllRateCardsLegacy() async {
-    try {
-      final snapshot = await rateCard.get();
-      Map<String, dynamic> allRates = {};
-
-      for (var doc in snapshot.docs) {
-        allRates[doc.id] = doc.data();
-      }
-
-      return allRates;
-    } catch (e) {
-      return {};
-    }
+  // ========== STREAMS FOR REAL-TIME UPDATES ==========
+  static Stream<DocumentSnapshot> getVehicleStream(String vehicleType) {
+    return vehicles.doc(vehicleType.toLowerCase()).snapshots();
   }
 
-  // 2. GET TOLL DATABASE (FIXED RETURN TYPE)
-  static Future<Map<String, dynamic>> getTollDatabase() async {
-    try {
-      final snapshot = await tollDatabase.get();
-      Map<String, dynamic> tolls = {};
-
-      for (var doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        tolls[doc.id] = data;
-      }
-
-      return tolls;
-    } catch (e) {
-      return {};
-    }
+  static Stream<QuerySnapshot> getAllVehiclesStream() {
+    return vehicles.snapshots();
   }
 
-  // 3. GET ROUTE DISTANCES - ADDED MISSING METHOD
-  static Future<Map<String, Map<String, double>>> getRouteDistances() async {
-    try {
-      final snapshot = await routeDistances.get();
-      Map<String, Map<String, double>> routes = {};
-
-      for (var doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        Map<String, double> distances = {};
-
-        data.forEach((key, value) {
-          if (key != 'createdAt' && key != 'updatedAt' && value != null) {
-            try {
-              distances[key] = (value as num).toDouble();
-            } catch (_) {
-              // ignored
-            }
-          }
-        });
-
-        routes[doc.id] = distances;
-      }
-
-      return routes;
-    } catch (e) {
-      return {};
-    }
-  }
-
-  // 4. GET CITIES
-  static Future<Map<String, Map<String, dynamic>>> getCities() async {
-    try {
-      final snapshot = await cities.get();
-      Map<String, Map<String, dynamic>> cityMap = {};
-
-      for (var doc in snapshot.docs) {
-        cityMap[doc.id] = doc.data() as Map<String, dynamic>;
-      }
-
-      return cityMap;
-    } catch (e) {
-      return {};
-    }
-  }
-
-  // 5. UPDATE RATE CARD (Admin Method)
-  static Future<void> updateRateCard(
-    String vehicleType,
-    Map<String, dynamic> newRates,
-  ) async {
-    try {
-      await rateCard
-          .doc(vehicleType.toLowerCase())
-          .set(newRates, SetOptions(merge: true));
-    } catch (e) {
-      throw Exception('Failed to update rate card');
-    }
-  }
-
-  // 6. UPDATE TOLL (Admin Method)
-  static Future<void> updateToll(
-      String route, Map<String, dynamic> tollData) async {
-    try {
-      String formattedRoute =
-          route.replaceAll(' ', '_').replaceAll('-', '_').toLowerCase();
-
-      await tollDatabase.doc(formattedRoute).set({
-        ...tollData,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      throw Exception('Failed to update toll');
-    }
-  }
-
-  // 7. UPDATE CITY (Admin Method)
-  static Future<void> updateCity(
-      String cityName, double lat, double lng) async {
-    try {
-      await cities.doc(cityName).set({
-        'lat': lat,
-        'lng': lng,
-        'name': cityName,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      throw Exception('Failed to update city');
-    }
-  }
-
-  // 8. UPDATE ROUTE DISTANCE (Admin Method)
-  static Future<void> updateRouteDistance(
-    String fromCity,
-    String toCity,
-    double distance,
-  ) async {
-    try {
-      await routeDistances.doc(fromCity).set({
-        toCity: distance,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
-      // Also add reverse route
-      await routeDistances.doc(toCity).set({
-        fromCity: distance,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } catch (e) {
-      throw Exception('Failed to update route distance');
-    }
-  }
-
-  // 9. STREAM FOR REAL-TIME UPDATES
-  static Stream<DocumentSnapshot> getRateCardStream(String vehicleType) {
-    return rateCard.doc(vehicleType.toLowerCase()).snapshots();
-  }
-
-  static Stream<QuerySnapshot> getAllRatesStream() {
-    return rateCard.snapshots();
-  }
-
-  static Stream<QuerySnapshot> getActiveRatesStream() {
-    return rateCard.where('isActive', isEqualTo: true).snapshots();
+  static Stream<QuerySnapshot> getActiveVehiclesStream() {
+    return vehicles.where('isActive', isEqualTo: true).snapshots();
   }
 
   static Stream<DocumentSnapshot> getTollStream(String route) {
     return tollDatabase.doc(route).snapshots();
   }
 
-  // 10. GET TOLL FOR SPECIFIC ROUTE
-  static Future<Map<String, dynamic>?> getTollForRoute(String route) async {
-    try {
-      final doc = await tollDatabase.doc(route).get();
-      return doc.data() as Map<String, dynamic>?;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // 11. GET CITY COORDINATES
-  static Future<Map<String, dynamic>?> getCityCoordinates(
-      String cityName) async {
-    try {
-      final doc = await cities.doc(cityName).get();
-      return doc.data() as Map<String, dynamic>?;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // 12. GET DISTANCE BETWEEN TWO CITIES
-  static Future<double?> getDistanceBetweenCities(
-      String fromCity, String toCity) async {
-    try {
-      final doc = await routeDistances.doc(fromCity).get();
-      if (doc.exists) {
-        final data = doc.data() as Map<String, dynamic>?;
-        final distance = data?[toCity];
-        if (distance != null) {
-          return (distance as num).toDouble();
-        }
-      }
-
-      // Try reverse
-      final reverseDoc = await routeDistances.doc(toCity).get();
-      if (reverseDoc.exists) {
-        final data = reverseDoc.data() as Map<String, dynamic>?;
-        final distance = data?[fromCity];
-        if (distance != null) {
-          return (distance as num).toDouble();
-        }
-      }
-
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // 13. ADD NEW VEHICLE TYPE (Admin - LEGACY VERSION)
-  static Future<void> addNewVehicleTypeLegacy(
-      String vehicleType, Map<String, dynamic> defaultRates) async {
-    try {
-      await rateCard.doc(vehicleType.toLowerCase()).set({
-        ...defaultRates,
-        'isActive': true,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      throw Exception('Failed to add vehicle type');
-    }
-  }
-
-  // 14. DELETE VEHICLE TYPE (Admin)
-  static Future<void> deleteVehicleType(String vehicleType) async {
-    try {
-      await rateCard.doc(vehicleType.toLowerCase()).delete();
-      await vehicleModels.doc(vehicleType.toLowerCase()).delete();
-    } catch (e) {
-      throw Exception('Failed to delete vehicle type');
-    }
-  }
-
-  // 15. GET ALL ADMIN DATA AT ONCE (For Dashboard)
+  // ========== ADMIN DASHBOARD DATA ==========
   static Future<Map<String, dynamic>> getAllAdminData() async {
     try {
-      final rateCards = await getAllRateCardsLegacy();
+      final vehiclesList = await getActiveVehicles();
+      final rateCards = await getAllRateCards();
       final tolls = await getTollDatabase();
       final routes = await getRouteDistances();
       final citiesData = await getCities();
-      final activeVehicles = await getActiveVehicles();
+      final allBookings = await getAllBookings();
 
       return {
+        'vehicles': vehiclesList,
         'rateCards': rateCards,
         'tolls': tolls,
         'routes': routes,
         'cities': citiesData,
-        'activeVehicles': activeVehicles,
+        'bookings': allBookings,
       };
     } catch (e) {
       return {};
     }
   }
 
-  // 16. SAVE BOOKING TO FIRESTORE
-  static Future<void> saveBooking(Map<String, dynamic> bookingData) async {
+  // ========== BACKWARD COMPATIBILITY METHODS ==========
+  // These methods are kept for compatibility with existing code
+
+  static CollectionReference get rateCard =>
+      vehicles; // Alias for backward compatibility
+
+  static Future<void> addNewVehicleTypeLegacy(
+      String vehicleType, Map<String, dynamic> defaultRates) async {
     try {
-      final bookingsRef = FirebaseFirestore.instance.collection('bookings');
-      await bookingsRef.add({
-        ...bookingData,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-        'status': 'pending',
-      });
+      final vehicleName = vehicleType.replaceAll('_', ' ').toUpperCase();
+      final seats = defaultRates['seats'] ?? 4;
+      final below200 = defaultRates['below200'] ?? {};
+      final above200 = defaultRates['above200'] ?? {};
+
+      await addNewVehicleType(vehicleName, seats, below200, above200);
     } catch (e) {
-      throw Exception('Failed to save booking');
-    }
-  }
-
-  // 17. GET USER BOOKINGS
-  static Future<List<Map<String, dynamic>>> getUserBookings(
-      String phoneNumber) async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('bookings')
-          .where('userPhone', isEqualTo: phoneNumber)
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      List<Map<String, dynamic>> bookings = [];
-      for (var doc in snapshot.docs) {
-        bookings.add({
-          'id': doc.id,
-          ...doc.data(),
-        });
-      }
-
-      return bookings;
-    } catch (e) {
-      return [];
-    }
-  }
-
-  // 18. GET ALL BOOKINGS (Admin)
-  static Future<List<Map<String, dynamic>>> getAllBookings() async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('bookings')
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      List<Map<String, dynamic>> bookings = [];
-      for (var doc in snapshot.docs) {
-        bookings.add({
-          'id': doc.id,
-          ...doc.data(),
-        });
-      }
-
-      return bookings;
-    } catch (e) {
-      return [];
-    }
-  }
-
-  // 19. UPDATE BOOKING STATUS
-  static Future<void> updateBookingStatus(
-    String bookingId,
-    String status,
-    String? driverId,
-  ) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('bookings')
-          .doc(bookingId)
-          .update({
-        'status': status,
-        if (driverId != null) 'driverId': driverId,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      throw Exception('Failed to update booking status');
+      throw Exception('Failed to add vehicle type: $e');
     }
   }
 }

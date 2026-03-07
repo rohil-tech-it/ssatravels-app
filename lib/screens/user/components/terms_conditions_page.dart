@@ -10,13 +10,13 @@ class TermsConditionsPage extends StatelessWidget {
         title: const Text(
           'Terms & Conditions',
           style: TextStyle(
-            color: Colors.white, // ⬅ white text
+            color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
         backgroundColor: const Color(0xFF00B14F),
         iconTheme: const IconThemeData(
-          color: Colors.white, // ⬅ back arrow white
+          color: Colors.white,
         ),
       ),
       body: SingleChildScrollView(
@@ -32,7 +32,7 @@ class TermsConditionsPage extends StatelessWidget {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00B14F).withOpacity(0.1),
+                      color: const Color(0xFF00B14F).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(40),
                     ),
                     child: const Icon(
@@ -117,10 +117,10 @@ class TermsConditionsPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF00B14F).withOpacity(0.05),
+                color: const Color(0xFF00B14F).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
                 border:
-                    Border.all(color: const Color(0xFF00B14F).withOpacity(0.2)),
+                    Border.all(color: const Color(0xFF00B14F).withValues(alpha: 0.2)),
               ),
               child: const Column(
                 children: [
@@ -137,7 +137,7 @@ class TermsConditionsPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
+                   SizedBox(height: 8),
                   Row(
                     children: [
                       Icon(Icons.watch_later,
@@ -151,7 +151,7 @@ class TermsConditionsPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
+                   SizedBox(height: 8),
                   Row(
                     children: [
                       Icon(Icons.watch_later,
@@ -235,6 +235,7 @@ class TermsConditionsPage extends StatelessWidget {
               ),
 
             const SizedBox(height: 20),
+
             // Liability
             _buildSectionHeader('7. Liability Limitations'),
             const SizedBox(height: 10),
@@ -288,7 +289,7 @@ class TermsConditionsPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF00B14F).withOpacity(0.1),
+                color: const Color(0xFF00B14F).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Column(
@@ -424,56 +425,6 @@ class TermsConditionsPage extends StatelessWidget {
           Text(
             text,
             style: const TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactItem(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: const Color(0xFF00B14F)),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: const TextStyle(fontSize: 15),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDownloadDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Download Terms',
-          style: TextStyle(color: Color(0xFF00B14F)),
-        ),
-        content: const Text('Download Terms & Conditions as PDF document?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Terms downloaded successfully'),
-                  backgroundColor: Color(0xFF00B14F),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00B14F),
-            ),
-            child: const Text('Download'),
           ),
         ],
       ),

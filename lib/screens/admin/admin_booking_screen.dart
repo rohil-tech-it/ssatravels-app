@@ -1,4 +1,4 @@
-// lib/screens/admin/admin_booking_screen.dart
+// lib/screens/admin/admin_booking_screen.dart - COMPLETE FIXED VERSION
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,12 +8,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AdminBookingScreen extends StatefulWidget {
   const AdminBookingScreen({super.key});
@@ -23,6 +25,12 @@ class AdminBookingScreen extends StatefulWidget {
 }
 
 class _AdminBookingScreenState extends State<AdminBookingScreen> {
+  // String truncate helper method
+  String _truncateString(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}...';
+  }
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   List<Map<String, dynamic>> _bookings = [];
@@ -32,6 +40,9 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
   String _selectedStatus = 'All';
   DateTime? _selectedDate;
   Map<String, dynamic>? _adminData;
+
+  // Google Maps API Key from .env
+  final String _googleMapsApiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
 
   // GST Company Details
   final String _companyGSTIN = "33DJJPS1207L1";
@@ -63,9 +74,41 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
   @override
   void initState() {
     super.initState();
+    _checkAdminAccess();
     _loadAdminData();
     _loadBookings();
     _loadInvoiceCounter();
+  }
+
+  Future<void> _checkAdminAccess() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        _showSnackBar('Please login as admin', Colors.red);
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.pushReplacementNamed(context, '/login');
+        });
+        return;
+      }
+
+      // Check Firestore for admin status
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(user.uid).get();
+
+      bool isAdmin = userDoc.exists && userDoc['isAdmin'] == true;
+
+      if (!isAdmin) {
+        _showSnackBar('Admin access required', Colors.red);
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.pushReplacementNamed(context, '/user-home');
+        });
+      } else {
+        print('✅ Admin access granted from Firestore');
+      }
+    } catch (e) {
+      print('Error checking admin access: $e');
+      _showSnackBar('Error verifying admin access', Colors.red);
+    }
   }
 
   Future<void> _loadInvoiceCounter() async {
@@ -131,10 +174,26 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           setState(() {
             _adminData = adminSnapshot.data() as Map<String, dynamic>;
           });
+        } else {
+          // Create admin record if not exists
+          await _firestore.collection('admins').doc(user.uid).set({
+            'name': user.displayName ?? 'Admin',
+            'email': user.email,
+            'createdAt': FieldValue.serverTimestamp(),
+            'isActive': true,
+          });
+
+          setState(() {
+            _adminData = {
+              'name': user.displayName ?? 'Admin',
+              'email': user.email,
+            };
+          });
         }
       }
     } catch (e) {
-      print('Error loading admin data: $e');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Something went wrong!")));
     }
   }
 
@@ -159,9 +218,14 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         String bookedOn = _formatDateTime(data['createdAt']);
         String updatedOn = _formatDateTime(data['updatedAt']);
 
+        // FIXED: Handle different possible field names for user/customer IDs
+        String userId =
+            data['userid'] ?? data['userId'] ?? data['customerId'] ?? '';
+
         bookings.add({
           'id': doc.id,
           ...data,
+          'userId': userId, // Add normalized user ID field
           'displayDate': _formatDisplayDate(data),
           'displayTime': data['formattedTime'] ?? data['pickupTime'] ?? 'N/A',
           'hoursDays': hoursDays,
@@ -178,8 +242,8 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
               data['pickupLocation']?.toString().trim() ?? 'Not specified',
           'dropLocation':
               data['dropLocation']?.toString().trim() ?? 'Not specified',
-          'pickupCoordinates': data['pickupCoordinates'] ?? null,
-          'dropCoordinates': data['dropCoordinates'] ?? null,
+          'pickupCoordinates': data['pickupCoordinates'],
+          'dropCoordinates': data['dropCoordinates'],
         });
       }
 
@@ -189,7 +253,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading bookings: $e');
       _showSnackBar('Error loading bookings: ${e.toString()}', Colors.red);
       setState(() => _isLoading = false);
     }
@@ -314,7 +377,8 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
 
       double value;
       if (amount is String) {
-        value = double.tryParse(amount) ?? 0.0;
+        String cleanAmount = amount.replaceAll('₹', '').replaceAll(',', '');
+        value = double.tryParse(cleanAmount) ?? 0.0;
       } else if (amount is int) {
         value = amount.toDouble();
       } else if (amount is double) {
@@ -430,223 +494,87 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         'drop': dropLatLng,
       };
     } catch (e) {
-      print('Error getting coordinates: $e');
       return {'pickup': null, 'drop': null};
     }
   }
 
-  Future<void> _showRouteMap(Map<String, dynamic> booking) async {
-    String pickup = booking['pickupLocation'] ?? '';
-    String drop = booking['dropLocation'] ?? '';
-    String bookingId = booking['bookingId'] ?? '';
+  Future<List<LatLng>> _getRoutePolyline(
+      LatLng origin, LatLng destination) async {
+    List<LatLng> polylinePoints = [];
 
-    if (pickup.isEmpty ||
-        drop.isEmpty ||
-        pickup == 'Not specified' ||
-        drop == 'Not specified') {
-      _showSnackBar('Pickup or Drop location not available', Colors.orange);
-      return;
+    if (_googleMapsApiKey.isEmpty) {
+      return polylinePoints;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.all(16),
-        child: Container(
-          width: double.maxFinite,
-          height: MediaQuery.of(context).size.height * 0.8,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.white,
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _adminPrimaryColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.map, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Route Map - ${bookingId.length > 8 ? bookingId.substring(0, 8) : bookingId}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: FutureBuilder<Map<String, LatLng?>>(
-                  future: _getCoordinatesForRoute(pickup, drop),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: 16),
-                            Text('Loading map...'),
-                          ],
-                        ),
-                      );
-                    }
+    try {
+      final String url =
+          'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=driving&key=$_googleMapsApiKey';
 
-                    if (snapshot.hasError) {
-                      return _buildLocationPreview(pickup, drop, true);
-                    }
+      final response = await http.get(Uri.parse(url));
 
-                    final coordinates = snapshot.data ?? {};
-                    final pickupLatLng = coordinates['pickup'];
-                    final dropLatLng = coordinates['drop'];
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
 
-                    if (pickupLatLng == null || dropLatLng == null) {
-                      return _buildLocationPreview(pickup, drop, false);
-                    }
+        if (data['status'] == 'OK') {
+          final routes = data['routes'] as List;
+          if (routes.isNotEmpty) {
+            final legs = routes[0]['legs'] as List;
+            if (legs.isNotEmpty) {
+              final steps = legs[0]['steps'] as List;
 
-                    return Stack(
-                      children: [
-                        GoogleMap(
-                          initialCameraPosition: CameraPosition(
-                            target: pickupLatLng,
-                            zoom: 10,
-                          ),
-                          markers: {
-                            Marker(
-                              markerId: const MarkerId('pickup'),
-                              position: pickupLatLng,
-                              icon: BitmapDescriptor.defaultMarkerWithHue(
-                                BitmapDescriptor.hueGreen,
-                              ),
-                              infoWindow: InfoWindow(
-                                title: 'Pickup Location',
-                                snippet: _truncateString(pickup, 30),
-                              ),
-                            ),
-                            Marker(
-                              markerId: const MarkerId('drop'),
-                              position: dropLatLng,
-                              icon: BitmapDescriptor.defaultMarkerWithHue(
-                                BitmapDescriptor.hueRed,
-                              ),
-                              infoWindow: InfoWindow(
-                                title: 'Drop Location',
-                                snippet: _truncateString(drop, 30),
-                              ),
-                            ),
-                          },
-                          polylines: {
-                            Polyline(
-                              polylineId: const PolylineId('route'),
-                              points: [pickupLatLng, dropLatLng],
-                              color: Colors.blue,
-                              width: 3,
-                            ),
-                          },
-                          zoomControlsEnabled: true,
-                          myLocationButtonEnabled: false,
-                          compassEnabled: true,
-                          mapToolbarEnabled: true,
-                        ),
-                        Positioned(
-                          bottom: 16,
-                          right: 16,
-                          child: FloatingActionButton.small(
-                            onPressed: () => _openInGoogleMaps(pickup, drop),
-                            backgroundColor: _adminPrimaryColor,
-                            child: const Icon(Icons.directions,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16),
-                  ),
-                  border: Border(top: BorderSide(color: Colors.grey[200]!)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: Colors.green,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Pickup: ${_truncateString(pickup, 40)}',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Drop: ${_truncateString(drop, 40)}',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+              for (var step in steps) {
+                final polyline = step['polyline']['points'];
+                polylinePoints.addAll(_decodePolyline(polyline));
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Error getting route polyline: $e');
+    }
+    if (polylinePoints.isEmpty) {
+      polylinePoints = [origin, destination];
+    }
+
+    return polylinePoints;
   }
 
-  String _truncateString(String text, int maxLength) {
-    if (text.length <= maxLength) return text;
-    return '${text.substring(0, maxLength)}...';
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> points = [];
+    int index = 0;
+    int len = encoded.length;
+    int lat = 0;
+    int lng = 0;
+
+    while (index < len) {
+      int b;
+      int shift = 0;
+      int result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+
+      points.add(LatLng(lat / 1E5, lng / 1E5));
+    }
+    return points;
   }
 
+  // Location preview widget
   Widget _buildLocationPreview(String pickup, String drop, bool hasError) {
     String displayPickup = _isCoordinate(pickup) ? 'Selected Location' : pickup;
     String displayDrop = _isCoordinate(drop) ? 'Selected Location' : drop;
@@ -749,6 +677,274 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showRouteMap(Map<String, dynamic> booking) async {
+    String pickup = booking['pickupLocation'] ?? '';
+    String drop = booking['dropLocation'] ?? '';
+    String bookingId = booking['bookingId'] ?? '';
+
+    if (pickup.isEmpty ||
+        drop.isEmpty ||
+        pickup == 'Not specified' ||
+        drop == 'Not specified') {
+      _showSnackBar('Pickup or Drop location not available', Colors.orange);
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: Container(
+          width: double.maxFinite,
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _adminPrimaryColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.map, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Route Map - ${bookingId.length > 8 ? bookingId.substring(0, 8) : bookingId}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Map
+              Expanded(
+                child: FutureBuilder<Map<String, LatLng?>>(
+                  future: _getCoordinatesForRoute(pickup, drop),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('Loading map...'),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      return _buildLocationPreview(pickup, drop, true);
+                    }
+
+                    final coordinates = snapshot.data ?? {};
+                    final pickupLatLng = coordinates['pickup'];
+                    final dropLatLng = coordinates['drop'];
+
+                    if (pickupLatLng == null || dropLatLng == null) {
+                      return _buildLocationPreview(pickup, drop, false);
+                    }
+
+                    return FutureBuilder<List<LatLng>>(
+                      future: _getRoutePolyline(pickupLatLng, dropLatLng),
+                      builder: (context, routeSnapshot) {
+                        if (routeSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 16),
+                                Text('Loading route...'),
+                              ],
+                            ),
+                          );
+                        }
+
+                        final routePoints =
+                            routeSnapshot.data ?? [pickupLatLng, dropLatLng];
+                        final bool hasRealRoute = routePoints.length > 2;
+
+                        return Stack(
+                          children: [
+                            GoogleMap(
+                              initialCameraPosition: CameraPosition(
+                                target: pickupLatLng,
+                                zoom: 10,
+                              ),
+                              markers: {
+                                Marker(
+                                  markerId: const MarkerId('pickup'),
+                                  position: pickupLatLng,
+                                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                                    BitmapDescriptor.hueGreen,
+                                  ),
+                                  infoWindow: InfoWindow(
+                                    title: 'Pickup Location',
+                                    snippet: _truncateString(pickup, 30),
+                                  ),
+                                ),
+                                Marker(
+                                  markerId: const MarkerId('drop'),
+                                  position: dropLatLng,
+                                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                                    BitmapDescriptor.hueRed,
+                                  ),
+                                  infoWindow: InfoWindow(
+                                    title: 'Drop Location',
+                                    snippet: _truncateString(drop, 30),
+                                  ),
+                                ),
+                              },
+                              polylines: {
+                                Polyline(
+                                  polylineId: PolylineId(
+                                    hasRealRoute
+                                        ? 'real_route'
+                                        : 'direct_route',
+                                  ),
+                                  points: routePoints,
+                                  color:
+                                      hasRealRoute ? Colors.blue : Colors.grey,
+                                  width: hasRealRoute ? 5 : 3,
+                                ),
+                              },
+                              zoomControlsEnabled: true,
+                              myLocationButtonEnabled: false,
+                              compassEnabled: true,
+                              mapToolbarEnabled: true,
+                            ),
+
+                            // Google Maps Button
+                            Positioned(
+                              bottom: 16,
+                              right: 16,
+                              child: FloatingActionButton.small(
+                                onPressed: () =>
+                                    _openInGoogleMaps(pickup, drop),
+                                backgroundColor: _adminPrimaryColor,
+                                child: const Icon(Icons.directions,
+                                    color: Colors.white),
+                              ),
+                            ),
+
+                            // Route type indicator
+                            if (!hasRealRoute)
+                              Positioned(
+                                top: 16,
+                                left: 16,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Text(
+                                    'Direct Route (No API)',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              // Footer with location details
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  border: Border(top: BorderSide(color: Colors.grey[200]!)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            color: Colors.green,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Pickup: ${_truncateString(pickup, 40)}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Drop: ${_truncateString(drop, 40)}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -932,6 +1128,7 @@ SSA Travels Virudhunagar
     );
   }
 
+  // FIXED: Added admin claim check and sync with rides collection
   Future<void> _updateBookingStatus(String bookingId, String newStatus) async {
     try {
       User? user = _auth.currentUser;
@@ -940,6 +1137,33 @@ SSA Travels Virudhunagar
         return;
       }
 
+      // Check Firestore for admin status (instead of custom claims)
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(user.uid).get();
+
+      bool isAdmin = userDoc.exists && userDoc['isAdmin'] == true;
+
+      if (!isAdmin) {
+        _showSnackBar('Admin privileges required', Colors.red);
+        return;
+      }
+
+      // Get booking data before update to get userId
+      DocumentSnapshot bookingSnapshot =
+          await _firestore.collection('bookings').doc(bookingId).get();
+
+      if (!bookingSnapshot.exists) {
+        _showSnackBar('Booking not found', Colors.red);
+        return;
+      }
+
+      var bookingData = bookingSnapshot.data() as Map<String, dynamic>;
+      String userId = bookingData['userid'] ??
+          bookingData['userId'] ??
+          bookingData['customerId'] ??
+          '';
+
+      // Update booking status
       await _firestore.collection('bookings').doc(bookingId).update({
         'bookingStatus': newStatus,
         'status': newStatus,
@@ -948,12 +1172,48 @@ SSA Travels Virudhunagar
         'updatedByName': _adminData?['name'] ?? 'Admin',
       });
 
+      // SYNC WITH RIDES COLLECTION - User app la show aagum!
+      if (userId.isNotEmpty) {
+        // Find the corresponding ride for this booking
+        QuerySnapshot rideSnapshot = await _firestore
+            .collection('rides')
+            .where('bookingId', isEqualTo: bookingId)
+            .limit(1)
+            .get();
+
+        if (rideSnapshot.docs.isNotEmpty) {
+          // Update existing ride
+          await rideSnapshot.docs.first.reference.update({
+            'status': newStatus.toLowerCase(),
+            'updatedAt': FieldValue.serverTimestamp(),
+            'updatedBy': user.uid,
+          });
+          print('✅ Rides collection updated for user: $userId');
+        } else {
+          // If ride doesn't exist yet, create one (for backward compatibility)
+          await _firestore.collection('rides').add({
+            'userid': userId,
+            'bookingId': bookingId,
+            'status': newStatus.toLowerCase(),
+            'createdAt':
+                bookingData['createdAt'] ?? FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+            'pickupAddress': bookingData['pickupLocation'] ?? '',
+            'destinationAddress': bookingData['dropLocation'] ?? '',
+            'fare': bookingData['totalFare'] ?? bookingData['totalAmount'] ?? 0,
+            'vehicleType': bookingData['vehicleType'] ?? 'Standard',
+            'rideId': bookingData['bookingId'] ?? bookingId,
+          });
+          print('✅ New ride created for user: $userId');
+        }
+      }
+
       if (newStatus == 'Completed') {
         await _updateRevenueStats(bookingId);
       }
 
       _showSnackBar('Booking status updated to $newStatus', _adminPrimaryColor);
-      await _loadBookings();
+      await _loadBookings(); // Refresh bookings list
     } catch (e) {
       _showSnackBar('Error updating status: ${e.toString()}', Colors.red);
     }
@@ -1187,9 +1447,7 @@ SSA Travels Virudhunagar
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -1257,9 +1515,7 @@ SSA Travels Virudhunagar
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
                       _buildDetailSection(
                         title: 'Customer Information',
                         icon: Icons.person,
@@ -1272,9 +1528,7 @@ SSA Travels Virudhunagar
                               'Email', booking['customerEmail'] ?? 'N/A'),
                         ],
                       ),
-
                       const SizedBox(height: 16),
-
                       _buildDetailSection(
                         title: 'Trip Details',
                         icon: Icons.route,
@@ -1295,9 +1549,7 @@ SSA Travels Virudhunagar
                               booking['distanceFormatted'] ?? '0 km'),
                         ],
                       ),
-
                       const SizedBox(height: 16),
-
                       _buildDetailSection(
                         title: 'Payment Details',
                         icon: Icons.payment,
@@ -1384,10 +1636,8 @@ SSA Travels Virudhunagar
     );
   }
 
-  // Generate PDF bill - FIXED const errors
   Future<File?> _generatePDFBill(
       Map<String, dynamic> booking, String invoiceNumber) async {
-    // Check if running on web
     if (kIsWeb) {
       _showSnackBar('PDF generation is not available on web', Colors.orange);
       return null;
@@ -1405,12 +1655,12 @@ SSA Travels Virudhunagar
 
       Map<String, double> gstDetails = _calculateGST(baseAmount);
 
-      String baseFormatted = '₹${baseAmount.toStringAsFixed(0)}';
-      String cgstFormatted = '₹${gstDetails['cgst']!.toStringAsFixed(0)}';
-      String sgstFormatted = '₹${gstDetails['sgst']!.toStringAsFixed(0)}';
-      String totalGSTFormatted = '₹${gstDetails['totalGST']!.toStringAsFixed(0)}';
+      String baseFormatted = '₹${_formatNumber(baseAmount)}';
+      String cgstFormatted = '₹${_formatNumber(gstDetails['cgst']!)}';
+      String sgstFormatted = '₹${_formatNumber(gstDetails['sgst']!)}';
+      String totalGSTFormatted = '₹${_formatNumber(gstDetails['totalGST']!)}';
       String totalWithGSTFormatted =
-          '₹${gstDetails['totalWithGST']!.toStringAsFixed(0)}';
+          '₹${_formatNumber(gstDetails['totalWithGST']!)}';
 
       final pdf = pw.Document();
 
@@ -1488,7 +1738,6 @@ SSA Travels Virudhunagar
                 ),
               ),
               pw.SizedBox(height: 24),
-
               pw.Container(
                 padding: const pw.EdgeInsets.all(12),
                 decoration: pw.BoxDecoration(
@@ -1513,9 +1762,7 @@ SSA Travels Virudhunagar
                   ],
                 ),
               ),
-
               pw.SizedBox(height: 24),
-
               pw.Container(
                 decoration: pw.BoxDecoration(
                   border: pw.Border.all(color: PdfColors.grey300),
@@ -1538,19 +1785,22 @@ SSA Travels Virudhunagar
                             flex: 3,
                             child: pw.Text(
                               'Description',
-                              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold),
                             ),
                           ),
                           pw.Expanded(
                             child: pw.Text(
                               'SAC Code',
-                              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold),
                             ),
                           ),
                           pw.Expanded(
                             child: pw.Text(
                               'Amount',
-                              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold),
                               textAlign: pw.TextAlign.right,
                             ),
                           ),
@@ -1567,13 +1817,13 @@ SSA Travels Virudhunagar
                                 flex: 3,
                                 child: pw.Text(
                                   'Car Rental – ${booking['pickupLocation']?.toString().split(',').first ?? 'N/A'} to ${booking['dropLocation']?.toString().split(',').first ?? 'N/A'}',
-                                  style: pw.TextStyle(fontSize: 11), // FIXED: removed const
+                                  style: pw.TextStyle(fontSize: 11),
                                 ),
                               ),
                               pw.Expanded(
                                 child: pw.Text(
                                   _sacCode,
-                                  style: pw.TextStyle(fontSize: 11), // FIXED: removed const
+                                  style: pw.TextStyle(fontSize: 11),
                                 ),
                               ),
                               pw.Expanded(
@@ -1583,7 +1833,7 @@ SSA Travels Virudhunagar
                                   style: pw.TextStyle(
                                     fontSize: 11,
                                     fontWeight: pw.FontWeight.bold,
-                                  ), // FIXED: removed const
+                                  ),
                                 ),
                               ),
                             ],
@@ -1639,9 +1889,7 @@ SSA Travels Virudhunagar
                   ],
                 ),
               ),
-
               pw.SizedBox(height: 16),
-
               pw.Container(
                 padding: const pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
@@ -1654,9 +1902,9 @@ SSA Travels Virudhunagar
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
                         pw.Text('Base Amount:',
-                            style: pw.TextStyle(fontSize: 12)), // FIXED: removed const
+                            style: pw.TextStyle(fontSize: 12)),
                         pw.Text(baseFormatted,
-                            style: pw.TextStyle(fontSize: 12)), // FIXED: removed const
+                            style: pw.TextStyle(fontSize: 12)),
                       ],
                     ),
                     pw.SizedBox(height: 4),
@@ -1687,17 +1935,17 @@ SSA Travels Virudhunagar
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
                         pw.Text('Total GST (5%):',
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                            style:
+                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                         pw.Text(totalGSTFormatted,
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                            style:
+                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                       ],
                     ),
                   ],
                 ),
               ),
-
               pw.SizedBox(height: 16),
-
               pw.Container(
                 padding: const pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
@@ -1738,9 +1986,7 @@ SSA Travels Virudhunagar
                   ],
                 ),
               ),
-
               pw.SizedBox(height: 24),
-
               pw.Container(
                 padding: const pw.EdgeInsets.all(12),
                 decoration: pw.BoxDecoration(
@@ -1794,9 +2040,7 @@ SSA Travels Virudhunagar
                   ],
                 ),
               ),
-
               pw.SizedBox(height: 16),
-
               pw.Center(
                 child: pw.Text(
                   'Thank you for choosing SSA Travels!',
@@ -1820,6 +2064,11 @@ SSA Travels Virudhunagar
       print('Error generating PDF: $e');
       return null;
     }
+  }
+
+  String _formatNumber(double number) {
+    NumberFormat format = NumberFormat('#,##,###', 'en_IN');
+    return format.format(number.round());
   }
 
   Future<void> _sendPDFViaWhatsApp(File pdfFile, String phoneNumber) async {
@@ -1968,9 +2217,7 @@ For any queries, contact us: +91 9751867879
                           ],
                         ),
                       ),
-
                       const Divider(height: 30, thickness: 1),
-
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -2028,9 +2275,7 @@ For any queries, contact us: +91 9751867879
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -2057,9 +2302,7 @@ For any queries, contact us: +91 9751867879
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey[300]!),
@@ -2180,9 +2423,7 @@ For any queries, contact us: +91 9751867879
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -2240,9 +2481,7 @@ For any queries, contact us: +91 9751867879
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -2264,7 +2503,7 @@ For any queries, contact us: +91 9751867879
                                   ),
                                 ),
                                 Text(
-                                  '₹${gstDetails['totalWithGST']!.toStringAsFixed(0)}',
+                                  '₹${_formatNumber(gstDetails['totalWithGST']!)}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
@@ -2284,9 +2523,7 @@ For any queries, contact us: +91 9751867879
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -2344,9 +2581,7 @@ For any queries, contact us: +91 9751867879
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
                       Center(
                         child: Text(
                           'Thank you for choosing SSA Travels!',
@@ -2360,7 +2595,6 @@ For any queries, contact us: +91 9751867879
                   ),
                 ),
               ),
-
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -2377,27 +2611,31 @@ For any queries, contact us: +91 9751867879
                       child: OutlinedButton.icon(
                         onPressed: () async {
                           Navigator.pop(context);
-                          
+
                           if (kIsWeb) {
-                            _showSnackBar('PDF generation is not available on web', Colors.orange);
+                            _showSnackBar(
+                                'PDF generation is not available on web',
+                                Colors.orange);
                             return;
                           }
-                          
+
                           _showLoadingDialog();
 
                           try {
                             File? pdfFile =
                                 await _generatePDFBill(booking, invoiceNumber);
-                            Navigator.pop(context); // Remove loading dialog
-                            
+                            Navigator.pop(context);
+
                             if (pdfFile != null) {
                               await OpenFile.open(pdfFile.path);
                             } else {
-                              _showSnackBar('Failed to generate PDF', Colors.red);
+                              _showSnackBar(
+                                  'Failed to generate PDF', Colors.red);
                             }
                           } catch (e) {
                             Navigator.pop(context);
-                            _showSnackBar('Error generating PDF: $e', Colors.red);
+                            _showSnackBar(
+                                'Error generating PDF: $e', Colors.red);
                           }
                         },
                         icon: const Icon(Icons.picture_as_pdf, size: 18),
@@ -2415,13 +2653,16 @@ For any queries, contact us: +91 9751867879
                           Navigator.pop(context);
 
                           if (kIsWeb) {
-                            _showSnackBar('WhatsApp sharing is not available on web', Colors.orange);
+                            _showSnackBar(
+                                'WhatsApp sharing is not available on web',
+                                Colors.orange);
                             return;
                           }
 
                           String phone = booking['customerPhone'] ?? '';
                           if (phone.isEmpty) {
-                            _showSnackBar('Customer phone number not available', Colors.orange);
+                            _showSnackBar('Customer phone number not available',
+                                Colors.orange);
                             return;
                           }
 
@@ -2430,11 +2671,12 @@ For any queries, contact us: +91 9751867879
                           try {
                             File? pdfFile =
                                 await _generatePDFBill(booking, invoiceNumber);
-                                
+
                             if (pdfFile != null) {
                               await _sendPDFViaWhatsApp(pdfFile, phone);
                             } else {
-                              _showSnackBar('Failed to generate PDF', Colors.red);
+                              _showSnackBar(
+                                  'Failed to generate PDF', Colors.red);
                             }
                             Navigator.pop(context);
                           } catch (e) {
@@ -2590,15 +2832,7 @@ For any queries, contact us: +91 9751867879
                 _showWhatsAppDialog(booking);
               },
             ),
-            ListTile(
-              leading: Icon(Icons.update, color: _adminPrimaryColor),
-              title: const Text('Update Status'),
-              subtitle: const Text('Change booking status only'),
-              onTap: () {
-                Navigator.pop(context);
-                _showStatusUpdateDialog(booking['id'], booking['status']);
-              },
-            ),
+           
             ListTile(
               leading: const Icon(Icons.phone, color: Colors.blue),
               title: const Text('Contact Customer'),
@@ -3106,9 +3340,9 @@ For any queries, contact us: +91 9751867879
           ),
         ],
       ),
-      child: InkWell(
+      child: GestureDetector(
         onTap: () => _showBookingDetails(booking),
-        borderRadius: BorderRadius.circular(12),
+        behavior: HitTestBehavior.opaque,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -3415,32 +3649,61 @@ For any queries, contact us: +91 9751867879
 
               const SizedBox(height: 12),
 
-              // Action Buttons - Stack on mobile
+              // FIXED: Action Buttons with proper tap handling
               MediaQuery.of(context).size.width > 400
                   ? Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showRouteMap(booking),
-                            icon: const Icon(Icons.map, size: 14),
-                            label: const Text('Route'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.green,
-                              side: const BorderSide(color: Colors.green),
+                          child: GestureDetector(
+                            onTap: () => _showRouteMap(booking),
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.green),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                               padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.map,
+                                      size: 14, color: Colors.green),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Route',
+                                    style: TextStyle(
+                                        color: Colors.green, fontSize: 12),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showBookingDetails(booking),
-                            icon: const Icon(Icons.receipt, size: 14),
-                            label: const Text('Details'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _adminPrimaryColor,
-                              side: BorderSide(color: _adminPrimaryColor),
+                          child: GestureDetector(
+                            onTap: () => _showBookingDetails(booking),
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: _adminPrimaryColor),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                               padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.receipt,
+                                      size: 14, color: _adminPrimaryColor),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Details',
+                                    style: TextStyle(
+                                        color: _adminPrimaryColor,
+                                        fontSize: 12),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -3448,25 +3711,54 @@ For any queries, contact us: +91 9751867879
                     )
                   : Column(
                       children: [
-                        OutlinedButton.icon(
-                          onPressed: () => _showRouteMap(booking),
-                          icon: const Icon(Icons.map, size: 14),
-                          label: const Text('Route'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.green,
-                            side: const BorderSide(color: Colors.green),
-                            minimumSize: const Size(double.infinity, 40),
+                        GestureDetector(
+                          onTap: () => _showRouteMap(booking),
+                          behavior: HitTestBehavior.opaque,
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.green),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.map, size: 14, color: Colors.green),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Route',
+                                  style: TextStyle(
+                                      color: Colors.green, fontSize: 12),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
-                        OutlinedButton.icon(
-                          onPressed: () => _showBookingDetails(booking),
-                          icon: const Icon(Icons.receipt, size: 14),
-                          label: const Text('Details'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: _adminPrimaryColor,
-                            side: BorderSide(color: _adminPrimaryColor),
-                            minimumSize: const Size(double.infinity, 40),
+                        GestureDetector(
+                          onTap: () => _showBookingDetails(booking),
+                          behavior: HitTestBehavior.opaque,
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: _adminPrimaryColor),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.receipt,
+                                    size: 14, color: _adminPrimaryColor),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Details',
+                                  style: TextStyle(
+                                      color: _adminPrimaryColor, fontSize: 12),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

@@ -15,7 +15,6 @@ class WebPlacesHelper {
           '&components=country:in'
           '&key=$apiKey';
       
-      print('📍 Web Places search: $query');
       
       // Don't add any headers
       final response = await http.get(Uri.parse(url)).timeout(
@@ -27,7 +26,6 @@ class WebPlacesHelper {
         
         if (data['status'] == 'OK') {
           final predictions = data['predictions'] as List? ?? [];
-          print('✅ Found ${predictions.length} results for "$query"');
           
           return predictions.map((p) {
             return {
@@ -40,7 +38,7 @@ class WebPlacesHelper {
         }
       }
     } catch (e) {
-      print('❌ Web places helper error: $e');
+      return [];
     }
     
     return [];
@@ -80,7 +78,7 @@ class WebPlacesHelper {
         }
       }
     } catch (e) {
-      print('❌ Web details error: $e');
+      return null;
     }
     
     return null;

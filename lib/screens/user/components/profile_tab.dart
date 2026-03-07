@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ssatravels_app/screens/user/components/about_page.dart';
+import 'package:ssatravels_app/screens/user/components/booking_history_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -9,14 +10,13 @@ import 'dart:io';
 // Import the new pages
 import 'help_support_page.dart';
 import 'settings_page.dart';
-import 'ride_history_page.dart';
 
 class ProfileTab extends StatefulWidget {
-  final String? userName;  // ✅ ADD THIS PARAMETER
+  final String? userName; // Parameter for guest view
 
   const ProfileTab({
     super.key,
-    this.userName,  // ✅ ADD CONSTRUCTOR PARAMETER
+    this.userName,
   });
 
   @override
@@ -24,7 +24,6 @@ class ProfileTab extends StatefulWidget {
 }
 
 class _ProfileTabState extends State<ProfileTab> {
-  
   // Theme colors - Green theme
   final Color _primaryColor = const Color(0xFF00B14F);
   final Color _backgroundColor = const Color(0xFFF5F5F5);
@@ -37,7 +36,7 @@ class _ProfileTabState extends State<ProfileTab> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  
+
   // Image picker
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
@@ -76,7 +75,7 @@ class _ProfileTabState extends State<ProfileTab> {
         }, SetOptions(merge: true));
       }
     } catch (e) {
-      print('Error saving profile: $e');
+      debugPrint('Error saving profile: $e');
       rethrow;
     }
   }
@@ -131,13 +130,15 @@ class _ProfileTabState extends State<ProfileTab> {
 
   void _showMessage(BuildContext context, String message,
       {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : _primaryColor,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: isError ? Colors.red : _primaryColor,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _makePhoneCall() async {
@@ -147,25 +148,22 @@ class _ProfileTabState extends State<ProfileTab> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMessage(context, 'Could not launch phone app', isError: true);
+      if (mounted) {
+        _showMessage(context, 'Could not launch phone app', isError: true);
+      }
     }
   }
 
   Widget _buildUserStatusHeader(User? user, Map<String, dynamic>? userData) {
     final bool isLoggedIn = user != null;
-    
-    // ✅ USE THE PARAMETER - Priority: Firebase Data > Constructor Parameter > Default
-    final String fullName = 
-        userData?['fullName'] ?? 
-        user?.displayName ?? 
-        (isLoggedIn ? null : widget.userName) ??  // Use userName for guest
+
+    // Use the parameter for guest view
+    final String fullName = userData?['fullName'] ??
+        user?.displayName ??
+        (isLoggedIn ? 'User' : widget.userName) ??
         'Guest User';
-        
+
     final String designation = userData?['designation'] ?? 'SSA Traveler';
-    final String email =
-        userData?['email'] ?? user?.email ?? 'guest@ssatravels.com';
-    final String phoneNumber =
-        userData?['phoneNumber'] ?? user?.phoneNumber ?? '+91 00000 00000';
 
     return Container(
       width: double.infinity,
@@ -178,7 +176,7 @@ class _ProfileTabState extends State<ProfileTab> {
         ),
         boxShadow: [
           BoxShadow(
-            color: _primaryColor.withOpacity(0.3),
+            color: _primaryColor.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -210,7 +208,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 8,
                                 offset: const Offset(0, 3),
                               ),
@@ -272,7 +270,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -290,7 +288,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
                           if (!isLoggedIn) ...[
@@ -301,7 +299,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Text(
@@ -329,14 +327,13 @@ class _ProfileTabState extends State<ProfileTab> {
 
   Widget _buildContactInfoSection(User? user, Map<String, dynamic>? userData) {
     final bool isLoggedIn = user != null;
-    
-    // ✅ USE THE PARAMETER for guest view
-    final String fullName = 
-        userData?['fullName'] ?? 
-        user?.displayName ?? 
-        (isLoggedIn ? null : widget.userName) ?? 
+
+    // Use the parameter for guest view
+    final String fullName = userData?['fullName'] ??
+        user?.displayName ??
+        (isLoggedIn ? 'User' : widget.userName) ??
         'Guest User';
-        
+
     final String email =
         userData?['email'] ?? user?.email ?? 'guest@ssatravels.com';
     final String phoneNumber =
@@ -349,7 +346,7 @@ class _ProfileTabState extends State<ProfileTab> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -392,7 +389,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: _primaryColor.withOpacity(0.1),
+                    color: _primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -440,7 +437,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: _primaryColor.withOpacity(0.1),
+                    color: _primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -488,7 +485,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: _primaryColor.withOpacity(0.1),
+                    color: _primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -539,7 +536,7 @@ class _ProfileTabState extends State<ProfileTab> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -567,11 +564,11 @@ class _ProfileTabState extends State<ProfileTab> {
             Column(
               children: [
                 _buildProfileOptionItem(
-                  title: 'Ride History',
+                  title: 'Booking History',
                   subtitle: 'View your booked rides',
                   icon: Icons.history,
                   color: _primaryColor,
-                  onTap: () => _handleOptionTap(context, 'Ride History'),
+                  onTap: () => _handleOptionTap(context, 'Booking History'),
                 ),
                 Divider(color: _dividerColor, height: 1, indent: 72),
               ],
@@ -643,7 +640,7 @@ class _ProfileTabState extends State<ProfileTab> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -696,7 +693,7 @@ class _ProfileTabState extends State<ProfileTab> {
       case 'Ride History':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const RideHistoryPage()),
+          MaterialPageRoute(builder: (context) => const BookingHistoryPage()),
         );
         break;
       case 'Settings':
@@ -938,8 +935,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: _primaryColor,
-                              side: BorderSide(
-                                  color: Colors.grey),
+                              side: BorderSide(color: Colors.grey),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -988,12 +984,16 @@ class _ProfileTabState extends State<ProfileTab> {
                                         newPasswordController.text);
                                   }
 
-                                  Navigator.pop(context);
-                                  _showMessage(
-                                      context, 'Profile updated successfully!');
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                    _showMessage(context,
+                                        'Profile updated successfully!');
+                                  }
                                 } catch (e) {
-                                  _showMessage(context, 'Error: $e',
-                                      isError: true);
+                                  if (context.mounted) {
+                                    _showMessage(context, 'Error: $e',
+                                        isError: true);
+                                  }
                                 }
                               }
                             },

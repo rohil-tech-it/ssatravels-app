@@ -22,13 +22,13 @@ class _SettingsPageState extends State<SettingsPage> {
         title: const Text(
           'Settings',
           style: TextStyle(
-            color: Colors.white, // ⬅ white text
+            color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
         backgroundColor: const Color(0xFF00B14F),
         iconTheme: const IconThemeData(
-          color: Colors.white, // ⬅ back arrow white
+          color: Colors.white,
         ),
       ),
       body: SingleChildScrollView(
@@ -135,10 +135,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     if (await canLaunchUrl(phoneUri)) {
                       await launchUrl(phoneUri);
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Could not launch phone dialer')),
-                      );
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Could not launch phone dialer'),
+                          ),
+                        );
+                      }
                     }
                   },
                 ),
@@ -156,12 +159,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
                 icon: const Icon(Icons.logout_outlined, size: 20),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.withOpacity(0.1),
+                  backgroundColor: const Color(0xFF00B14F).withValues(alpha: 0.1),
                   foregroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.red.withOpacity(0.3)),
+                    side: BorderSide(
+                      color: Colors.red.withValues(alpha: 0.3),
+                    ),
                   ),
                 ),
                 label: const Text('Logout'),
@@ -173,8 +178,10 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSection(
-      {required String title, required List<Widget> children}) {
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -204,7 +211,7 @@ class _SettingsPageState extends State<SettingsPage> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFF00B14F).withOpacity(0.1),
+            color: const Color(0xFF00B14F).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: const Color(0xFF00B14F)),
@@ -220,57 +227,30 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showClearHistoryDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear History'),
-        content:
-            const Text('Are you sure you want to delete all ride history?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('History cleared successfully'),
-                  backgroundColor: Color(0xFF00B14F),
-                ),
-              );
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showLogoutDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Logout'),
         content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
 
               await FirebaseAuth.instance.signOut();
 
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false,
-              );
+              if (mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
             },
             child: const Text('Logout'),
           ),

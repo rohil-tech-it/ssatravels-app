@@ -72,21 +72,18 @@ class HelpSupportPage extends StatelessWidget {
                   icon: Icons.call,
                   title: 'Call Us',
                   subtitle: 'Available 24/7',
-                  phoneNumber: '9751867879',
                   onTap: () => _makePhoneCall(context, '9751867879'),
                 ),
                 _buildContactOption(
                   icon: Icons.email,
                   title: 'Email Support',
                   subtitle: 'support@ssatravels.com',
-                  email: 'support@ssatravels.com',
                   onTap: () => _sendEmail(context, 'support@ssatravels.com'),
                 ),
                 _buildContactOption(
                   icon: Icons.chat,
                   title: 'Live Chat',
                   subtitle: 'Chat with our support team',
-                  whatsappNumber: '9751867879',
                   onTap: () => _openWhatsApp(context, '9751867879'),
                 ),
               ],
@@ -123,8 +120,10 @@ class HelpSupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(
-      {required String title, required List<Widget> children}) {
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -172,9 +171,6 @@ class HelpSupportPage extends StatelessWidget {
     required IconData icon,
     required String title,
     required String subtitle,
-    String? phoneNumber,
-    String? email,
-    String? whatsappNumber,
     required VoidCallback onTap,
   }) {
     return Container(
@@ -184,7 +180,7 @@ class HelpSupportPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -195,7 +191,7 @@ class HelpSupportPage extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFF00B14F).withOpacity(0.1),
+            color: const Color(0xFF00B14F).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: const Color(0xFF00B14F)),
@@ -216,14 +212,14 @@ class HelpSupportPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color:  const Color.fromARGB(255, 199, 247, 221),
+        color: const Color.fromARGB(255, 255, 255, 255),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color:  const Color(0xFF00B14F)),
+        border: Border.all(color: const Color(0xFF00B14F)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle, color:  Color(0xFF00B14F), size: 20),
+          const Icon(Icons.check_circle, color: Color(0xFF00B14F), size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -232,45 +228,6 @@ class HelpSupportPage extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey[200]!),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: const Color(0xFF00B14F), size: 28),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -285,7 +242,9 @@ class HelpSupportPage extends StatelessWidget {
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
-      _showSnackBar(context, 'Could not launch phone app');
+      if (context.mounted) {
+        _showSnackBar(context, 'Could not launch phone app');
+      }
     }
   }
 
@@ -303,7 +262,9 @@ class HelpSupportPage extends StatelessWidget {
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
-      _showSnackBar(context, 'Could not launch email app');
+      if (context.mounted) {
+        _showSnackBar(context, 'Could not launch email app');
+      }
     }
   }
 
@@ -324,22 +285,9 @@ class HelpSupportPage extends StatelessWidget {
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
-      _showSnackBar(context, 'Could not launch WhatsApp');
-    }
-  }
-
-  // SMS Functionality
-  Future<void> _sendSMS(BuildContext context, String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'sms',
-      path: phoneNumber,
-      queryParameters: {'body': 'Hello SSA Travel!'},
-    );
-
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
-    } else {
-      _showSnackBar(context, 'Could not launch SMS app');
+      if (context.mounted) {
+        _showSnackBar(context, 'Could not launch WhatsApp');
+      }
     }
   }
 
@@ -349,41 +297,6 @@ class HelpSupportPage extends StatelessWidget {
         content: Text(message),
         backgroundColor: const Color(0xFF00B14F),
         duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-}
-
-// Helper widget for timing rows
-class _BuildTimingRow extends StatelessWidget {
-  final String day;
-  final String time;
-
-  const _BuildTimingRow(this.day, this.time);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            day,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            time,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF00B14F),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }

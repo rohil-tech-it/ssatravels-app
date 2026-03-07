@@ -1,4 +1,3 @@
-import '../models/toll_route_model.dart';
 import '../data/tamilnadu_toll_routes.dart';
 
 enum TripType { oneWay, roundTrip }

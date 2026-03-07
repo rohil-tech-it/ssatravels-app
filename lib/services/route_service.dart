@@ -9,7 +9,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'web_places_helper.dart';
 
 class RouteService {
   String? _apiKey;
@@ -25,13 +24,9 @@ class RouteService {
       _apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
       
       if (_apiKey == null || _apiKey!.isEmpty) {
-        print('❌ GOOGLE_MAPS_API_KEY not found in .env file');
       } else {
-        print('🔑 RouteService initialized with API key: ✅ Loaded');
-        print('   Key starts with: ${_apiKey!.substring(0, 10)}...');
       }
     } catch (e) {
-      print('❌ Error loading .env file: $e');
       _apiKey = '';
     }
   }
@@ -55,14 +50,12 @@ class RouteService {
   Future<List<Map<String, dynamic>>> searchPlaces(String query) async {
     if (query.isEmpty || query.length < 2) return [];
     if (_apiKey == null || _apiKey!.isEmpty) {
-      print('❌ API key is missing');
       return [];
     }
 
     // For web, use simple fetch without custom headers
     if (kIsWeb) {
       try {
-        print('📍 Using web fetch for: "$query"');
         final url = _buildUrl('place/autocomplete', {
           'input': query,
           'components': 'country:in',
@@ -78,7 +71,6 @@ class RouteService {
           
           if (data['status'] == 'OK') {
             final predictions = data['predictions'] as List? ?? [];
-            print('✅ Found ${predictions.length} results for "$query"');
             
             return predictions.map((p) {
               return {
@@ -91,7 +83,7 @@ class RouteService {
           }
         }
       } catch (e) {
-        print('❌ Web fetch error: $e');
+        return [];
       }
     }
 
@@ -101,9 +93,6 @@ class RouteService {
         'input': query,
         'components': 'country:in',
       });
-
-      print('📍 Places search URL: ${url.replaceAll(_apiKey!, 'HIDDEN')}');
-
       // Don't use headers for Google APIs
       final response = await http.get(Uri.parse(url)).timeout(
         const Duration(seconds: 10),
@@ -111,11 +100,9 @@ class RouteService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('   Places search status: ${data['status']}');
 
         if (data['status'] == 'OK') {
           final predictions = data['predictions'] as List? ?? [];
-          print('✅ Found ${predictions.length} results for "$query"');
           
           return predictions.map<Map<String, dynamic>>((p) {
             return {
@@ -128,18 +115,14 @@ class RouteService {
             };
           }).toList();
         } else if (data['status'] == 'ZERO_RESULTS') {
-          print('⚠️ No results found for "$query"');
           return [];
         } else if (data['status'] == 'REQUEST_DENIED') {
-          print('❌ Places API not enabled.');
         } else {
-          print('❌ Places API error: ${data['status']}');
         }
       } else {
-        print('❌ HTTP error: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Place search error: $e');
+      return [];
     }
 
     return [];
@@ -155,7 +138,6 @@ class RouteService {
         'fields': 'name,formatted_address,geometry',
       });
 
-      print('📍 Place details URL: ${url.replaceAll(_apiKey!, 'HIDDEN')}');
 
       // Don't use headers for Google APIs
       final response = await http.get(Uri.parse(url)).timeout(
@@ -164,7 +146,6 @@ class RouteService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('   Place details status: ${data['status']}');
 
         if (data['status'] == 'OK') {
           final result = data['result'];
@@ -180,11 +161,10 @@ class RouteService {
             };
           }
         } else if (data['status'] == 'REQUEST_DENIED') {
-          print('❌ Places API not enabled.');
         }
       }
     } catch (e) {
-      print('❌ Place details error: $e');
+      return null;
     }
 
     return null;
@@ -195,10 +175,8 @@ class RouteService {
     required LatLng origin,
     required LatLng destination,
   }) async {
-    print('📍 Getting route from ${origin.latitude},${origin.longitude} to ${destination.latitude},${destination.longitude}');
 
     if (_apiKey == null || _apiKey!.isEmpty) {
-      print('⚠️ API key empty, using fallback');
       return _generateFallbackRoute(origin, destination);
     }
 
@@ -210,7 +188,6 @@ class RouteService {
         'alternatives': 'true',
       });
 
-      print('📍 Directions URL: ${url.replaceAll(_apiKey!, 'HIDDEN')}');
 
       // Don't use headers for Google APIs
       final response = await http.get(Uri.parse(url)).timeout(
@@ -219,24 +196,19 @@ class RouteService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('   Directions status: ${data['status']}');
 
         if (data['status'] == 'OK') {
-          print('✅ Real road route found!');
           return _parseDirectionsResponse(data);
         } else if (data['status'] == 'REQUEST_DENIED') {
-          print('❌ Directions API not enabled.');
         } else if (data['status'] == 'ZERO_RESULTS') {
-          print('⚠️ No route found between these points');
         } else {
-          print('❌ Directions API error: ${data['status']}');
+          return _generateFallbackRoute(origin, destination);
         }
       }
     } catch (e) {
-      print('❌ Directions error: $e');
+      return _generateFallbackRoute(origin, destination);
     }
 
-    print('⚠️ Using fallback route');
     return _generateFallbackRoute(origin, destination);
   }
 
@@ -268,9 +240,7 @@ class RouteService {
         routePoints = decodedPoints
             .map((point) => LatLng(point.latitude, point.longitude))
             .toList();
-        print('📍 Successfully decoded ${routePoints.length} route points');
       } catch (e) {
-        print('❌ Polyline decode error: $e');
         routePoints = _decodePolylineManual(encodedPolyline);
       }
     }
@@ -324,7 +294,6 @@ class RouteService {
 
   // Get address from coordinates
   Future<String> getAddressFromLatLng(LatLng latLng) async {
-    print('📍 Getting address for: (${latLng.latitude}, ${latLng.longitude})');
 
     if (_apiKey == null || _apiKey!.isEmpty) {
       return _formatCoordinates(latLng);
@@ -336,7 +305,6 @@ class RouteService {
           '?latlng=${latLng.latitude},${latLng.longitude}'
           '&key=$_apiKey';
 
-      print('   Reverse geocoding URL: ${url.replaceAll(_apiKey!, 'HIDDEN')}');
 
       // Don't use headers for Google APIs
       final response = await http.get(Uri.parse(url)).timeout(
@@ -345,7 +313,6 @@ class RouteService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('   Geocoding status: ${data['status']}');
 
         if (data['status'] == 'OK' &&
             data['results'] != null &&
@@ -354,15 +321,13 @@ class RouteService {
           String address = result['formatted_address'] ?? '';
 
           if (address.isNotEmpty) {
-            print('✅ Found address: $address');
             return address;
           }
         } else if (data['status'] == 'REQUEST_DENIED') {
-          print('❌ Geocoding API not enabled.');
         }
       }
     } catch (e) {
-      print('❌ Reverse geocoding error: $e');
+      return _formatCoordinates(latLng);
     }
 
     // Try local geocoding
@@ -379,17 +344,17 @@ class RouteService {
         if (p.name?.isNotEmpty ?? false) parts.add(p.name!);
         if (p.subLocality?.isNotEmpty ?? false) parts.add(p.subLocality!);
         if (p.locality?.isNotEmpty ?? false) parts.add(p.locality!);
-        if (p.administrativeArea?.isNotEmpty ?? false)
+        if (p.administrativeArea?.isNotEmpty ?? false) {
           parts.add(p.administrativeArea!);
+        }
         if (p.country?.isNotEmpty ?? false) parts.add(p.country!);
 
         if (parts.isNotEmpty) {
-          print('✅ Local address: ${parts.join(', ')}');
           return parts.join(', ');
         }
       }
     } catch (e) {
-      print('❌ Local geocoding error: $e');
+      return _formatCoordinates(latLng);
     }
 
     return _formatCoordinates(latLng);
@@ -415,7 +380,16 @@ class RouteService {
           ) /
           1000.0;
     } catch (e) {
-      print('❌ Distance calculation error: $e');
+      return {
+        'distance': distance,
+        'distanceText': '${distance.toStringAsFixed(1)} km',
+        'duration': 'Unknown',
+        'durationSeconds': 0,
+        'routePoints': [origin, destination],
+        'steps': [],
+        'status': 'FALLBACK',
+        'source': 'fallback',
+      };
     }
 
     int steps = (distance * 2).round().clamp(20, 100);
@@ -448,7 +422,7 @@ class RouteService {
     
     String duration = minutes >= 60
         ? '${minutes ~/ 60} hr ${minutes % 60} min'
-        : '${minutes} min';
+        : '$minutes min';
 
     return {
       'distance': distance,
