@@ -1,8 +1,9 @@
+// ignore_for_file: unused_field, unused_element, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ssatravels_app/screens/user/components/about_page.dart';
-import 'package:ssatravels_app/screens/user/components/booking_history_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -12,11 +13,13 @@ import 'help_support_page.dart';
 import 'settings_page.dart';
 
 class ProfileTab extends StatefulWidget {
-  final String? userName; // Parameter for guest view
+  final String? userName;
+  final Function(int)? onIndexChanged; // add this
 
   const ProfileTab({
     super.key,
     this.userName,
+    this.onIndexChanged, // add this
   });
 
   @override
@@ -46,6 +49,15 @@ class _ProfileTabState extends State<ProfileTab> {
   void initState() {
     super.initState();
     _loadProfileImage();
+  }
+
+  // ================= NAVIGATION HELPERS =================
+  void _navigateToPage(BuildContext context, Widget page) {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
   }
 
   Future<void> _loadProfileImage() async {
@@ -80,35 +92,65 @@ class _ProfileTabState extends State<ProfileTab> {
     }
   }
 
-  Future<void> _uploadProfileImage(File image) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) return;
+// In ProfileTab.dart, update the _uploadProfileImage method:
+Future<void> _uploadProfileImage(File image) async {
+  final user = _auth.currentUser;
+  if (user == null) return;
 
-      // Create a reference to the location you want to upload to in firebase storage
-      final ref = _storage.ref().child('profile_images/${user.uid}.jpg');
+  // store context locally
+  final currentContext = context;
 
-      // Upload the file
-      await ref.putFile(image);
+  try {
+    showDialog(
+      context: currentContext,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF00B14F),
+        ),
+      ),
+    );
 
-      // Get the download URL
-      final url = await ref.getDownloadURL();
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child("profile_images")
+        .child("${user.uid}.jpg");
 
-      // Save the URL to Firestore
-      await _firestore.collection('users').doc(user.uid).set({
-        'profileImageUrl': url,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+    SettableMetadata metadata = SettableMetadata(
+      contentType: 'image/jpeg',
+      customMetadata: {'uploadedAt': DateTime.now().toString()},
+    );
 
-      setState(() {
-        _profileImageUrl = url;
-      });
+    UploadTask uploadTask = ref.putFile(image, metadata);
 
-      _showMessage(context, 'Profile image updated successfully!');
-    } catch (e) {
-      _showMessage(context, 'Error uploading image: $e', isError: true);
-    }
+    TaskSnapshot snapshot = await uploadTask;
+    String downloadUrl = await snapshot.ref.getDownloadURL();
+
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(user.uid)
+        .update({
+      "profileImageUrl": downloadUrl,
+      "updatedAt": FieldValue.serverTimestamp(),
+    });
+
+    if (!mounted) return;
+
+    Navigator.pop(currentContext);
+
+    setState(() {
+      _profileImageUrl = downloadUrl;
+      _selectedImage = null;
+    });
+
+    _showMessage(currentContext, 'Profile image updated successfully!');
+  } catch (e) {
+    if (!mounted) return;
+
+    Navigator.pop(currentContext);
+    _showMessage(currentContext, 'Error uploading image: $e', isError: true);
   }
+}
 
   Future<void> _pickImage() async {
     try {
@@ -142,7 +184,7 @@ class _ProfileTabState extends State<ProfileTab> {
   }
 
   Future<void> _makePhoneCall() async {
-    const phoneNumber = '9751867879';
+    const phoneNumber = '6374049582';
     final url = Uri.parse('tel:$phoneNumber');
 
     if (await canLaunchUrl(url)) {
@@ -167,18 +209,18 @@ class _ProfileTabState extends State<ProfileTab> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
       decoration: BoxDecoration(
         color: _primaryColor,
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
         ),
         boxShadow: [
           BoxShadow(
             color: _primaryColor.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -187,30 +229,32 @@ class _ProfileTabState extends State<ProfileTab> {
           // User Status Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(15),
             child: Column(
               children: [
                 // User Avatar and Info
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // User Avatar with edit option
+                    // User Avatar with edit option - INCREASED SIZE
                     Stack(
                       children: [
                         Container(
-                          width: 70,
-                          height: 70,
+                          width: 100, // Increased from 70 to 100
+                          height: 100, // Increased from 70 to 100
                           decoration: BoxDecoration(
                             color: _primaryColor,
-                            borderRadius: BorderRadius.circular(35),
+                            borderRadius: BorderRadius.circular(
+                                50), // Updated for 100 size
                             border: Border.all(
                               color: Colors.white,
-                              width: 3,
+                              width: 4, // Increased border width
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 12,
+                                offset: const Offset(0, 5),
                               ),
                             ],
                             image: _profileImageUrl != null
@@ -225,7 +269,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                   child: Text(
                                     _getInitials(fullName),
                                     style: const TextStyle(
-                                      fontSize: 28,
+                                      fontSize: 42, // Increased from 28 to 42
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -235,22 +279,32 @@ class _ProfileTabState extends State<ProfileTab> {
                         ),
                         if (isLoggedIn)
                           Positioned(
-                            bottom: 0,
-                            right: 0,
+                            bottom: 2,
+                            right: 2,
                             child: GestureDetector(
                               onTap: _pickImage,
                               child: Container(
-                                width: 28,
-                                height: 28,
+                                width: 36, // Increased from 28 to 36
+                                height: 36, // Increased from 28 to 36
                                 decoration: BoxDecoration(
                                   color: _primaryColor,
                                   shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: Colors.white, width: 2),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 3, // Increased border width
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.2),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: const Icon(
                                   Icons.edit,
-                                  size: 14,
+                                  size: 20, // Increased from 14 to 20
                                   color: Colors.white,
                                 ),
                               ),
@@ -258,9 +312,9 @@ class _ProfileTabState extends State<ProfileTab> {
                           ),
                       ],
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 20), // Increased spacing
 
-                    // User Info
+                    // User Info - Adjusted for larger avatar
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,45 +322,47 @@ class _ProfileTabState extends State<ProfileTab> {
                           Text(
                             isLoggedIn ? 'Hello!' : 'Welcome, Guest!',
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 18, // Increased from 15
                               fontWeight: FontWeight.w700,
                               color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
                             fullName,
                             style: const TextStyle(
-                              fontSize: 24,
+                              fontSize: 26, // Increased from 24
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
                             designation,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 16, // Increased from 14
                               fontWeight: FontWeight.w600,
                               color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
                           if (!isLoggedIn) ...[
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 15),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
+                                horizontal: 18,
+                                vertical: 10,
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(25),
                               ),
                               child: const Text(
                                 'Guest Mode',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 12,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -558,22 +614,7 @@ class _ProfileTabState extends State<ProfileTab> {
                 Divider(color: _dividerColor, height: 1, indent: 72),
               ],
             ),
-
-          // Ride History Option (only for logged in users)
-          if (isLoggedIn)
-            Column(
-              children: [
-                _buildProfileOptionItem(
-                  title: 'Booking History',
-                  subtitle: 'View your booked rides',
-                  icon: Icons.history,
-                  color: _primaryColor,
-                  onTap: () => _handleOptionTap(context, 'Booking History'),
-                ),
-                Divider(color: _dividerColor, height: 1, indent: 72),
-              ],
-            ),
-
+      
           // Settings Option
           _buildProfileOptionItem(
             title: 'Settings',
@@ -690,12 +731,6 @@ class _ProfileTabState extends State<ProfileTab> {
       case 'Edit Profile':
         _showEditProfileDialog(context);
         break;
-      case 'Ride History':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const BookingHistoryPage()),
-        );
-        break;
       case 'Settings':
         Navigator.push(
           context,
@@ -748,289 +783,358 @@ class _ProfileTabState extends State<ProfileTab> {
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.edit,
-                          color: _primaryColor,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Edit Profile',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: _primaryColor,
+      builder: (context) {
+        // Create state variables outside the StatefulBuilder builder
+        // so they persist across rebuilds
+        bool showCurrentPassword = false;
+        bool showNewPassword = false;
+        bool showConfirmPassword = false;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.edit,
+                                color: _primaryColor,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Edit Profile',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: _primaryColor,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                    // Personal Information Section
-                    const SizedBox(height: 16),
-
-                    TextFormField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Full Name',
-                        prefixIcon: Icon(Icons.person, color: _primaryColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextFormField(
-                      controller: designationController,
-                      decoration: InputDecoration(
-                        labelText: 'Designation',
-                        prefixIcon: Icon(Icons.work, color: _primaryColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextFormField(
-                      controller: phoneController,
-                      decoration: InputDecoration(
-                        labelText: 'Phone Number',
-                        prefixIcon: Icon(Icons.phone, color: _primaryColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter phone number';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextFormField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email Address',
-                        prefixIcon: Icon(Icons.email, color: _primaryColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter email address';
-                        }
-                        if (!value.contains('@') || !value.contains('.')) {
-                          return 'Enter valid email address';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Change Password Section
-                    Text(
-                      'Change Password',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: _textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    TextFormField(
-                      controller: currentPasswordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Current Password',
-                        prefixIcon: Icon(Icons.lock, color: _primaryColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextFormField(
-                      controller: newPasswordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'New Password',
-                        prefixIcon:
-                            Icon(Icons.lock_outline, color: _primaryColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value != null &&
-                            value.isNotEmpty &&
-                            value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextFormField(
-                      controller: confirmPasswordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Confirm New Password',
-                        prefixIcon:
-                            Icon(Icons.lock_reset, color: _primaryColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (newPasswordController.text.isNotEmpty &&
-                            value != newPasswordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _primaryColor,
-                              side: BorderSide(color: Colors.grey),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
+                          // Personal Information Section
+                          TextFormField(
+                            controller: nameController,
+                            decoration: InputDecoration(
+                              labelText: 'Full Name',
+                              prefixIcon:
+                                  Icon(Icons.person, color: _primaryColor),
+                              border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              if (formKey.currentState!.validate()) {
-                                try {
-                                  // Update profile information
-                                  await _saveUserProfile(
-                                    nameController.text,
-                                    phoneController.text,
-                                    emailController.text,
-                                    designationController.text,
-                                  );
-
-                                  // Update Firebase Auth display name and email
-                                  await user
-                                      .updateDisplayName(nameController.text);
-
-                                  // Change password if provided
-                                  if (currentPasswordController
-                                          .text.isNotEmpty &&
-                                      newPasswordController.text.isNotEmpty) {
-                                    // Re-authenticate user before changing password
-                                    final credential =
-                                        EmailAuthProvider.credential(
-                                      email: user.email!,
-                                      password: currentPasswordController.text,
-                                    );
-                                    await user.reauthenticateWithCredential(
-                                        credential);
-                                    await user.updatePassword(
-                                        newPasswordController.text);
-                                  }
-
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
-                                    _showMessage(context,
-                                        'Profile updated successfully!');
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    _showMessage(context, 'Error: $e',
-                                        isError: true);
-                                  }
-                                }
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your name';
                               }
+                              return null;
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
+                          ),
+                          const SizedBox(height: 12),
+
+                          TextFormField(
+                            controller: designationController,
+                            decoration: InputDecoration(
+                              labelText: 'Designation',
+                              prefixIcon:
+                                  Icon(Icons.work, color: _primaryColor),
+                              border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text('Save Changes'),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+
+                          TextFormField(
+                            controller: phoneController,
+                            decoration: InputDecoration(
+                              labelText: 'Phone Number',
+                              prefixIcon:
+                                  Icon(Icons.phone, color: _primaryColor),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            keyboardType: TextInputType.phone,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter phone number';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+
+                          TextFormField(
+                            controller: emailController,
+                            decoration: InputDecoration(
+                              labelText: 'Email Address',
+                              prefixIcon:
+                                  Icon(Icons.email, color: _primaryColor),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter email address';
+                              }
+                              if (!value.contains('@') ||
+                                  !value.contains('.')) {
+                                return 'Enter valid email address';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Change Password Section
+                          Text(
+                            'Change Password',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: _textColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          TextFormField(
+                            controller: currentPasswordController,
+                            obscureText: !showCurrentPassword,
+                            decoration: InputDecoration(
+                              labelText: 'Current Password',
+                              prefixIcon:
+                                  Icon(Icons.lock, color: _primaryColor),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  showCurrentPassword
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  color: _primaryColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    showCurrentPassword = !showCurrentPassword;
+                                  });
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          TextFormField(
+                            controller: newPasswordController,
+                            obscureText: !showNewPassword,
+                            decoration: InputDecoration(
+                              labelText: 'New Password',
+                              prefixIcon: Icon(Icons.lock_outline,
+                                  color: _primaryColor),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  showNewPassword
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  color: _primaryColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    showNewPassword = !showNewPassword;
+                                  });
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value != null &&
+                                  value.isNotEmpty &&
+                                  value.length < 6) {
+                                return 'Password must be at least 6 characters';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+
+                          TextFormField(
+                            controller: confirmPasswordController,
+                            obscureText: !showConfirmPassword,
+                            decoration: InputDecoration(
+                              labelText: 'Confirm New Password',
+                              prefixIcon:
+                                  Icon(Icons.lock_reset, color: _primaryColor),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  showConfirmPassword
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  color: _primaryColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    showConfirmPassword = !showConfirmPassword;
+                                  });
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (newPasswordController.text.isNotEmpty &&
+                                  value != newPasswordController.text) {
+                                return 'Passwords do not match';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: _primaryColor,
+                                    side:
+                                        BorderSide(color: Colors.grey.shade300),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (formKey.currentState!.validate()) {
+                                      try {
+                                        // Update profile information
+                                        await _saveUserProfile(
+                                          nameController.text,
+                                          phoneController.text,
+                                          emailController.text,
+                                          designationController.text,
+                                        );
+
+                                        // Update Firebase Auth display name
+                                        await user.updateDisplayName(
+                                            nameController.text);
+
+                                        // Change password if provided
+                                        if (currentPasswordController
+                                                .text.isNotEmpty &&
+                                            newPasswordController
+                                                .text.isNotEmpty) {
+                                          // Re-authenticate user before changing password
+                                          final credential =
+                                              EmailAuthProvider.credential(
+                                            email: user.email!,
+                                            password:
+                                                currentPasswordController.text,
+                                          );
+                                          await user
+                                              .reauthenticateWithCredential(
+                                                  credential);
+                                          await user.updatePassword(
+                                              newPasswordController.text);
+                                        }
+
+                                        if (context.mounted) {
+                                          Navigator.pop(context);
+                                          _showMessage(context,
+                                              'Profile updated successfully!');
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          _showMessage(context, 'Error: $e',
+                                              isError: true);
+                                        }
+                                      }
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _primaryColor,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text('Save Changes'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
-  // Helper method to get initials from name
+// Helper method to get initials from name
   String _getInitials(String name) {
     if (name.isEmpty || name == 'Guest User') return 'GU';
 
+    // Handle names like "Abarna S" -> should return "AS"
     final parts = name.trim().split(' ');
-    if (parts.length == 1) {
+    if (parts.length >= 2) {
+      // Take first letter of first name and first letter of last name
+      return parts[0].substring(0, 1).toUpperCase() +
+          parts[1].substring(0, 1).toUpperCase();
+    } else if (parts.length == 1) {
+      // Single name - take first letter
       return parts[0].substring(0, 1).toUpperCase();
     }
 
-    return parts[0].substring(0, 1).toUpperCase() +
-        parts[1].substring(0, 1).toUpperCase();
+    return 'U';
   }
 
   @override

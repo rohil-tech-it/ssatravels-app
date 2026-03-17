@@ -1,4 +1,5 @@
-// lib/screens/admin/admin_booking_screen.dart - COMPLETE FIXED VERSION
+// lib/screens/admin/admin_booking_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:async';
 
 class AdminBookingScreen extends StatefulWidget {
   const AdminBookingScreen({super.key});
@@ -24,33 +26,45 @@ class AdminBookingScreen extends StatefulWidget {
   State<AdminBookingScreen> createState() => _AdminBookingScreenState();
 }
 
-class _AdminBookingScreenState extends State<AdminBookingScreen> {
-  // String truncate helper method
-  String _truncateString(String text, int maxLength) {
-    if (text.length <= maxLength) return text;
-    return '${text.substring(0, maxLength)}...';
-  }
+class _AdminBookingScreenState extends State<AdminBookingScreen>
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  // ---------- Static variables ----------
+  static String? _cachedUserId;
+  static bool _isAdminVerified = false;
+  static bool _isCheckingAdmin = false;
+  static List<Map<String, dynamic>>? _cachedBookings;
+  static DateTime? _lastLoadTime;
+  static bool _isRedirecting = false;
+  static bool _isInitialized = false;
+  static int _loadAttempts = 0;
+
+  // ---------- Instance variables ----------
+  bool _isLoading = true;
+  bool _isDataLoading = true;
+  bool _hasLoadError = false;
+  String _errorMessage = '';
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
   List<Map<String, dynamic>> _bookings = [];
   List<Map<String, dynamic>> _filteredBookings = [];
-  bool _isLoading = true;
+
   String _searchQuery = '';
   String _selectedStatus = 'All';
   DateTime? _selectedDate;
   Map<String, dynamic>? _adminData;
 
-  // Google Maps API Key from .env
   final String _googleMapsApiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
 
-  // GST Company Details
   final String _companyGSTIN = "33DJJPS1207L1";
   final String _companyName = "S.S.A AGENCY";
   final String _companyAddress = "Virudhunagar";
-  final String _companyPhone = "+91 9751867879";
+  final String _companyPhone = "+91 63740 49582";
 
-  // Admin Colors
   final Color _adminPrimaryColor = const Color(0xFF00C853);
   final Color _adminAccentColor = const Color(0xFF00E676);
   final Color _adminBackground = const Color(0xFFF5FDF8);
@@ -65,219 +79,453 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     'Cancelled'
   ];
 
-  // SAC Code for Passenger Transport Service
   final String _sacCode = "9966";
-
-  // Invoice counter
   int _invoiceCounter = 0;
+
+  // ---------- Auth state listener ----------
+  late Stream<User?> _authStateChanges;
+  late StreamSubscription<User?> _authSubscription;
+  Timer? _sessionCheckTimer;
 
   @override
   void initState() {
     super.initState();
-    _checkAdminAccess();
-    _loadAdminData();
-    _loadBookings();
-    _loadInvoiceCounter();
+
+    print('🟢 AdminBookingScreen - initState');
+
+    _setupAuthListener();
+    WidgetsBinding.instance.addObserver(this);
+    _startSessionCheckTimer();
+
+    Future.microtask(() {
+      _initializeScreen();
+    });
   }
 
-  Future<void> _checkAdminAccess() async {
-    try {
-      User? user = _auth.currentUser;
+  void _setupAuthListener() {
+    _authSubscription = _auth.authStateChanges().listen((User? user) {
+      if (!mounted) return;
+
       if (user == null) {
-        _showSnackBar('Please login as admin', Colors.red);
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.pushReplacementNamed(context, '/login');
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted && FirebaseAuth.instance.currentUser == null) {
+            _redirectToLogin();
+          }
         });
+      }
+    });
+  }
+
+  void _startSessionCheckTimer() {
+    _sessionCheckTimer = Timer.periodic(const Duration(minutes: 5), (timer) {
+      if (mounted) {
+        _checkSessionQuietly();
+      }
+    });
+  }
+
+  Future<void> _checkSessionQuietly() async {
+    try {
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        // wait and re-check to avoid temporary logout
+        await Future.delayed(const Duration(seconds: 2));
+
+        if (FirebaseAuth.instance.currentUser == null &&
+            mounted &&
+            !_isRedirecting) {
+          print("⚠️ User really logged out");
+          _handleLogout();
+        }
+
         return;
       }
 
-      // Check Firestore for admin status
-      DocumentSnapshot userDoc =
-          await _firestore.collection('users').doc(user.uid).get();
+      // Check token silently
+      await user.getIdToken(false);
+    } catch (e) {
+      print('⚠️ Session check error: $e');
+    }
+  }
 
-      bool isAdmin = userDoc.exists && userDoc['isAdmin'] == true;
+  void _handleLogout() {
+    if (_isRedirecting) return;
 
-      if (!isAdmin) {
-        _showSnackBar('Admin access required', Colors.red);
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.pushReplacementNamed(context, '/user-home');
+    if (FirebaseAuth.instance.currentUser != null) {
+      return; // avoid false logout
+    }
+
+    print("🔴 Logging out user");
+
+    _redirectToLogin();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkSessionQuietly();
+    }
+  }
+
+  @override
+  void dispose() {
+    print('🔴 AdminBookingScreen - dispose');
+    _authSubscription.cancel();
+    _sessionCheckTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _redirectToLogin() {
+    if (!mounted || _isRedirecting) return;
+
+    _isRedirecting = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login').then((_) {
+          _isRedirecting = false;
+        }).catchError((_) {
+          _isRedirecting = false;
         });
       } else {
-        print('✅ Admin access granted from Firestore');
+        _isRedirecting = false;
       }
-    } catch (e) {
-      print('Error checking admin access: $e');
-      _showSnackBar('Error verifying admin access', Colors.red);
-    }
+    });
   }
 
-  Future<void> _loadInvoiceCounter() async {
-    try {
-      DocumentSnapshot counterDoc =
-          await _firestore.collection('settings').doc('invoiceCounter').get();
+  Future<void> _initializeScreen() async {
+    print('🟢 _initializeScreen started');
 
-      if (counterDoc.exists) {
-        setState(() {
-          _invoiceCounter = counterDoc['count'] ?? 0;
-        });
-      } else {
-        await _firestore.collection('settings').doc('invoiceCounter').set({
-          'count': 0,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
+    if (_isInitialized && _isAdminVerified) {
+      print('✅ Already initialized and verified');
+      return;
+    }
+
+    User? currentUser = _auth.currentUser;
+
+    if (currentUser == null) {
+      print('⚠️ User null, rechecking...');
+
+      await Future.delayed(const Duration(seconds: 2));
+
+      currentUser = _auth.currentUser;
+
+      if (currentUser == null) {
+        print('❌ User really logged out');
+        _redirectToLogin();
+        return;
       }
-    } catch (e) {
-      print('Error loading invoice counter: $e');
     }
-  }
 
-  Future<String> _getNextInvoiceNumber() async {
-    try {
-      final settingsRef =
-          _firestore.collection('settings').doc('invoiceCounter');
+    await _checkAdminAccess();
 
-      return await _firestore.runTransaction((transaction) async {
-        final snapshot = await transaction.get(settingsRef);
+    if (_isAdminVerified && mounted) {
+      try {
+        await Future.wait([
+          _loadAdminData(),
+          _loadBookings(),
+          _loadInvoiceCounter(),
+        ]);
 
-        int currentCount = snapshot.exists ? (snapshot['count'] ?? 0) : 0;
-        int nextCount = currentCount + 1;
-
-        transaction.set(
-            settingsRef,
-            {
-              'count': nextCount,
-              'updatedAt': FieldValue.serverTimestamp(),
-            },
-            SetOptions(merge: true));
-
-        String year = DateFormat('yyyy').format(DateTime.now());
-        String number = nextCount.toString().padLeft(3, '0');
-
-        return 'SSA/$year/$number';
-      });
-    } catch (e) {
-      print('Error getting next invoice number: $e');
-      String year = DateFormat('yyyy').format(DateTime.now());
-      _invoiceCounter++;
-      return 'SSA/$year/${_invoiceCounter.toString().padLeft(3, '0')}';
-    }
-  }
-
-  Future<void> _loadAdminData() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        DocumentSnapshot adminSnapshot =
-            await _firestore.collection('admins').doc(user.uid).get();
-
-        if (adminSnapshot.exists) {
+        if (mounted) {
           setState(() {
-            _adminData = adminSnapshot.data() as Map<String, dynamic>;
-          });
-        } else {
-          // Create admin record if not exists
-          await _firestore.collection('admins').doc(user.uid).set({
-            'name': user.displayName ?? 'Admin',
-            'email': user.email,
-            'createdAt': FieldValue.serverTimestamp(),
-            'isActive': true,
-          });
-
-          setState(() {
-            _adminData = {
-              'name': user.displayName ?? 'Admin',
-              'email': user.email,
-            };
+            _isInitialized = true;
+            _hasLoadError = false;
           });
         }
+        print('✅ Screen initialized successfully');
+      } catch (e) {
+        print('❌ Error during initialization: $e');
+        setState(() {
+          _hasLoadError = true;
+          _errorMessage = e.toString();
+        });
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Something went wrong!")));
     }
   }
 
-  Future<void> _loadBookings() async {
+  @override
+  void didUpdateWidget(covariant AdminBookingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (_isInitialized && _isAdminVerified) {
+      _checkSessionQuietly();
+    }
+  }
+
+  Future<void> _checkAdminAccess() async {
+    if (_isCheckingAdmin) return;
+
+    setState(() {
+      _isCheckingAdmin = true;
+      _isLoading = true;
+    });
+
+    User? user = _auth.currentUser;
+    if (user == null) {
+      _redirectToLogin();
+      return;
+    }
+
+    bool isAdmin = false;
     try {
-      setState(() => _isLoading = true);
+      // Check by UID
+      DocumentSnapshot adminDoc = await _firestore
+          .collection('admins')
+          .doc(user.uid)
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      if (adminDoc.exists) {
+        isAdmin = true;
+        print('✅ Admin verified by UID');
+      }
+
+      // Check by phone number
+      if (!isAdmin && user.phoneNumber != null) {
+        String phone = user.phoneNumber!.replaceAll('+91', '').trim();
+        DocumentSnapshot phoneDoc =
+            await _firestore.collection('admins').doc('admin_$phone').get();
+        if (phoneDoc.exists) {
+          isAdmin = true;
+          print('✅ Admin verified by phone: $phone');
+        }
+      }
+
+      // Check in users collection
+      if (!isAdmin) {
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+        var data = userDoc.data() as Map<String, dynamic>?;
+        if (data != null && data['isAdmin'] == true) {
+          isAdmin = true;
+          print('✅ Admin verified in users collection');
+        }
+      }
+
+      if (!isAdmin) {
+        throw Exception('Admin access required');
+      }
+
+      setState(() {
+        _cachedUserId = user.uid;
+        _isAdminVerified = true;
+        _isLoading = false;
+        _isCheckingAdmin = false;
+      });
+    } catch (e) {
+      print('❌ Admin check failed: $e');
+      setState(() {
+        _isLoading = false;
+        _isCheckingAdmin = false;
+        _hasLoadError = true;
+        _errorMessage = e.toString();
+      });
+
+      if (!mounted) return;
+
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Access Denied'),
+          content:
+              Text('You need admin privileges to access this page.\nError: $e'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _auth.signOut();
+                _redirectToLogin();
+              },
+              child: const Text('Logout'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushReplacementNamed(context, '/user-home');
+              },
+              child: const Text('Go to User Home'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _checkAdminAccess();
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadBookings({bool forceRefresh = false}) async {
+    if (!mounted || !_isAdminVerified) {
+      print('⚠️ Cannot load bookings - not verified');
+      return;
+    }
+
+    _loadAttempts++;
+
+    // Cached data check
+    if (!forceRefresh && _cachedBookings != null && _lastLoadTime != null) {
+      final now = DateTime.now();
+      final diff = now.difference(_lastLoadTime!);
+
+      if (diff.inMinutes < 5) {
+        print('✅ Using cached bookings (${diff.inMinutes} min old)');
+        if (mounted) {
+          setState(() {
+            _bookings = List.from(_cachedBookings!);
+            _filteredBookings = List.from(_cachedBookings!);
+            _isDataLoading = false;
+            _hasLoadError = false;
+          });
+        }
+        return;
+      }
+    }
+
+    try {
+      setState(() {
+        _isDataLoading = true;
+        _hasLoadError = false;
+      });
+
+      print('🟢 Loading bookings from Firestore...');
 
       QuerySnapshot snapshot = await _firestore
           .collection('bookings')
           .orderBy('createdAt', descending: true)
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 30)); // Increased timeout
 
       List<Map<String, dynamic>> bookings = [];
 
       for (var doc in snapshot.docs) {
-        var data = doc.data() as Map<String, dynamic>;
+        try {
+          var data = doc.data() as Map<String, dynamic>;
 
-        String hoursDays = _calculateDuration(data);
-        String vehicleName = await _getVehicleName(data);
-        String status = data['bookingStatus'] ?? data['status'] ?? 'Pending';
-        String distanceFormatted = _formatDistance(data['distance']);
-        String bookedOn = _formatDateTime(data['createdAt']);
-        String updatedOn = _formatDateTime(data['updatedAt']);
+          String hoursDays = await _calculateDuration(data);
+          String vehicleName = await _getVehicleName(data);
+          String status = data['bookingStatus'] ?? data['status'] ?? 'Pending';
+          String distanceFormatted = _formatDistance(data['distance']);
+          String bookedOn = _formatDateTime(data['createdAt']);
+          String updatedOn = _formatDateTime(data['updatedAt']);
 
-        // FIXED: Handle different possible field names for user/customer IDs
-        String userId =
-            data['userid'] ?? data['userId'] ?? data['customerId'] ?? '';
+          String userId =
+              data['userid'] ?? data['userId'] ?? data['customerId'] ?? '';
 
-        bookings.add({
-          'id': doc.id,
-          ...data,
-          'userId': userId, // Add normalized user ID field
-          'displayDate': _formatDisplayDate(data),
-          'displayTime': data['formattedTime'] ?? data['pickupTime'] ?? 'N/A',
-          'hoursDays': hoursDays,
-          'totalFareFormatted':
-              _formatCurrency(data['totalFare'] ?? data['totalAmount'] ?? 0),
-          'vehicleName': vehicleName,
-          'status': status,
-          'bookingStatus': status,
-          'paymentStatus': data['paymentStatus'] ?? 'Unpaid',
-          'createdAtFormatted': bookedOn,
-          'updatedAtFormatted': updatedOn,
-          'distanceFormatted': distanceFormatted,
-          'pickupLocation':
-              data['pickupLocation']?.toString().trim() ?? 'Not specified',
-          'dropLocation':
-              data['dropLocation']?.toString().trim() ?? 'Not specified',
-          'pickupCoordinates': data['pickupCoordinates'],
-          'dropCoordinates': data['dropCoordinates'],
-        });
+          bookings.add({
+            'id': doc.id,
+            ...data,
+            'userId': userId,
+            'displayDate': _formatDisplayDate(data),
+            'displayTime': data['formattedTime'] ?? data['pickupTime'] ?? 'N/A',
+            'hoursDays': hoursDays,
+            'totalFareFormatted':
+                _formatCurrency(data['totalFare'] ?? data['totalAmount'] ?? 0),
+            'vehicleName': vehicleName,
+            'status': status,
+            'bookingStatus': status,
+            'paymentStatus': data['paymentStatus'] ?? 'Unpaid',
+            'createdAtFormatted': bookedOn,
+            'updatedAtFormatted': updatedOn,
+            'distanceFormatted': distanceFormatted,
+            'pickupLocation':
+                data['pickupLocation']?.toString().trim() ?? 'Not specified',
+            'dropLocation':
+                data['dropLocation']?.toString().trim() ?? 'Not specified',
+            'pickupCoordinates': data['pickupCoordinates'],
+            'dropCoordinates': data['dropCoordinates'],
+          });
+        } catch (e) {
+          print('⚠️ Error processing booking ${doc.id}: $e');
+          continue;
+        }
       }
+
+      if (!mounted) return;
+
+      _cachedBookings = List.from(bookings);
+      _lastLoadTime = DateTime.now();
+      _loadAttempts = 0;
 
       setState(() {
         _bookings = bookings;
         _filteredBookings = bookings;
-        _isLoading = false;
+        _isDataLoading = false;
+        _hasLoadError = false;
       });
+
+      print('✅ Loaded ${bookings.length} bookings successfully');
     } catch (e) {
-      _showSnackBar('Error loading bookings: ${e.toString()}', Colors.red);
-      setState(() => _isLoading = false);
+      print('❌ Error loading bookings: $e');
+
+      if (!mounted) return;
+
+      // Show error but keep cached data if available
+      if (_cachedBookings != null && mounted) {
+        setState(() {
+          _bookings = List.from(_cachedBookings!);
+          _filteredBookings = List.from(_cachedBookings!);
+          _isDataLoading = false;
+          _hasLoadError = true;
+          _errorMessage = e.toString();
+        });
+
+        _showSnackBar('⚠️ Using cached data. Network error: ${e.toString()}',
+            Colors.orange);
+      } else {
+        setState(() {
+          _isDataLoading = false;
+          _hasLoadError = true;
+          _errorMessage = e.toString();
+        });
+
+        _showSnackBar('❌ Error loading bookings: ${e.toString()}', Colors.red);
+      }
+
+      // Don't logout on error, just show retry option
+      if (_loadAttempts < 3) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted && _hasLoadError) {
+            _loadBookings(forceRefresh: true);
+          }
+        });
+      }
     }
   }
 
   void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(10),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 
-  String _calculateDuration(Map<String, dynamic> data) {
+  Future<String> _calculateDuration(Map<String, dynamic> data) async {
     if (data['isPackageTrip'] == true && data['packageHours'] != null) {
       return '${data['packageHours']} hours';
     } else if (data['distance'] != null) {
-      double distance = double.tryParse(data['distance'].toString()) ?? 0.0;
-      if (distance > 200) {
-        int days = (distance / 400).ceil();
-        return '$days days';
-      } else {
+      try {
+        double distance = double.tryParse(data['distance'].toString()) ?? 0.0;
+        if (distance > 200) {
+          int days = (distance / 400).ceil();
+          return '$days days';
+        } else {
+          return '1 day';
+        }
+      } catch (e) {
         return '1 day';
       }
     }
@@ -291,7 +539,8 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         DocumentSnapshot vehicleSnapshot = await _firestore
             .collection('vehicles')
             .doc(data['vehicleId'])
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 5));
         if (vehicleSnapshot.exists) {
           var vehicleData = vehicleSnapshot.data() as Map<String, dynamic>;
           vehicleName = vehicleData['name'] ?? vehicleName;
@@ -398,6 +647,101 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     }
   }
 
+  Future<void> _loadInvoiceCounter() async {
+    if (!mounted || !_isAdminVerified) return;
+
+    try {
+      DocumentSnapshot counterDoc = await _firestore
+          .collection('settings')
+          .doc('invoiceCounter')
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      if (counterDoc.exists && mounted) {
+        setState(() {
+          _invoiceCounter = counterDoc['count'] ?? 0;
+        });
+      } else {
+        await _firestore.collection('settings').doc('invoiceCounter').set({
+          'count': 0,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print('Error loading invoice counter: $e');
+    }
+  }
+
+  Future<String> _getNextInvoiceNumber() async {
+    try {
+      final settingsRef =
+          _firestore.collection('settings').doc('invoiceCounter');
+
+      return await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(settingsRef);
+
+        int currentCount = snapshot.exists ? (snapshot['count'] ?? 0) : 0;
+        int nextCount = currentCount + 1;
+
+        transaction.set(
+            settingsRef,
+            {
+              'count': nextCount,
+              'updatedAt': FieldValue.serverTimestamp(),
+            },
+            SetOptions(merge: true));
+
+        String year = DateFormat('yyyy').format(DateTime.now());
+        String number = nextCount.toString().padLeft(3, '0');
+
+        return 'SSA/$year/$number';
+      });
+    } catch (e) {
+      String year = DateFormat('yyyy').format(DateTime.now());
+      _invoiceCounter++;
+      return 'SSA/$year/${_invoiceCounter.toString().padLeft(3, '0')}';
+    }
+  }
+
+  Future<void> _loadAdminData() async {
+    if (!mounted || !_isAdminVerified) return;
+
+    try {
+      User? user = _auth.currentUser;
+      if (user != null && mounted) {
+        DocumentSnapshot adminSnapshot = await _firestore
+            .collection('admins')
+            .doc(user.uid)
+            .get()
+            .timeout(const Duration(seconds: 10));
+
+        if (adminSnapshot.exists && mounted) {
+          setState(() {
+            _adminData = adminSnapshot.data() as Map<String, dynamic>;
+          });
+        } else if (mounted) {
+          await _firestore.collection('admins').doc(user.uid).set({
+            'name': user.displayName ?? 'Admin',
+            'email': user.email,
+            'createdAt': FieldValue.serverTimestamp(),
+            'isActive': true,
+          });
+
+          if (mounted) {
+            setState(() {
+              _adminData = {
+                'name': user.displayName ?? 'Admin',
+                'email': user.email,
+              };
+            });
+          }
+        }
+      }
+    } catch (e) {
+      print('Error loading admin data: $e');
+    }
+  }
+
   Color _getStatusColor(String? status) {
     if (status == null) return Colors.grey;
     switch (status.toLowerCase()) {
@@ -494,6 +838,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         'drop': dropLatLng,
       };
     } catch (e) {
+      print('Error getting coordinates: $e');
       return {'pickup': null, 'drop': null};
     }
   }
@@ -503,14 +848,15 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     List<LatLng> polylinePoints = [];
 
     if (_googleMapsApiKey.isEmpty) {
-      return polylinePoints;
+      return [origin, destination];
     }
 
     try {
       final String url =
           'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=driving&key=$_googleMapsApiKey';
 
-      final response = await http.get(Uri.parse(url));
+      final response =
+          await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -533,6 +879,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     } catch (e) {
       print('Error getting route polyline: $e');
     }
+
     if (polylinePoints.isEmpty) {
       polylinePoints = [origin, destination];
     }
@@ -574,7 +921,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     return points;
   }
 
-  // Location preview widget
   Widget _buildLocationPreview(String pickup, String drop, bool hasError) {
     String displayPickup = _isCoordinate(pickup) ? 'Selected Location' : pickup;
     String displayDrop = _isCoordinate(drop) ? 'Selected Location' : drop;
@@ -708,7 +1054,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           ),
           child: Column(
             children: [
-              // Header
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -740,8 +1085,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                   ],
                 ),
               ),
-
-              // Map
               Expanded(
                 child: FutureBuilder<Map<String, LatLng?>>(
                   future: _getCoordinatesForRoute(pickup, drop),
@@ -841,8 +1184,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                               compassEnabled: true,
                               mapToolbarEnabled: true,
                             ),
-
-                            // Google Maps Button
                             Positioned(
                               bottom: 16,
                               right: 16,
@@ -854,8 +1195,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                                     color: Colors.white),
                               ),
                             ),
-
-                            // Route type indicator
                             if (!hasRealRoute)
                               Positioned(
                                 top: 16,
@@ -886,8 +1225,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                   },
                 ),
               ),
-
-              // Footer with location details
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -950,6 +1287,11 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     );
   }
 
+  String _truncateString(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}...';
+  }
+
   Future<void> _openInGoogleMaps(String pickup, String drop) async {
     String origin;
     String destination;
@@ -979,8 +1321,9 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     final String url =
         'https://www.google.com/maps/dir/?api=1&origin=$origin&destination=$destination';
 
-    if (await canLaunch(url)) {
-      await launch(url);
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       _showSnackBar('Could not open Google Maps', Colors.red);
     }
@@ -1018,7 +1361,7 @@ Your booking status has been updated!
 ✅ *New Status:* $newStatus
 
 Thank you for choosing SSA Travels!
-For any queries, contact us: +91 9751867879
+For any queries, contact us: +91 6374049582
 
 Best regards,
 SSA Travels Virudhunagar
@@ -1027,9 +1370,10 @@ SSA Travels Virudhunagar
 
       String encodedMessage = Uri.encodeComponent(message);
       String whatsappUrl = 'https://wa.me/$cleanPhone?text=$encodedMessage';
+      final Uri uri = Uri.parse(whatsappUrl);
 
-      if (await canLaunch(whatsappUrl)) {
-        await launch(whatsappUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         throw 'Could not launch WhatsApp';
       }
@@ -1128,7 +1472,6 @@ SSA Travels Virudhunagar
     );
   }
 
-  // FIXED: Added admin claim check and sync with rides collection
   Future<void> _updateBookingStatus(String bookingId, String newStatus) async {
     try {
       User? user = _auth.currentUser;
@@ -1137,20 +1480,16 @@ SSA Travels Virudhunagar
         return;
       }
 
-      // Check Firestore for admin status (instead of custom claims)
-      DocumentSnapshot userDoc =
-          await _firestore.collection('users').doc(user.uid).get();
-
-      bool isAdmin = userDoc.exists && userDoc['isAdmin'] == true;
-
-      if (!isAdmin) {
+      if (!_isAdminVerified) {
         _showSnackBar('Admin privileges required', Colors.red);
         return;
       }
 
-      // Get booking data before update to get userId
-      DocumentSnapshot bookingSnapshot =
-          await _firestore.collection('bookings').doc(bookingId).get();
+      DocumentSnapshot bookingSnapshot = await _firestore
+          .collection('bookings')
+          .doc(bookingId)
+          .get()
+          .timeout(const Duration(seconds: 10));
 
       if (!bookingSnapshot.exists) {
         _showSnackBar('Booking not found', Colors.red);
@@ -1163,7 +1502,6 @@ SSA Travels Virudhunagar
           bookingData['customerId'] ??
           '';
 
-      // Update booking status
       await _firestore.collection('bookings').doc(bookingId).update({
         'bookingStatus': newStatus,
         'status': newStatus,
@@ -1172,9 +1510,7 @@ SSA Travels Virudhunagar
         'updatedByName': _adminData?['name'] ?? 'Admin',
       });
 
-      // SYNC WITH RIDES COLLECTION - User app la show aagum!
       if (userId.isNotEmpty) {
-        // Find the corresponding ride for this booking
         QuerySnapshot rideSnapshot = await _firestore
             .collection('rides')
             .where('bookingId', isEqualTo: bookingId)
@@ -1182,15 +1518,12 @@ SSA Travels Virudhunagar
             .get();
 
         if (rideSnapshot.docs.isNotEmpty) {
-          // Update existing ride
           await rideSnapshot.docs.first.reference.update({
             'status': newStatus.toLowerCase(),
             'updatedAt': FieldValue.serverTimestamp(),
             'updatedBy': user.uid,
           });
-          print('✅ Rides collection updated for user: $userId');
         } else {
-          // If ride doesn't exist yet, create one (for backward compatibility)
           await _firestore.collection('rides').add({
             'userid': userId,
             'bookingId': bookingId,
@@ -1204,7 +1537,6 @@ SSA Travels Virudhunagar
             'vehicleType': bookingData['vehicleType'] ?? 'Standard',
             'rideId': bookingData['bookingId'] ?? bookingId,
           });
-          print('✅ New ride created for user: $userId');
         }
       }
 
@@ -1212,17 +1544,21 @@ SSA Travels Virudhunagar
         await _updateRevenueStats(bookingId);
       }
 
+      await _loadBookings(forceRefresh: true);
       _showSnackBar('Booking status updated to $newStatus', _adminPrimaryColor);
-      await _loadBookings(); // Refresh bookings list
     } catch (e) {
+      print('Error updating status: $e');
       _showSnackBar('Error updating status: ${e.toString()}', Colors.red);
     }
   }
 
   Future<void> _updateRevenueStats(String bookingId) async {
     try {
-      DocumentSnapshot bookingSnapshot =
-          await _firestore.collection('bookings').doc(bookingId).get();
+      DocumentSnapshot bookingSnapshot = await _firestore
+          .collection('bookings')
+          .doc(bookingId)
+          .get()
+          .timeout(const Duration(seconds: 10));
 
       if (bookingSnapshot.exists) {
         var bookingData = bookingSnapshot.data() as Map<String, dynamic>;
@@ -1285,355 +1621,7 @@ SSA Travels Virudhunagar
   }
 
   Future<void> _showBookingDetails(Map<String, dynamic> booking) async {
-    await showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.all(16),
-        child: Container(
-          width: double.maxFinite,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.85,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _adminPrimaryColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.receipt, color: Colors.white),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Booking Details',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.blue.shade200),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.account_balance,
-                                    color: _adminPrimaryColor, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'GST Details',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: _adminPrimaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          'Company Name:',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          _companyName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Divider(height: 16),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          'GSTIN:',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          _companyGSTIN,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                            letterSpacing: 1,
-                                            color: _adminPrimaryColor,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          'SAC Code:',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          _sacCode,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Booking ID',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    booking['bookingId'] ?? 'N/A',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(booking['status'])
-                                    .withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _getStatusColor(booking['status']),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _getStatusIcon(booking['status']),
-                                    size: 14,
-                                    color: _getStatusColor(booking['status']),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    booking['status'] ?? 'Pending',
-                                    style: TextStyle(
-                                      color: _getStatusColor(booking['status']),
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildDetailSection(
-                        title: 'Customer Information',
-                        icon: Icons.person,
-                        children: [
-                          _buildDetailRow(
-                              'Name', booking['customerName'] ?? 'N/A'),
-                          _buildDetailRow(
-                              'Phone', booking['customerPhone'] ?? 'N/A'),
-                          _buildDetailRow(
-                              'Email', booking['customerEmail'] ?? 'N/A'),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildDetailSection(
-                        title: 'Trip Details',
-                        icon: Icons.route,
-                        children: [
-                          _buildDetailRow(
-                              'Vehicle', booking['vehicleName'] ?? 'N/A'),
-                          _buildDetailRow(
-                              'Pickup', booking['pickupLocation'] ?? 'N/A'),
-                          _buildDetailRow(
-                              'Drop', booking['dropLocation'] ?? 'N/A'),
-                          _buildDetailRow(
-                              'Date', booking['displayDate'] ?? 'N/A'),
-                          _buildDetailRow(
-                              'Time', booking['displayTime'] ?? 'N/A'),
-                          _buildDetailRow(
-                              'Duration', booking['hoursDays'] ?? 'N/A'),
-                          _buildDetailRow('Distance',
-                              booking['distanceFormatted'] ?? '0 km'),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildDetailSection(
-                        title: 'Payment Details',
-                        icon: Icons.payment,
-                        children: [
-                          _buildDetailRow('Base Amount',
-                              booking['totalFareFormatted'] ?? '₹0'),
-                          _buildDetailRow('Payment Status',
-                              booking['paymentStatus'] ?? 'Unpaid'),
-                          _buildDetailRow('Booked On',
-                              booking['createdAtFormatted'] ?? 'N/A'),
-                          _buildDetailRow('Last Updated',
-                              booking['updatedAtFormatted'] ?? 'N/A'),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(12),
-                    bottomRight: Radius.circular(12),
-                  ),
-                  border: Border(top: BorderSide(color: Colors.grey[200]!)),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _showRouteMap(booking);
-                        },
-                        icon: const Icon(Icons.map, size: 18),
-                        label: const Text('View Route'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.blue,
-                          side: const BorderSide(color: Colors.blue),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _showGenerateBillDialog(booking);
-                        },
-                        icon: const Icon(Icons.receipt, size: 18),
-                        label: const Text('Generate Bill'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _adminPrimaryColor,
-                          side: BorderSide(color: _adminPrimaryColor),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (booking['status'] != 'Completed' &&
-                        booking['status'] != 'Cancelled')
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _showActionOptions(booking);
-                          },
-                          icon: const Icon(Icons.edit, size: 18),
-                          label: const Text('Actions'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _adminPrimaryColor,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    // ... (keep your existing _showBookingDetails method)
   }
 
   Future<File?> _generatePDFBill(
@@ -2099,607 +2087,25 @@ Hi,
 Your invoice from SSA Travels is attached below.
 
 Thank you for choosing SSA Travels!
-For any queries, contact us: +91 9751867879
+For any queries, contact us: +91 63740 49582
       '''
           .trim();
 
       String encodedMessage = Uri.encodeComponent(message);
       String whatsappUrl = 'https://wa.me/$cleanPhone?text=$encodedMessage';
+      final Uri uri = Uri.parse(whatsappUrl);
 
-      if (await canLaunch(whatsappUrl)) {
-        await launch(whatsappUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
     } catch (e) {
+      print('Error sending PDF: $e');
       _showSnackBar('Error sending PDF: ${e.toString()}', Colors.red);
     }
   }
 
   Future<void> _showGenerateBillDialog(Map<String, dynamic> booking) async {
-    double baseAmount = 0;
-    try {
-      String amountStr = booking['totalFareFormatted'] ?? '₹0';
-      String cleanAmount = amountStr.replaceAll('₹', '').replaceAll(',', '');
-      baseAmount = double.parse(cleanAmount);
-    } catch (e) {
-      baseAmount = 0;
-    }
-
-    Map<String, double> gstDetails = _calculateGST(baseAmount);
-
-    String baseFormatted = _formatCurrency(baseAmount);
-    String cgstFormatted = _formatCurrency(gstDetails['cgst']!);
-    String sgstFormatted = _formatCurrency(gstDetails['sgst']!);
-    String totalGSTFormatted = _formatCurrency(gstDetails['totalGST']!);
-    String totalWithGSTFormatted = _formatCurrency(gstDetails['totalWithGST']!);
-
-    String invoiceNumber = await _getNextInvoiceNumber();
-
-    await showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.all(16),
-        child: Container(
-          width: double.maxFinite,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.9,
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _adminPrimaryColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.receipt_long, color: Colors.white),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'TAX INVOICE',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              _companyName,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _companyAddress,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            Text(
-                              _companyPhone,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'GSTIN: $_companyGSTIN',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: _adminPrimaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(height: 30, thickness: 1),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Invoice No:',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      invoiceNumber,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    const Text(
-                                      'Invoice Date:',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      DateFormat('dd MMM yyyy')
-                                          .format(DateTime.now()),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Bill To:',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                                'Customer: ${booking['customerName'] ?? 'N/A'}'),
-                            Text('Phone: ${booking['customerPhone'] ?? 'N/A'}'),
-                            if (booking['customerEmail'] != null)
-                              Text('Email: ${booking['customerEmail']}'),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(8),
-                                  topRight: Radius.circular(8),
-                                ),
-                              ),
-                              child: Row(
-                                children: const [
-                                  Expanded(
-                                    flex: 3,
-                                    child: Text('Description',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                  ),
-                                  Expanded(
-                                    child: Text('SAC Code',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                  ),
-                                  Expanded(
-                                    child: Text('Amount',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                        textAlign: TextAlign.right),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          'Car Rental – ${booking['pickupLocation']?.toString().split(',').first ?? 'N/A'} to ${booking['dropLocation']?.toString().split(',').first ?? 'N/A'}',
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          _sacCode,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          baseFormatted,
-                                          textAlign: TextAlign.right,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          'Vehicle: ${booking['vehicleName'] ?? 'N/A'}',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ),
-                                      const Expanded(
-                                        child: Text(''),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          booking['hoursDays'] ?? '1 day',
-                                          textAlign: TextAlign.right,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          'Distance: ${booking['distanceFormatted'] ?? '0 km'}',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ),
-                                      const Expanded(
-                                        child: Text(''),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Base Amount:',
-                                    style: TextStyle(fontSize: 13)),
-                                Text(baseFormatted,
-                                    style: const TextStyle(fontSize: 13)),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('CGST (2.5%):',
-                                    style: TextStyle(
-                                        fontSize: 13, color: Colors.blue[700])),
-                                Text(cgstFormatted,
-                                    style: TextStyle(
-                                        fontSize: 13, color: Colors.blue[700])),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('SGST (2.5%):',
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.green[700])),
-                                Text(sgstFormatted,
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.green[700])),
-                              ],
-                            ),
-                            const Divider(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Total GST (5%):',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                Text(totalGSTFormatted,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: _adminPrimaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: _adminPrimaryColor, width: 2),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'GRAND TOTAL',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  '₹${_formatNumber(gstDetails['totalWithGST']!)}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    color: _adminPrimaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '(Inclusive of GST)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Declaration:',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'We declare that this invoice shows the actual price of the services described.',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey[600]),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'For $_companyName',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const Text(
-                                  'Authorized Signature',
-                                  style: TextStyle(fontSize: 11),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            Container(
-                              height: 1,
-                              color: Colors.grey[300],
-                            ),
-                            const SizedBox(height: 8),
-                            Center(
-                              child: Text(
-                                'This is a computer generated invoice',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey[500],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Center(
-                        child: Text(
-                          'Thank you for choosing SSA Travels!',
-                          style: TextStyle(
-                            color: _adminPrimaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(12),
-                    bottomRight: Radius.circular(12),
-                  ),
-                  border: Border(top: BorderSide(color: Colors.grey[200]!)),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          Navigator.pop(context);
-
-                          if (kIsWeb) {
-                            _showSnackBar(
-                                'PDF generation is not available on web',
-                                Colors.orange);
-                            return;
-                          }
-
-                          _showLoadingDialog();
-
-                          try {
-                            File? pdfFile =
-                                await _generatePDFBill(booking, invoiceNumber);
-                            Navigator.pop(context);
-
-                            if (pdfFile != null) {
-                              await OpenFile.open(pdfFile.path);
-                            } else {
-                              _showSnackBar(
-                                  'Failed to generate PDF', Colors.red);
-                            }
-                          } catch (e) {
-                            Navigator.pop(context);
-                            _showSnackBar(
-                                'Error generating PDF: $e', Colors.red);
-                          }
-                        },
-                        icon: const Icon(Icons.picture_as_pdf, size: 18),
-                        label: const Text('View PDF'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          Navigator.pop(context);
-
-                          if (kIsWeb) {
-                            _showSnackBar(
-                                'WhatsApp sharing is not available on web',
-                                Colors.orange);
-                            return;
-                          }
-
-                          String phone = booking['customerPhone'] ?? '';
-                          if (phone.isEmpty) {
-                            _showSnackBar('Customer phone number not available',
-                                Colors.orange);
-                            return;
-                          }
-
-                          _showLoadingDialog();
-
-                          try {
-                            File? pdfFile =
-                                await _generatePDFBill(booking, invoiceNumber);
-
-                            if (pdfFile != null) {
-                              await _sendPDFViaWhatsApp(pdfFile, phone);
-                            } else {
-                              _showSnackBar(
-                                  'Failed to generate PDF', Colors.red);
-                            }
-                            Navigator.pop(context);
-                          } catch (e) {
-                            Navigator.pop(context);
-                            _showSnackBar('Error: ${e.toString()}', Colors.red);
-                          }
-                        },
-                        icon: const Icon(Icons.share, size: 18),
-                        label: const Text('Send via WhatsApp'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    // ... (keep your existing _showGenerateBillDialog method)
   }
 
   void _showLoadingDialog() {
@@ -2832,7 +2238,6 @@ For any queries, contact us: +91 9751867879
                 _showWhatsAppDialog(booking);
               },
             ),
-           
             ListTile(
               leading: const Icon(Icons.phone, color: Colors.blue),
               title: const Text('Contact Customer'),
@@ -2911,8 +2316,9 @@ For any queries, contact us: +91 9751867879
 
   Future<void> _makePhoneCall(String phoneNumber) async {
     final url = 'tel:$phoneNumber';
-    if (await canLaunch(url)) {
-      await launch(url);
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
       _showSnackBar('Could not make phone call', Colors.red);
     }
@@ -2921,8 +2327,9 @@ For any queries, contact us: +91 9751867879
   Future<void> _sendSMS(
       String phoneNumber, String name, String bookingId) async {
     final url = 'sms:$phoneNumber';
-    if (await canLaunch(url)) {
-      await launch(url);
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
       _showSnackBar('Could not send SMS', Colors.red);
     }
@@ -3018,17 +2425,145 @@ For any queries, contact us: +91 9751867879
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
+    final currentUser = _auth.currentUser;
+
+    if (currentUser == null) {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted && FirebaseAuth.instance.currentUser == null) {
+          _redirectToLogin();
+        }
+      });
+
+      return Scaffold(
+        backgroundColor: _adminBackground,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: _adminPrimaryColor),
+              const SizedBox(height: 16),
+              Text(
+                'Checking session...',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: _adminBackground,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: _adminPrimaryColor),
+              const SizedBox(height: 16),
+              Text(
+                'Verifying admin access...',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (!_isAdminVerified) {
+      return Scaffold(
+        backgroundColor: _adminBackground,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                'Access Denied',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You do not have admin privileges',
+                style: TextStyle(color: Colors.grey[500]),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  _auth.signOut();
+                  _redirectToLogin();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _adminPrimaryColor,
+                ),
+                child: const Text('Go to Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_hasLoadError && _bookings.isEmpty) {
+      return Scaffold(
+        backgroundColor: _adminBackground,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
+                const SizedBox(height: 16),
+                const Text(
+                  'Failed to load bookings',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _errorMessage.isNotEmpty
+                      ? _errorMessage
+                      : 'Network error occurred',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () => _loadBookings(forceRefresh: true),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Try Again'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _adminPrimaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: _adminBackground,
       body: Column(
         children: [
-          // Filters Section - Mobile Responsive
+          // Search bar and filter section
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.white,
             child: Column(
               children: [
-                // Search Bar with Refresh Button
                 Row(
                   children: [
                     Expanded(
@@ -3078,7 +2613,7 @@ For any queries, contact us: +91 9751867879
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
-                        onPressed: _loadBookings,
+                        onPressed: () => _loadBookings(forceRefresh: true),
                         icon: const Icon(Icons.refresh, color: Colors.white),
                         tooltip: 'Refresh',
                         constraints: const BoxConstraints(
@@ -3089,10 +2624,9 @@ For any queries, contact us: +91 9751867879
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 12),
 
-                // Filters Row - Stack on mobile if needed
+                // Filters
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -3178,7 +2712,7 @@ For any queries, contact us: +91 9751867879
             ),
           ),
 
-          // Stats Summary - Scroll horizontally on mobile
+          // Stats bar
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             color: _adminPrimaryColor.withOpacity(0.05),
@@ -3229,9 +2763,9 @@ For any queries, contact us: +91 9751867879
             ),
           ),
 
-          // Bookings List
+          // Bookings list
           Expanded(
-            child: _isLoading
+            child: _isDataLoading
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -3283,7 +2817,7 @@ For any queries, contact us: +91 9751867879
                         ),
                       )
                     : RefreshIndicator(
-                        onRefresh: _loadBookings,
+                        onRefresh: () => _loadBookings(forceRefresh: true),
                         color: _adminPrimaryColor,
                         backgroundColor: _adminBackground,
                         child: ListView.builder(
@@ -3348,7 +2882,6 @@ For any queries, contact us: +91 9751867879
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Row
               Row(
                 children: [
                   Container(
@@ -3406,10 +2939,7 @@ For any queries, contact us: +91 9751867879
                   ),
                 ],
               ),
-
               const SizedBox(height: 12),
-
-              // Vehicle and Amount
               Row(
                 children: [
                   Container(
@@ -3443,10 +2973,7 @@ For any queries, contact us: +91 9751867879
                   ),
                 ],
               ),
-
               const SizedBox(height: 12),
-
-              // Location and Time - Mobile Responsive
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -3555,7 +3082,6 @@ For any queries, contact us: +91 9751867879
                       )
                     : Column(
                         children: [
-                          // Pickup
                           Row(
                             children: [
                               Container(
@@ -3578,7 +3104,6 @@ For any queries, contact us: +91 9751867879
                             ],
                           ),
                           const SizedBox(height: 6),
-                          // Drop
                           Row(
                             children: [
                               Container(
@@ -3601,7 +3126,6 @@ For any queries, contact us: +91 9751867879
                             ],
                           ),
                           const Divider(height: 12),
-                          // Date, Time, Distance in Row
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
@@ -3646,10 +3170,7 @@ For any queries, contact us: +91 9751867879
                         ],
                       ),
               ),
-
               const SizedBox(height: 12),
-
-              // FIXED: Action Buttons with proper tap handling
               MediaQuery.of(context).size.width > 400
                   ? Row(
                       children: [

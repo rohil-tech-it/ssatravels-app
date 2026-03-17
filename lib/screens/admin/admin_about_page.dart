@@ -46,7 +46,8 @@ class AdminAboutPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1), // Fixed deprecated withOpacity
+                    color: Colors.grey
+                        .withValues(alpha: 0.1), // Fixed deprecated withOpacity
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -88,9 +89,6 @@ class AdminAboutPage extends StatelessWidget {
                     'With a growing customer base and strong local presence, SSA Tours & Travels continues to deliver dependable travel solutions every day.',
                   ),
                   const SizedBox(height: 20),
-
-                  // Contact Information
-                  _buildContactInfo(),
                 ],
               ),
             ),
@@ -110,18 +108,12 @@ class AdminAboutPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildFeatureItem('Easy Booking', 'Book rides in just a few taps'),
-            _buildFeatureItem('Live Tracking', 'Track your ride in real-time'),
             _buildFeatureItem(
                 'Multiple Payment Options', 'Cash, Card, UPI & Wallets'),
             _buildFeatureItem(
-                'Ride History', 'Access your complete ride history'),
+                'Booking History', 'Access your complete ride history'),
             _buildFeatureItem(
                 '24/7 Support', 'Round-the-clock customer support'),
-
-            const SizedBox(height: 30),
-
-            // Version Information
-            _buildVersionInfo(),
 
             const SizedBox(height: 30),
 
@@ -156,87 +148,6 @@ class AdminAboutPage extends StatelessWidget {
     );
   }
 
-  // New method to display contact information
-  Widget _buildContactInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(height: 32),
-        const Text(
-          'Contact Information',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF00B14F),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildContactDetailItem(Icons.location_on, 'Virudhunagar, Tamil Nadu'),
-        _buildContactDetailItem(Icons.phone, '+91 98765 43210'),
-        _buildContactDetailItem(Icons.email, 'info@ssatravels.com'),
-        _buildContactDetailItem(Icons.web, 'www.ssatravels.com'),
-      ],
-    );
-  }
-
-  // Helper method for contact details (renamed and used)
-  Widget _buildContactDetailItem(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF00B14F), size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // New method for version information
-  Widget _buildVersionInfo() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'App Version',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF00B14F).withValues(alpha: 0.1), // Fixed deprecated withOpacity
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              '1.0.0',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF00B14F),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFeatureItem(String title, String subtitle) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -252,7 +163,8 @@ class AdminAboutPage extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF00B14F).withValues(alpha: 0.1), // Fixed deprecated withOpacity
+              color: const Color(0xFF00B14F)
+                  .withValues(alpha: 0.1), // Fixed deprecated withOpacity
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -287,7 +199,4 @@ class AdminAboutPage extends StatelessWidget {
       ),
     );
   }
-
-  // Note: _buildInfoRow and the original _buildContactDetail methods have been removed
-  // as they were unused. The functionality is now covered by _buildContactDetailItem
 }

@@ -1,4 +1,6 @@
 // lib/screens/user/components/booking_tab.dart
+// ignore_for_file: unused_field, unused_local_variable, prefer_final_fields, avoid_print, duplicate_ignore, use_build_context_synchronously, deprecated_member_use, unnecessary_brace_in_string_interps, unnecessary_brace_in_string_interps, unnecessary_brace_in_string_interps, unnecessary_brace_in_string_interps, unnecessary_to_list_in_spreads
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,18 +15,16 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ssatravels_app/services/booking_service.dart';
 import 'package:ssatravels_app/services/toll_service.dart';
 import 'package:ssatravels_app/services/route_service.dart';
-import 'package:ssatravels_app/screens/user/components/place_search_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/gestures.dart';
 
 class BookingTab extends StatefulWidget {
   final Color themeColor;
-
+  static const String routeName = '/booking_tab';
   const BookingTab({super.key, this.themeColor = const Color(0xFF00C853)});
 
   @override
@@ -39,7 +39,6 @@ class _BookingTabState extends State<BookingTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     return Column(
       children: [
         Expanded(
@@ -70,13 +69,11 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
   final BookingService _bookingService = BookingService();
   final TollService _tollService = TollService();
   late final RouteService _routeService;
-  late PolylinePoints polylinePoints;
 
-  // 🔥 TRACK INITIALIZATION STATE
+  // ========== TRACK INITIALIZATION STATE ==========
   bool _isInitialized = false;
 
   // ========== CONTROLLERS ==========
-  final TextEditingController _minutesInputController = TextEditingController();
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _dropController = TextEditingController();
   final TextEditingController _customerNameController = TextEditingController();
@@ -110,6 +107,9 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
   double _distance = 0.0;
   double _totalFare = 0.0;
   double _tollCharges = 0.0;
+  double _returnTollCharges = 0.0;
+  double _totalTollCharges = 0.0;
+  double _tollSavings = 0.0;
   double _kmCharges = 0.0;
   double _driverAllowance = 0.0;
   double _driverFoodCharges = 0.0;
@@ -126,10 +126,10 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
   int _tripDurationHours = 0;
   int _estimatedTripMinutes = 0;
   int _baseHours = 8;
-  int _selectedHours = 8;
+  int _selectedHours = 0;
   int _selectedMinutes = 0;
   bool _isManualHours = true;
-  int _extraHours = 0;
+  double _extraHours = 0.0;
   bool _showExtraHoursWarning = false;
   String _extraHoursMessage = '';
 
@@ -183,7 +183,7 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
   String _googleMapsApiKey = '';
 
   // WhatsApp number for sharing booking details
-  final String _whatsappNumber = '9751867879';
+  final String _whatsappNumber = '6374049582';
 
   // Animation controllers for smooth transitions
   late AnimationController _fadeController;
@@ -195,24 +195,27 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
   @override
   void initState() {
     super.initState();
+
     _routeService = RouteService();
-    polylinePoints = PolylinePoints();
 
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
       curve: Curves.easeInOut,
     );
 
-    // Initialize immediately
     _initializeData();
+    _fadeController.forward();
   }
 
   @override
   void dispose() {
+    // ignore: avoid_print
+    print('🔴 BookingTab - dispose');
     _searchDebounceTimer?.cancel();
     _mapMoveTimer?.cancel();
     _searchController.dispose();
@@ -242,17 +245,18 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
 
     print('📦 Initializing data...');
 
-    setState(() {
-      _isInitialized = true;
-    });
-
     await _initializeApiKeys();
+    await _testApiKey(); // Test API key on startup
     await _loadCitySuggestions();
     await _loadVehicleData();
 
     if (mounted) {
       _checkNightTravel();
-      await _setDefaultLocation();
+
+      setState(() {
+        _isInitialized = true;
+      });
+
       _fadeController.forward();
     }
 
@@ -261,10 +265,83 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
 
   Future<void> _initializeApiKeys() async {
     try {
+      // Try to load from .env first
       await dotenv.load(fileName: ".env");
       _googleMapsApiKey = dotenv.get('GOOGLE_MAPS_API_KEY', fallback: '');
+
+      print(
+          '📱 .env API Key loaded: ${_googleMapsApiKey.isNotEmpty ? 'Yes' : 'No'}');
+
+      // If .env key is empty or invalid, use the manifest key
+      if (_googleMapsApiKey.isEmpty || _googleMapsApiKey.length < 30) {
+        print('⚠️ .env API key invalid, using Android Manifest key');
+        // Use the manifest key from your AndroidManifest.xml
+        _googleMapsApiKey = 'AIzaSyA3ElqlmQtIPePKOhQweCdcKADv0K2c3ww';
+      }
+
+      // Validate the API key format
+      if (!_googleMapsApiKey.startsWith('AIza')) {
+        print('⚠️ API key format looks incorrect');
+      }
+
+      print(
+          '✅ Final API Key being used (first 15 chars): ${_googleMapsApiKey.substring(0, min(15, _googleMapsApiKey.length))}...');
     } catch (e) {
       print('API key initialization error: $e');
+      // Fallback to manifest key
+      _googleMapsApiKey = 'AIzaSyA3ElqlmQtIPePKOhQweCdcKADv0K2c3ww';
+    }
+  }
+
+  Future<void> _testApiKey() async {
+    print('🔍 Testing API Key...');
+    try {
+      // Test Geocoding API
+      final testUrl = 'https://maps.googleapis.com/maps/api/geocode/json'
+          '?address=Chennai'
+          '&key=$_googleMapsApiKey';
+
+      final response = await http.get(Uri.parse(testUrl));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('📊 Geocoding API Test Status: ${data['status']}');
+
+        if (data['status'] == 'OK') {
+          print('✅ Geocoding API is working!');
+        } else if (data['status'] == 'REQUEST_DENIED') {
+          print('❌ Geocoding API Error: ${data['error_message']}');
+          _showSnackBar('Geocoding API Error: Please check API configuration',
+              Colors.red);
+        }
+      }
+
+      // Test Places API
+      final placesUrl =
+          'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+          '?input=Chennai'
+          '&components=country:in'
+          '&key=$_googleMapsApiKey';
+
+      final placesResponse = await http.get(Uri.parse(placesUrl));
+
+      if (placesResponse.statusCode == 200) {
+        final placesData = json.decode(placesResponse.body);
+        print('📊 Places API Test Status: ${placesData['status']}');
+
+        if (placesData['status'] == 'OK') {
+          print('✅ Places API is working!');
+        } else if (placesData['status'] == 'REQUEST_DENIED') {
+          print('❌ Places API Error: ${placesData['error_message']}');
+          _showSnackBar(
+              'Places API Error: Please enable Places API in Google Cloud Console',
+              Colors.red);
+        } else if (placesData['status'] == 'ZERO_RESULTS') {
+          print('⚠️ Places API returned no results');
+        }
+      }
+    } catch (e) {
+      print('❌ API Test error: $e');
     }
   }
 
@@ -434,6 +511,22 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
           'extraHourRate': 150.0
         },
       },
+      'ertiga': {
+        'below200': {
+          'perKm': 12.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'minHours': 8,
+          'extraHourRate': 150.0
+        },
+        'above200': {
+          'perKm': 15.0,
+          'driverAllowance': 300.0,
+          'driverFood': 100.0,
+          'nightHalt': 100.0,
+          'extraHourRate': 150.0
+        },
+      },
     };
   }
 
@@ -505,6 +598,7 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
     return null;
   }
 
+  // ========== FIXED SEARCH FUNCTIONALITY ==========
   Future<void> _searchLocation(String query) async {
     if (query.isEmpty || query.length < 2) {
       if (mounted) {
@@ -523,38 +617,68 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
           setState(() => _isSearching = true);
         }
 
+        print('🔍 Searching for: "$query"');
         List<Map<String, dynamic>> allResults = [];
 
+        // Try Google Places API
         if (_googleMapsApiKey.isNotEmpty) {
           try {
             final String url =
                 'https://maps.googleapis.com/maps/api/place/autocomplete/json'
-                '?input=$query'
+                '?input=${Uri.encodeComponent(query)}'
                 '&components=country:in'
                 '&key=$_googleMapsApiKey';
 
-            final response = await http.get(Uri.parse(url));
+            print('🌐 Places API URL: $url');
+
+            final response = await http.get(Uri.parse(url)).timeout(
+              const Duration(seconds: 10),
+              onTimeout: () {
+                print('⏰ Places API timeout');
+                return http.Response('{"status":"TIMEOUT"}', 408);
+              },
+            );
 
             if (response.statusCode == 200) {
               final data = json.decode(response.body);
+              print('📊 Places API status: ${data['status']}');
+
+              if (data['error_message'] != null) {
+                print('❌ Places API error: ${data['error_message']}');
+              }
 
               if (data['status'] == 'OK' && data['predictions'] != null) {
+                print(
+                    '✅ Found ${data['predictions'].length} Google Places results');
+
                 for (var prediction in data['predictions']) {
+                  String description = prediction['description'] ?? '';
+                  String mainText = prediction['structured_formatting'] != null
+                      ? prediction['structured_formatting']['main_text'] ?? ''
+                      : description.split(',').first;
+
                   allResults.add({
-                    'name': prediction['structured_formatting']['main_text'] ??
-                        prediction['description'].split(',').first,
-                    'address': prediction['description'],
+                    'name': mainText,
+                    'address': description,
                     'place_id': prediction['place_id'],
                     'type': 'google_places',
                   });
                 }
+              } else if (data['status'] == 'ZERO_RESULTS') {
+                print('ℹ️ No Google Places results found');
+              } else if (data['status'] == 'REQUEST_DENIED') {
+                print('❌ Places API is not enabled!');
+                _showSnackBar(
+                    'Please enable Places API in Google Cloud Console',
+                    Colors.red);
               }
             }
           } catch (e) {
-            print('Places API error: $e');
+            print('❌ Places API error: $e');
           }
         }
 
+        // Add local city suggestions as fallback
         final queryLower = query.toLowerCase();
         for (var city in _citySuggestions) {
           if (city.toLowerCase().contains(queryLower)) {
@@ -571,6 +695,7 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
           }
         }
 
+        // Remove duplicates
         final uniqueResults = <Map<String, dynamic>>[];
         final seenAddresses = <String>{};
 
@@ -582,6 +707,8 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
           }
         }
 
+        print('✅ Total unique results: ${uniqueResults.length}');
+
         if (mounted) {
           setState(() {
             _searchResults = uniqueResults.take(10).toList();
@@ -589,6 +716,7 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
           });
         }
       } catch (e) {
+        print('❌ Search error: $e');
         if (mounted) {
           setState(() {
             _searchResults = [];
@@ -600,7 +728,10 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
   }
 
   Future<Map<String, dynamic>?> _getPlaceDetails(String placeId) async {
-    if (_googleMapsApiKey.isEmpty) return null;
+    if (_googleMapsApiKey.isEmpty) {
+      print('Google Maps API key is empty');
+      return null;
+    }
 
     try {
       final String url =
@@ -609,10 +740,18 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
           '&fields=name,formatted_address,geometry'
           '&key=$_googleMapsApiKey';
 
-      final response = await http.get(Uri.parse(url));
+      print('Fetching place details: $url');
+      final response = await http.get(Uri.parse(url)).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print('Place details timeout');
+          return http.Response('Error', 408);
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('Place details response status: ${data['status']}');
 
         if (data['status'] == 'OK' && data['result'] != null) {
           final result = data['result'];
@@ -649,23 +788,29 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
       LatLng? selectedLatLng;
       String displayText = place['address'] ?? place['name'] ?? '';
 
+      // Get coordinates based on place type
       if (place['type'] == 'google_places' && place.containsKey('place_id')) {
         final details = await _getPlaceDetails(place['place_id']);
         if (details != null) {
           selectedLatLng = LatLng(details['lat'], details['lng']);
           displayText = details['address'] ?? details['name'] ?? displayText;
+          print('Got coordinates from Google Places: $selectedLatLng');
         }
       } else if (place.containsKey('lat') && place.containsKey('lng')) {
         selectedLatLng = LatLng(place['lat'], place['lng']);
         displayText = place['address'] ?? place['name'] ?? '';
+        print('Got coordinates from local data: $selectedLatLng');
       }
 
+      // Fallback to geocoding if needed
       if (selectedLatLng == null) {
         try {
+          print('Attempting geocoding for: $displayText');
           final locations = await locationFromAddress(displayText);
           if (locations.isNotEmpty) {
             selectedLatLng =
                 LatLng(locations.first.latitude, locations.first.longitude);
+            print('Got coordinates from geocoding: $selectedLatLng');
           }
         } catch (e) {
           print('Geocoding error: $e');
@@ -673,9 +818,10 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
       }
 
       if (selectedLatLng == null) {
-        throw Exception('Could not get coordinates');
+        throw Exception('Could not get coordinates for the selected location');
       }
 
+      // Update location
       if (isPickup) {
         _pickupLatLng = selectedLatLng;
         _pickupController.text = displayText;
@@ -693,10 +839,12 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
 
       _updateMarkers();
 
+      // Move camera to selected location
       if (_mapController != null && mounted) {
         await _moveCameraToLocation(selectedLatLng, zoom: 16.0);
       }
 
+      // Close bottom sheet if open
       if (Navigator.canPop(context)) {
         Navigator.pop(context);
       }
@@ -706,19 +854,38 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
         widget.themeColor,
       );
 
+      // Fetch route if both locations are set
       if (_pickupLatLng != null && _dropLatLng != null) {
         await _fetchRealRoadRoute();
       }
     } catch (e) {
-      _showSnackBar('Error: Could not set location', Colors.orange);
+      print('Error selecting location: $e');
+      _showSnackBar(
+          'Error: Could not set location - ${e.toString()}', Colors.orange);
       if (mounted) {
         setState(() => _isLoadingLocation = false);
       }
     }
   }
 
+  // ========== FIXED REAL ROAD ROUTE FETCHING ==========
   Future<void> _fetchRealRoadRoute() async {
-    if (_pickupLatLng == null || _dropLatLng == null) return;
+    if (_pickupLatLng == null || _dropLatLng == null) {
+      print('Cannot fetch route: missing locations');
+      return;
+    }
+
+    if (_googleMapsApiKey.isEmpty) {
+      print('Cannot fetch route: Google Maps API key is missing');
+      _showSnackBar('Google Maps API key is missing', Colors.orange);
+      return;
+    }
+
+    // Validate API key format
+    if (!_googleMapsApiKey.startsWith('AIza')) {
+      _showSnackBar('Invalid API key format', Colors.red);
+      return;
+    }
 
     if (mounted) {
       setState(() {
@@ -730,11 +897,6 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
     }
 
     try {
-      if (_googleMapsApiKey.isEmpty) {
-        _useFallbackRoute();
-        return;
-      }
-
       final String origin =
           '${_pickupLatLng!.latitude},${_pickupLatLng!.longitude}';
       final String destination =
@@ -747,26 +909,51 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
           '&alternatives=true'
           '&key=$_googleMapsApiKey';
 
-      final response = await http.get(Uri.parse(url));
+      print('🌐 Fetching route...');
+      print('📍 Origin: $origin');
+      print('📍 Destination: $destination');
+      print('🔑 Using API Key: ${_googleMapsApiKey.substring(0, 15)}...');
+
+      final response = await http.get(Uri.parse(url)).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          print('⏰ Directions API timeout');
+          throw Exception('Directions API timeout');
+        },
+      );
+
+      print('📡 Directions API response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('📊 Directions API status: ${data['status']}');
+
+        // Log any error message
+        if (data['error_message'] != null) {
+          print('❌ API Error: ${data['error_message']}');
+          _showSnackBar('API Error: ${data['error_message']}', Colors.red);
+        }
 
         if (data['status'] == 'OK') {
           final route = data['routes'][0];
           final leg = route['legs'][0];
 
-          _distance = leg['distance']['value'] / 1000.0;
+          // Extract distance
+          _distance = (leg['distance']['value'] as num).toDouble() / 1000.0;
           _routeDistance = leg['distance']['text'];
           _routeDuration = leg['duration']['text'];
 
-          _tripDurationMinutes = leg['duration']['value'] ~/ 60;
+          // Calculate trip duration
+          _tripDurationMinutes = (leg['duration']['value'] as int) ~/ 60;
           _tripDurationHours = (_tripDurationMinutes / 60).ceil();
           _estimatedTripMinutes = _tripDurationMinutes;
 
+          // Decode polyline
           final points = route['overview_polyline']['points'];
           _routePoints = _decodePolyline(points);
+          print('Decoded ${_routePoints.length} route points');
 
+          // Extract route steps
           _routeSteps = [];
           for (var step in leg['steps']) {
             _routeSteps.add({
@@ -776,6 +963,7 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
             });
           }
 
+          // Calculate extra hours based on USER SELECTION
           _calculateExtraHours();
 
           if (mounted) {
@@ -785,9 +973,11 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
             });
           }
 
+          // Update map
           _updateMarkers();
           _updateRoutePolyline();
 
+          // Fit camera to route
           Future.delayed(const Duration(milliseconds: 500), () {
             if (mounted && _mapController != null && _routePoints.isNotEmpty) {
               _fitCameraToRoute();
@@ -798,7 +988,16 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
             'Route loaded: $_routeDistance • $_routeDuration',
             Colors.green,
           );
+        } else if (data['status'] == 'REQUEST_DENIED') {
+          _showSnackBar(
+              'API key error: Please check your API key configuration',
+              Colors.red);
+        } else if (data['status'] == 'ZERO_RESULTS') {
+          _showSnackBar(
+              'No route found between these locations', Colors.orange);
         } else {
+          _showSnackBar(
+              'Could not find a route: ${data['status']}', Colors.orange);
           throw Exception('Directions API error: ${data['status']}');
         }
       } else {
@@ -810,7 +1009,42 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
 
       if (mounted) {
         setState(() => _loadingData = false);
+        _showSnackBar(
+          'Using approximate route',
+          Colors.orange,
+        );
       }
+    }
+  }
+
+  double _calculateReturnToll(double oneWayToll) {
+    if (_returnDate == null) {
+      return 0.0;
+    }
+
+    DateTime travelDateTime = DateTime(
+      _pickupDate.year,
+      _pickupDate.month,
+      _pickupDate.day,
+      _pickupTime.hour,
+      _pickupTime.minute,
+    );
+
+    DateTime returnDateTime = DateTime(
+      _returnDate!.year,
+      _returnDate!.month,
+      _returnDate!.day,
+      23,
+      59,
+    );
+
+    Duration difference = returnDateTime.difference(travelDateTime);
+    bool within24Hours = difference.inHours <= 24;
+
+    if (within24Hours) {
+      return oneWayToll * 0.75;
+    } else {
+      return oneWayToll;
     }
   }
 
@@ -830,20 +1064,36 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
     _extraHourRate = (rateData['extraHourRate'] as num?)?.toDouble() ?? 0.0;
 
     int userSelectedMinutes = (_selectedHours * 60) + _selectedMinutes;
+    int actualTripMinutes = _tripDurationMinutes;
 
-    if (userSelectedMinutes > _tripDurationMinutes) {
-      _extraHours = ((userSelectedMinutes - _tripDurationMinutes) / 60).ceil();
+    if (userSelectedMinutes > actualTripMinutes) {
+      int extraMinutes = userSelectedMinutes - actualTripMinutes;
+      _extraHours = extraMinutes / 60.0;
+
       _extraHoursMessage =
-          '⚠️ Extended trip duration: $_extraHours extra hours will be charged at ₹$_extraHourRate/hour';
+          // ignore: unnecessary_brace_in_string_interps
+          '⚠️ Extended trip: +${extraMinutes} min (${_extraHours.toStringAsFixed(1)}h) at ₹${_extraHourRate}/hour';
       _showExtraHoursWarning = true;
-
-      // Calculate extra hour charges
       _extraHourCharges = _extraHours * _extraHourRate;
+
+      print(
+          '📊 USER SELECTED: ${_selectedHours}h ${_selectedMinutes}m = ${userSelectedMinutes}min');
+      print(
+          '📊 ACTUAL TRIP: ${actualTripMinutes ~/ 60}h ${actualTripMinutes % 60}m = ${actualTripMinutes}min');
+      print(
+          '📊 EXTRA: ${extraMinutes}min = ${_extraHours.toStringAsFixed(2)}h');
+      print(
+          '📊 EXTRA CHARGE: ${_extraHours.toStringAsFixed(2)}h × ₹$_extraHourRate = ₹${_extraHourCharges.toStringAsFixed(0)}');
     } else {
-      _extraHours = 0;
+      _extraHours = 0.0;
       _extraHourCharges = 0.0;
       _showExtraHoursWarning = false;
       _extraHoursMessage = '';
+
+      print('📊 USER SELECTED: ${_selectedHours}h ${_selectedMinutes}m');
+      print(
+          '📊 ACTUAL TRIP: ${actualTripMinutes ~/ 60}h ${actualTripMinutes % 60}m');
+      print('📊 NO EXTRA CHARGES');
     }
 
     _calculateFare();
@@ -1255,8 +1505,8 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
                       },
                       markers: _markers,
                       polylines: _polylines,
-                      myLocationEnabled: false,
-                      myLocationButtonEnabled: false,
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: true,
                       zoomControlsEnabled: false,
                       zoomGesturesEnabled: true,
                       scrollGesturesEnabled: true,
@@ -1601,19 +1851,6 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
     }
   }
 
-  Future<void> _setDefaultLocation() async {
-    if (mounted) {
-      setState(() {
-        _center = const LatLng(9.5850, 77.9570);
-        _pickupLatLng = _center;
-        _pickupController.text = 'Virudhunagar, Tamil Nadu';
-      });
-    }
-    _updateMarkers();
-    await _moveCameraToLocation(_center);
-    _showSnackBar('Default location set as pickup', widget.themeColor);
-  }
-
   Future<void> _zoomIn() async {
     try {
       if (_mapController != null) {
@@ -1730,13 +1967,37 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
         setState(() {
           if (tollResult['success'] == true) {
             _tollCharges = tollResult['totalAmount'] ?? 0.0;
+
+            if (_returnDate != null) {
+              _returnTollCharges = _calculateReturnToll(_tollCharges);
+              _totalTollCharges = _tollCharges + _returnTollCharges;
+              _tollSavings = _tollCharges - _returnTollCharges;
+            } else {
+              _returnTollCharges = 0.0;
+              _totalTollCharges = _tollCharges;
+              _tollSavings = 0.0;
+            }
+
             _tollDetails =
                 List<Map<String, dynamic>>.from(tollResult['plazas'] ?? []);
+
+            String tripType = _returnDate != null ? 'Round Trip' : 'One Way';
             _tollInfo =
-                '${_tollDetails.length} toll plaza(s) • ₹${_tollCharges.toStringAsFixed(0)}';
+                '${_returnDate != null ? "Round Trip" : "One Way"} • ${_tollDetails.length} plaza(s) • ₹${_tollCharges.toStringAsFixed(0)}';
+            if (_returnDate != null) {
+              _tollInfo +=
+                  ' → Return ₹${_returnTollCharges.toStringAsFixed(0)}';
+              if (_tollSavings > 0) {
+                _tollInfo += ' (Save ₹${_tollSavings.toStringAsFixed(0)})';
+              }
+            }
+
             _tollCalculated = true;
           } else {
             _tollCharges = 0.0;
+            _returnTollCharges = 0.0;
+            _totalTollCharges = 0.0;
+            _tollSavings = 0.0;
             _tollDetails = [];
             _tollInfo = tollResult['message'] ?? 'No toll plazas found';
             _tollCalculated = false;
@@ -1780,7 +2041,6 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
     _driverAllowance = 0.0;
     _driverFoodCharges = 0.0;
     _nightHaltCharges = 0.0;
-    _extraHourCharges = 0.0;
     _extraKmCharges = 0.0;
     double totalFare = 0.0;
 
@@ -1790,32 +2050,43 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
 
     if (rateData == null) return;
 
-    _kmCharges = effectiveDistance * (rateData['perKm'] ?? 0.0);
+    double perKm = (rateData['perKm'] as num?)?.toDouble() ?? 0.0;
+    _kmCharges = effectiveDistance * perKm;
+
+    print(
+        '💰 KM Charges: ${effectiveDistance.toStringAsFixed(1)}km × ₹$perKm = ₹${_kmCharges.toStringAsFixed(0)}');
 
     if (!isBelow200 && rateData['driverAllowance'] != null) {
-      _driverAllowance = rateData['driverAllowance'] as double;
+      _driverAllowance =
+          (rateData['driverAllowance'] as num?)?.toDouble() ?? 0.0;
+      print('💰 Driver Allowance: ₹${_driverAllowance.toStringAsFixed(0)}');
     }
 
     if (rateData['driverFood'] != null) {
-      _driverFoodCharges = rateData['driverFood'] as double;
+      _driverFoodCharges = (rateData['driverFood'] as num?)?.toDouble() ?? 0.0;
+      print('💰 Driver Food: ₹${_driverFoodCharges.toStringAsFixed(0)}');
     }
 
     if (_isNightTravel && rateData['nightHalt'] != null) {
-      _nightHaltCharges = rateData['nightHalt'] as double;
+      _nightHaltCharges = (rateData['nightHalt'] as num?)?.toDouble() ?? 0.0;
+      print('💰 Night Halt: ₹${_nightHaltCharges.toStringAsFixed(0)}');
     }
 
-    // Calculate extra hour charges if applicable
-    if (_extraHours > 0 && rateData['extraHourRate'] != null) {
-      _extraHourCharges = _extraHours * (rateData['extraHourRate'] as double);
+    // EXTRA HOUR CHARGES
+    if (_extraHours > 0) {
+      print(
+          '💰 EXTRA HOURS: ${_extraHours.toStringAsFixed(2)}h × ₹$_extraHourRate = ₹${_extraHourCharges.toStringAsFixed(0)}');
     }
 
     totalFare = _kmCharges +
         _driverAllowance +
         _driverFoodCharges +
         _nightHaltCharges +
-        _tollCharges +
+        _totalTollCharges +
         _extraHourCharges +
         _extraKmCharges;
+
+    print('💰 TOTAL FARE: ₹${totalFare.toStringAsFixed(0)}');
 
     if (mounted) {
       setState(() => _totalFare = totalFare);
@@ -1887,7 +2158,15 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
       },
     );
     if (picked != null && mounted) {
-      setState(() => _returnDate = picked);
+      setState(() {
+        _returnDate = picked;
+        if (_tollCalculated) {
+          _returnTollCharges = _calculateReturnToll(_tollCharges);
+          _totalTollCharges = _tollCharges + _returnTollCharges;
+          _tollSavings = _tollCharges - _returnTollCharges;
+          _calculateFare();
+        }
+      });
     }
   }
 
@@ -1929,26 +2208,69 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
   List<String> _getModelsForSelectedVehicle() {
     if (_selectedVehicleType == null) return [];
 
-    final vehicle = _vehicleTypes.firstWhere(
-      (v) => v['id'] == _selectedVehicleType,
-      orElse: () => {'models': <String>[]},
-    );
+    try {
+      final vehicle = _vehicleTypes.firstWhere(
+        (v) => v['id'] == _selectedVehicleType,
+        orElse: () => {'models': <String>[]},
+      );
 
-    return List<String>.from(vehicle['models'] ?? []);
+      var models = vehicle['models'];
+      if (models == null) return [];
+
+      if (models is List) {
+        return List<String>.from(models.whereType<String>());
+      }
+      return [];
+    } catch (e) {
+      print('Error getting models: $e');
+      return [];
+    }
   }
 
   int _getSeatingCapacity(String vehicleType) {
+    try {
+      final vehicle = _vehicleTypes.firstWhere(
+        (v) => v['id'] == vehicleType,
+        orElse: () => {'seatingCapacity': 4},
+      );
+
+      var capacity = vehicle['seatingCapacity'];
+      if (capacity is int) return capacity;
+      if (capacity is double) return capacity.toInt();
+      return 4;
+    } catch (e) {
+      print('Error getting seating capacity: $e');
+      return 4;
+    }
+  }
+
+  String _getVehicleDisplayName() {
+    if (_selectedVehicleType == null) return '';
+
+    String vehicleDisplay = _selectedVehicleType ?? '';
+
+    // Get display name from vehicle types list
     final vehicle = _vehicleTypes.firstWhere(
-      (v) => v['id'] == vehicleType,
-      orElse: () => {'seatingCapacity': 4},
+      (v) => v['id'] == _selectedVehicleType,
+      orElse: () => {'displayName': _selectedVehicleType, 'models': []},
     );
-    return vehicle['seatingCapacity'] ?? 4;
+
+    String displayName = vehicle['displayName'] ?? _selectedVehicleType ?? '';
+
+    // Add model if selected
+    if (_selectedModel != null && _selectedModel!.isNotEmpty) {
+      vehicleDisplay = '$displayName - $_selectedModel';
+    } else {
+      vehicleDisplay = displayName;
+    }
+
+    return vehicleDisplay;
   }
 
   Widget _buildHoursSelection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
@@ -1959,12 +2281,12 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.access_time, color: widget.themeColor, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.access_time, color: widget.themeColor, size: 18),
+              const SizedBox(width: 6),
               Text(
                 'SELECT DURATION',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey.shade800,
                 ),
@@ -1972,199 +2294,254 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Hours',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<int>(
-                          value: _selectedHours,
-                          isExpanded: true,
-                          icon: Icon(Icons.arrow_drop_down,
-                              color: widget.themeColor),
-                          items: List.generate(24, (index) {
-                            return DropdownMenuItem<int>(
-                              value: index,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                child:
-                                    Text('$index hour${index != 1 ? 's' : ''}'),
-                              ),
-                            );
-                          }),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _selectedHours = value;
-                                _isManualHours = true;
-                                _calculateExtraHours();
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Add this controller at the top with other controllers
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Minutes',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+          // User Selection Summary
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: widget.themeColor.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.timer, color: widget.themeColor, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Your Selection: ${_selectedHours}h ${_selectedMinutes}m',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: widget.themeColor,
                     ),
-                    const SizedBox(height: 4),
-                    Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        children: [
-                          // Minus button
-                          IconButton(
-                            icon: Icon(Icons.remove, color: widget.themeColor),
-                            onPressed: () {
-                              setState(() {
-                                if (_selectedMinutes > 0) {
-                                  _selectedMinutes = _selectedMinutes - 1;
-                                  _calculateExtraHours();
-                                }
-                              });
-                            },
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                          // Minutes display
-                          Expanded(
-                            child: Text(
-                              '$_selectedMinutes min',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          // Plus button
-                          IconButton(
-                            icon: Icon(Icons.add, color: widget.themeColor),
-                            onPressed: () {
-                              setState(() {
-                                if (_selectedMinutes < 59) {
-                                  _selectedMinutes = _selectedMinutes + 1;
-                                  _calculateExtraHours();
-                                }
-                              });
-                            },
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
+                  ),
+                ),
+                if (_tripDurationMinutes > 0)
+                  Text(
+                    'Est: ${_tripDurationMinutes ~/ 60}h ${_tripDurationMinutes % 60}m',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
                     ),
-                    // Quick minute buttons
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: [0, 15, 30, 36, 45, 46, 50, 55].map((min) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedMinutes = min;
-                              _calculateExtraHours();
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _selectedMinutes == min
-                                  ? widget.themeColor
-                                  : Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '$min',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: _selectedMinutes == min
-                                    ? Colors.white
-                                    : Colors.black87,
-                              ),
-                            ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Hours',
+                style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: _selectedHours,
+                    isExpanded: true,
+                    icon: Icon(Icons.arrow_drop_down,
+                        color: widget.themeColor, size: 22),
+                    items: List.generate(24, (index) {
+                      return DropdownMenuItem<int>(
+                        value: index,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            '$index hour${index != 1 ? 's' : ''}',
+                            style: const TextStyle(fontSize: 13),
                           ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
+                        ),
+                      );
+                    }),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedHours = value;
+                          _isManualHours = true;
+                          _calculateExtraHours();
+                        });
+                      }
+                    },
+                  ),
                 ),
               ),
             ],
           ),
-          if (_extraHours > 0)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Container(
-                padding: const EdgeInsets.all(12),
+          const SizedBox(height: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Minutes',
+                style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.shade200),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.warning, color: Colors.orange[700], size: 20),
-                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (_selectedMinutes > 0) {
+                            _selectedMinutes = _selectedMinutes - 1;
+                            _calculateExtraHours();
+                          }
+                        });
+                      },
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            bottomLeft: Radius.circular(8),
+                          ),
+                        ),
+                        child: Icon(Icons.remove,
+                            color: widget.themeColor, size: 18),
+                      ),
+                    ),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Extra Hours: $_extraHours hour${_extraHours > 1 ? 's' : ''}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange[800],
-                              fontSize: 13,
-                            ),
+                      child: Text(
+                        '$_selectedMinutes min',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (_selectedMinutes < 59) {
+                            _selectedMinutes = _selectedMinutes + 1;
+                            _calculateExtraHours();
+                          }
+                        });
+                      },
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(8),
+                            bottomRight: Radius.circular(8),
                           ),
-                          Text(
-                            'Extra Charges: ₹${_extraHourCharges.toStringAsFixed(0)}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: widget.themeColor,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
+                        ),
+                        child:
+                            Icon(Icons.add, color: widget.themeColor, size: 18),
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [0, 15, 30, 45].map((min) {
+                    final isSelected = _selectedMinutes == min;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedMinutes = min;
+                            _calculateExtraHours();
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? widget.themeColor
+                                : Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            '$min min',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+          if (_extraHours > 0) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber,
+                      color: Colors.orange[700], size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Extra Hours: ${_extraHours.toStringAsFixed(1)}h',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange[800],
+                            fontSize: 11,
+                          ),
+                        ),
+                        Text(
+                          'Extra Charges: +₹${_extraHourCharges.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: widget.themeColor,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ],
         ],
       ),
     );
@@ -2195,8 +2572,6 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
       _showSnackBar('Please select trip duration', Colors.orange);
       return;
     }
-
-    // Return date is optional now - no validation needed
 
     _showBookingConfirmation();
   }
@@ -2245,8 +2620,40 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
               Text('Est. Duration: $durationText'),
               Text('Selected Duration: $selectedDurationText',
                   style: const TextStyle(fontWeight: FontWeight.bold)),
-              if (_tollCalculated)
-                Text('Toll Charges: ₹${_tollCharges.toStringAsFixed(0)}'),
+              if (_tollCalculated) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Toll Details:',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange.shade700)),
+                      const SizedBox(height: 4),
+                      Text(
+                          '• One-way Toll: ₹${_tollCharges.toStringAsFixed(0)}'),
+                      if (_returnDate != null) ...[
+                        Text(
+                            '• Return Toll: ₹${_returnTollCharges.toStringAsFixed(0)}'),
+                        if (_tollSavings > 0)
+                          Text(
+                              '• You Save: ₹${_tollSavings.toStringAsFixed(0)}',
+                              style: const TextStyle(color: Colors.green)),
+                      ],
+                      const Divider(),
+                      Text(
+                          'Total Toll: ₹${_totalTollCharges.toStringAsFixed(0)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ],
               if (_extraHours > 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -2266,7 +2673,7 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Extra Hours: $_extraHours h',
+                                'Extra Hours: ${_extraHours.toStringAsFixed(1)}h',
                                 style: const TextStyle(
                                     fontSize: 12, color: Colors.orange),
                               ),
@@ -2337,7 +2744,7 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
       String selectedDurationText = '$_selectedHours h $_selectedMinutes m';
 
       String extraHoursText = _extraHours > 0
-          ? '\n*Extra Hours:* $_extraHours h (₹${_extraHourCharges.toStringAsFixed(0)})'
+          ? '\n*Extra Hours:* ${_extraHours.toStringAsFixed(1)}h (₹${_extraHourCharges.toStringAsFixed(0)})'
           : '';
 
       String billedDistance = '${_distance.toStringAsFixed(1)} km';
@@ -2346,6 +2753,21 @@ class _OutstationCabBookingScreenState extends State<OutstationCabBookingScreen>
       String returnDateText = _returnDate != null
           ? '\n*Return:* ${DateFormat('dd/MM/yyyy').format(_returnDate!)}'
           : '';
+
+      String tollText = '';
+      if (_tollCalculated) {
+        if (_returnDate != null) {
+          tollText = '''
+*💰 Toll Details*
+*One-way Toll:* ₹${_tollCharges.toStringAsFixed(0)}
+*Return Toll:* ₹${_returnTollCharges.toStringAsFixed(0)}
+*Total Toll:* ₹${_totalTollCharges.toStringAsFixed(0)}
+${_tollSavings > 0 ? '*Savings:* ₹${_tollSavings.toStringAsFixed(0)} (within 24hrs discount)' : ''}
+''';
+        } else {
+          tollText = '*Toll Charges:* ₹${_tollCharges.toStringAsFixed(0)}\n';
+        }
+      }
 
       String message = '''
 *🚗 SSA Travels - Booking Confirmation*
@@ -2362,8 +2784,7 @@ ${_customerEmailController.text.isNotEmpty ? '*Email:* ${_customerEmailControlle
 *Pickup:* ${DateFormat('dd/MM/yyyy').format(_pickupDate)} at ${_pickupTime.format(context)}$returnDateText
 
 *🚙 Vehicle Details*
-*Type:* $_selectedVehicleType
-*Model:* ${_selectedModel ?? 'Not specified'}
+*Type:* ${_getVehicleDisplayName()}
 
 *⏱️ Trip Duration*
 *Estimated Duration:* $durationText
@@ -2372,7 +2793,7 @@ ${_customerEmailController.text.isNotEmpty ? '*Email:* ${_customerEmailControlle
 
 *💰 Fare Details*
 *Base Fare:* ₹${(_kmCharges + _driverAllowance + _driverFoodCharges + _nightHaltCharges).toStringAsFixed(0)}
-${_tollCalculated ? '*Toll Charges:* ₹${_tollCharges.toStringAsFixed(0)}\n' : ''}${_extraHours > 0 ? '*Extra Hour Charges:* ₹${_extraHourCharges.toStringAsFixed(0)}\n' : ''}
+$tollText${_extraHours > 0 ? '*Extra Hour Charges:* ₹${_extraHourCharges.toStringAsFixed(0)}\n' : ''}
 *Total Fare:* ₹${totalAmount.toStringAsFixed(0)}
 
 *👥 Passenger Details*
@@ -2438,10 +2859,13 @@ Thank you for choosing SSA Travels! 🎉
       print('📝 Creating booking with:');
       print('   From: ${_pickupController.text}');
       print('   To: ${_dropController.text}');
-      print('   Vehicle: $_selectedVehicleType');
+      print('   Vehicle: ${_getVehicleDisplayName()}');
       print('   Base Fare: $baseFare');
-      print('   Extra Hours: $_extraHours');
+      print('   Extra Hours: ${_extraHours.toStringAsFixed(2)}h');
       print('   Extra Hour Charges: $_extraHourCharges');
+      print('   One-way Toll: $_tollCharges');
+      print('   Return Toll: $_returnTollCharges');
+      print('   Total Toll: $_totalTollCharges');
       print('   Total Fare: $_totalFare');
       print('   Distance: $_distance km');
       print('   Trip Type: ${_returnDate != null ? "ROUND TRIP" : "ONE WAY"}');
@@ -2494,6 +2918,7 @@ Thank you for choosing SSA Travels! 🎉
     }
   }
 
+  // ignore: unused_element
   String _randomString(int length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     Random rnd = Random();
@@ -2525,6 +2950,9 @@ Thank you for choosing SSA Travels! 🎉
         _luggage = 0;
         _distance = 0.0;
         _tollCharges = 0.0;
+        _returnTollCharges = 0.0;
+        _totalTollCharges = 0.0;
+        _tollSavings = 0.0;
         _tollDetails = [];
         _tollCalculated = false;
         _totalFare = 0.0;
@@ -2543,15 +2971,13 @@ Thank you for choosing SSA Travels! 🎉
         _selectedHours = 8;
         _selectedMinutes = 0;
         _isManualHours = true;
-        _extraHours = 0;
+        _extraHours = 0.0;
         _extraHourCharges = 0.0;
         _showExtraHoursWarning = false;
         _extraHoursMessage = '';
         _checkNightTravel();
       });
     }
-
-    _setDefaultLocation();
   }
 
   @override
@@ -2623,26 +3049,6 @@ Thank you for choosing SSA Travels! 🎉
                   ),
                 ),
               ),
-              if (!_isInitialized)
-                Container(
-                  color: Colors.white.withOpacity(0.9),
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Color(0xFF00C853)),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Loading booking form...',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               if (_showRouteInfo && _routeDuration.isNotEmpty && _distance > 0)
                 _buildRouteInfoCard(),
             ],
@@ -2777,7 +3183,7 @@ Thank you for choosing SSA Travels! 🎉
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Extra $_extraHours h - ₹${_extraHourCharges.toStringAsFixed(0)}',
+                          'Extra ${_extraHours.toStringAsFixed(1)}h - ₹${_extraHourCharges.toStringAsFixed(0)}',
                           style: const TextStyle(
                             fontSize: 11,
                             color: Colors.orange,
@@ -3563,7 +3969,7 @@ Thank you for choosing SSA Travels! 🎉
                                     ),
                                   ),
                                   Text(
-                                    '₹${toll['rate']}',
+                                    '₹${toll['amount']}',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
@@ -3578,13 +3984,70 @@ Thank you for choosing SSA Travels! 🎉
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Total Toll Charges:',
+                              Text(
+                                'One-way Toll:',
                                 style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.bold),
+                                    fontSize: 14, color: Colors.grey.shade700),
                               ),
                               Text(
                                 '₹${_tollCharges.toStringAsFixed(0)}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_returnDate != null) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Return Toll:',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade700),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '₹${_returnTollCharges.toStringAsFixed(0)}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange.shade700,
+                                      ),
+                                    ),
+                                    if (_tollSavings > 0)
+                                      Text(
+                                        'Save ₹${_tollSavings.toStringAsFixed(0)}',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                          const Divider(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _returnDate != null
+                                    ? 'Total Toll (Round Trip):'
+                                    : 'Total Toll:',
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                '₹${_totalTollCharges.toStringAsFixed(0)}',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -3678,7 +4141,7 @@ Thank you for choosing SSA Travels! 🎉
 
     return Column(
       children: [
-        _buildFareDetailRow('Vehicle Type', _selectedVehicleType!, ''),
+        _buildFareDetailRow('Vehicle Type', _getVehicleDisplayName(), ''),
         _buildFareDetailRow('Distance', distanceDisplay, ''),
         if (_routeDuration.isNotEmpty)
           _buildFareDetailRow('Est. Time', _routeDuration, ''),
@@ -3695,9 +4158,9 @@ Thank you for choosing SSA Travels! 🎉
               '₹${_nightHaltCharges.toStringAsFixed(0)}'),
         _buildFareDetailRow('Base Fare', '', '₹${baseFare.toStringAsFixed(0)}',
             isBold: true),
-        if (_tollCharges > 0)
+        if (_totalTollCharges > 0)
           _buildFareDetailRow(
-              'Toll Charges', '', '₹${_tollCharges.toStringAsFixed(0)}'),
+              'Toll Charges', '', '₹${_totalTollCharges.toStringAsFixed(0)}'),
         if (_extraHours > 0)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -3710,7 +4173,7 @@ Thank you for choosing SSA Travels! 🎉
                       const Icon(Icons.timer, color: Colors.orange, size: 14),
                       const SizedBox(width: 4),
                       Text(
-                        'Extra Hours',
+                        'Extra Hours (${_extraHours.toStringAsFixed(1)}h)',
                         style: TextStyle(
                             fontSize: 13, color: Colors.grey.shade700),
                       ),
@@ -3719,7 +4182,7 @@ Thank you for choosing SSA Travels! 🎉
                 ),
                 Expanded(
                   child: Text(
-                    '$_extraHours h',
+                    '${_extraHours.toStringAsFixed(1)}h',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey.shade800,
@@ -3784,7 +4247,7 @@ Thank you for choosing SSA Travels! 🎉
                 amount,
                 style: TextStyle(
                   fontSize: 13,
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.bold,
+                  fontWeight: FontWeight.bold,
                   color: widget.themeColor,
                 ),
                 textAlign: TextAlign.right,

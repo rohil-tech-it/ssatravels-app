@@ -1,8 +1,11 @@
+// lib/services/toll_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/toll_plaza_model.dart';
 import '../models/toll_route_model.dart';
 import '../models/vehicle_model.dart';
 import '../data/tamilnadu_toll_plazas.dart';
+import '../data/tamilnadu_toll_routes.dart';
+import 'toll_calculator.dart'; // Add this import
 
 class TollService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -50,15 +53,14 @@ class TollService {
               'highway': plaza['highway'],
               'latitude': plaza['latitude'],
               'longitude': plaza['longitude'],
-              'amount': plaza['amount'] ?? 50, // SIMPLE AMOUNT
+              'amount': plaza['amount'] ?? 50,
               'createdAt': FieldValue.serverTimestamp(),
               'updatedAt': FieldValue.serverTimestamp(),
               'isActive': true,
             });
           }
         } catch (e) {
-          // Continue with next plaza even if one fails
-          rethrow;
+          continue;
         }
       }
     } catch (e) {
@@ -82,7 +84,7 @@ class TollService {
     return null;
   }
 
-  // Add new toll plaza - SIMPLE AMOUNT VERSION
+  // Add new toll plaza
   Future<void> addTollPlaza({
     required String name,
     required String location,
@@ -90,7 +92,7 @@ class TollService {
     required String highway,
     required double latitude,
     required double longitude,
-    required double amount, // Simple amount - no rates map
+    required double amount,
   }) async {
     try {
       final id =
@@ -104,7 +106,7 @@ class TollService {
         'highway': highway,
         'latitude': latitude,
         'longitude': longitude,
-        'amount': amount, // Simple amount field
+        'amount': amount,
         'isActive': true,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -114,7 +116,7 @@ class TollService {
     }
   }
 
-  // Update toll plaza - SIMPLE AMOUNT VERSION
+  // Update toll plaza
   Future<void> updateTollPlaza({
     required String plazaId,
     String? name,
@@ -123,7 +125,7 @@ class TollService {
     String? highway,
     double? latitude,
     double? longitude,
-    double? amount, // Simple amount
+    double? amount,
     bool? isActive,
   }) async {
     try {
@@ -137,7 +139,7 @@ class TollService {
       if (highway != null) updateData['highway'] = highway;
       if (latitude != null) updateData['latitude'] = latitude;
       if (longitude != null) updateData['longitude'] = longitude;
-      if (amount != null) updateData['amount'] = amount; // Simple amount
+      if (amount != null) updateData['amount'] = amount;
       if (isActive != null) updateData['isActive'] = isActive;
 
       await _tollPlazas.doc(plazaId).update(updateData);
@@ -260,7 +262,7 @@ class TollService {
   Future<void> addVehicle({
     required String name,
     required String displayName,
-    required String category, // This should match rateCard keys
+    required String category,
     required int seatingCapacity,
     required double baseTollMultiplier,
     String? model,
@@ -274,7 +276,7 @@ class TollService {
         'displayName': displayName,
         'vehicleName': displayName.split('(').first.trim(),
         'vehicleModel': model ?? '',
-        'category': category, // Save the category
+        'category': category,
         'seatingCapacity': seatingCapacity,
         'baseTollMultiplier': baseTollMultiplier,
         'isActive': true,
@@ -348,10 +350,89 @@ class TollService {
     return null;
   }
 
-  // ==================== TOLL CALCULATION ====================
-  // UPDATED: Simple amount calculation - no vehicle types
+  // ==================== ENHANCED TOLL CALCULATION ====================
+  // THIS IS THE KEY PART - COMBINING FIRESTORE AND LOCAL DATA
 
-  // Calculate toll between two cities - SIMPLE VERSION
+  // Enhanced route finding that works with both Firestore and local data
+  Future<Map<String, dynamic>> findRouteWithLocal({
+    required String source,
+    required String destination,
+  }) async {
+    try {
+      // First try Firestore
+      final firestoreResult = await calculateToll(
+        source: source,
+        destination: destination,
+      );
+
+      if (firestoreResult['success'] == true && 
+          firestoreResult['totalPlazas'] > 0) {
+        return firestoreResult;
+      }
+
+      // If Firestore fails, try local data
+      final localRoute = TamilNaduTollRoutes.getRoute(source, destination);
+      
+      if (localRoute != null) {
+        final totalAmount = localRoute['totalTollAmount'] ?? 
+                           localRoute['baseToll'] ?? 0;
+        final tollPlazaIds = List<String>.from(localRoute['tollPlazaIds'] ?? []);
+        
+        // Get plaza details from local data
+        List<Map<String, dynamic>> plazaDetails = [];
+        for (var plazaId in tollPlazaIds) {
+          final plaza = TamilNaduTollData.getAllTollPlazas()
+              .firstWhere((p) => p['id'] == plazaId, orElse: () => {});
+          if (plaza.isNotEmpty) {
+            plazaDetails.add({
+              'id': plazaId,
+              'name': plaza['name'] ?? plazaId,
+              'location': plaza['location'] ?? '',
+              'district': plaza['district'] ?? '',
+              'highway': plaza['highway'] ?? '',
+              'amount': plaza['amount'] ?? 50,
+            });
+          }
+        }
+
+        return {
+          'success': true,
+          'source': source,
+          'destination': destination,
+          'totalPlazas': tollPlazaIds.length,
+          'plazas': plazaDetails,
+          'totalAmount': totalAmount.toDouble(),
+          'distance': (localRoute['distance'] ?? 0).toDouble(),
+          'message': 'Found in local database',
+        };
+      }
+
+      // If no route found, try reverse
+      final reverseLocalRoute = TamilNaduTollRoutes.getRoute(destination, source);
+      if (reverseLocalRoute != null) {
+        return await findRouteWithLocal(
+          source: destination,
+          destination: source,
+        );
+      }
+
+      return {
+        'success': false,
+        'message': 'No toll route found between $source and $destination',
+        'totalAmount': 0,
+        'totalPlazas': 0,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': e.toString(),
+        'totalAmount': 0,
+        'totalPlazas': 0,
+      };
+    }
+  }
+
+  // Original calculate toll method (keep this as is)
   Future<Map<String, dynamic>> calculateToll({
     required String source,
     required String destination,
@@ -381,7 +462,7 @@ class TollService {
             'source': source,
             'destination': destination,
             'totalPlazas': 0,
-            'totalAmount': 0, // Simple amount
+            'totalAmount': 0,
           };
         }
 
@@ -461,7 +542,7 @@ class TollService {
       'destination': destination,
       'totalPlazas': plazaDetails.length,
       'plazas': plazaDetails,
-      'totalAmount': totalAmount, // Simple total amount
+      'totalAmount': totalAmount,
       'message': totalAmount > 0
           ? 'Via $totalAmount toll plazas'
           : 'No tolls on this route',
@@ -479,6 +560,33 @@ class TollService {
       return result['totalAmount'] ?? 0;
     }
     return 0;
+  }
+
+  // ==================== LOCAL DATA HELPER METHODS ====================
+
+  // Get all available sources from local data
+  List<String> getAllSources() {
+    return TamilNaduTollRoutes.getAllSources();
+  }
+
+  // Get destinations for a source
+  List<String> getDestinationsForSource(String source) {
+    return TamilNaduTollRoutes.getDestinationsBySource(source);
+  }
+
+  // Check if route exists in local data
+  bool routeExists(String source, String destination) {
+    return TamilNaduTollRoutes.getRoute(source, destination) != null;
+  }
+
+  // Get route summary from local data
+  String getRouteSummary(String source, String destination) {
+    return TollCalculator.getRouteSummary(source, destination);
+  }
+
+  // Get all locations from local data
+  List<String> getAllLocations() {
+    return TamilNaduTollRoutes.getAllLocations();
   }
 
   // ==================== DASHBOARD STATISTICS ====================

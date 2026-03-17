@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart'; // Add this import
 import 'package:ssatravels_app/screens/auth/login_screen.dart';
 import 'package:ssatravels_app/screens/user/components/about_page.dart';
 import 'package:ssatravels_app/screens/user/components/help_support_page.dart';
 import 'package:ssatravels_app/screens/user/components/privacy_policy_page.dart';
-import 'package:ssatravels_app/screens/user/components/booking_history_page.dart';
 import 'package:ssatravels_app/screens/user/components/settings_page.dart';
 import 'package:ssatravels_app/screens/user/components/terms_conditions_page.dart';
 
@@ -31,7 +31,7 @@ class UserDrawer extends StatelessWidget {
   Future<void> _callContactNumber() async {
     final Uri phoneUri = Uri(
       scheme: 'tel',
-      path: '9751867879',
+      path: '6374049582',
     );
 
     if (await canLaunchUrl(phoneUri)) {
@@ -100,6 +100,18 @@ class UserDrawer extends StatelessWidget {
                   .doc(user.uid)
                   .snapshots(),
               builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF00B14F)),
+                  );
+                }
+
+                if (userSnapshot.hasError) {
+                  return Center(
+                    child: Text('Error loading user data'),
+                  );
+                }
+
                 final userData =
                     userSnapshot.data?.data() as Map<String, dynamic>?;
                 final fullName =
@@ -107,13 +119,14 @@ class UserDrawer extends StatelessWidget {
                 final email = userData?['email'] ?? user.email ?? 'No email';
                 final phoneNumber =
                     userData?['phoneNumber'] ?? user.phoneNumber ?? '';
+                final profileImageUrl = userData?['profileImageUrl'];
 
                 return _buildLoggedInView(
                   context,
                   fullName,
                   email,
                   phoneNumber,
-                  user.photoURL,
+                  profileImageUrl,
                 );
               },
             );
@@ -134,7 +147,8 @@ class UserDrawer extends StatelessWidget {
         _drawerItem(context, Icons.home, 'Home', 0, isDrawerItem: true),
         _drawerItem(context, Icons.directions_car, 'Book Trip', 1,
             isDrawerItem: true),
-
+        _drawerItem(context, Icons.history, 'Book History', 3,
+            isDrawerItem: true),
         const Divider(height: 1),
 
         // Navigation to pages
@@ -166,15 +180,7 @@ class UserDrawer extends StatelessWidget {
           null,
           onTap: () => _navigateToPage(context, const HelpSupportPage()),
         ),
-        _drawerItem(
-          context,
-          Icons.history,
-          'Booking History',
-          null,
-          onTap: () {
-            _showLoginPrompt(context);
-          },
-        ),
+
         _drawerItem(
           context,
           Icons.call,
@@ -209,16 +215,19 @@ class UserDrawer extends StatelessWidget {
     String fullName,
     String email,
     String phoneNumber,
-    String? photoURL,
+    String? profileImageUrl,
   ) {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        _buildUserHeader(context, fullName, email, phoneNumber, photoURL),
+        _buildUserHeader(
+            context, fullName, email, phoneNumber, profileImageUrl),
 
         // Main navigation
         _drawerItem(context, Icons.home, 'Home', 0, isDrawerItem: true),
         _drawerItem(context, Icons.directions_car, 'Book Trip', 1,
+            isDrawerItem: true),
+        _drawerItem(context, Icons.history, 'Booking History', 3,
             isDrawerItem: true),
 
         const Divider(height: 1),
@@ -254,13 +263,6 @@ class UserDrawer extends StatelessWidget {
         ),
         _drawerItem(
           context,
-          Icons.history,
-          'Booking History',
-          null,
-          onTap: () => _navigateToPage(context, const BookingHistoryPage()),
-        ),
-        _drawerItem(
-          context,
           Icons.call,
           'Contact Us',
           7,
@@ -276,7 +278,7 @@ class UserDrawer extends StatelessWidget {
             context,
             Icons.person_outline,
             'My Profile',
-            3,
+            4,
             isDrawerItem: true,
           ),
           _drawerItem(
@@ -357,6 +359,7 @@ class UserDrawer extends StatelessWidget {
     );
   }
 
+  // ignore: unused_element
   void _showLoginPrompt(BuildContext context) {
     Navigator.pop(context);
     showDialog(
@@ -367,6 +370,9 @@ class UserDrawer extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF00B14F),
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
@@ -546,7 +552,7 @@ class UserDrawer extends StatelessWidget {
     String fullName,
     String email,
     String phoneNumber,
-    String? photoURL,
+    String? profileImageUrl,
   ) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
@@ -596,7 +602,8 @@ class UserDrawer extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildUserAvatar(context, photoURL, screenWidth * 0.15, fullName),
+              _buildUserAvatar(
+                  context, profileImageUrl, screenWidth * 0.15, fullName),
               SizedBox(width: screenWidth * 0.03),
               Expanded(
                 child: Column(
@@ -696,9 +703,9 @@ class UserDrawer extends StatelessWidget {
   }
 
   // ================= AVATAR =================
-  Widget _buildUserAvatar(
-      BuildContext context, String? photoURL, double size, String fullName) {
-    if (photoURL != null && photoURL.isNotEmpty) {
+  Widget _buildUserAvatar(BuildContext context, String? profileImageUrl,
+      double size, String fullName) {
+    if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
       return Container(
         width: size,
         height: size,
@@ -714,10 +721,19 @@ class UserDrawer extends StatelessWidget {
           ],
         ),
         child: ClipOval(
-          child: Image.network(
-            photoURL,
+          child: CachedNetworkImage(
+            imageUrl: profileImageUrl,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
+            placeholder: (context, url) => Container(
+              color: Colors.white.withValues(alpha: 0.3),
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: const Color(0xFF00B14F),
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+            errorWidget: (context, url, error) {
               return _buildDefaultAvatar(size, fullName);
             },
           ),
@@ -746,7 +762,7 @@ class UserDrawer extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          fullName.isNotEmpty ? fullName[0].toUpperCase() : 'U',
+          _getInitials(fullName),
           style: TextStyle(
             fontSize: size * 0.4,
             fontWeight: FontWeight.bold,
@@ -755,6 +771,22 @@ class UserDrawer extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Helper method to get initials from name
+  String _getInitials(String name) {
+    if (name.isEmpty || name == 'User') return 'U';
+
+    // Handle "Abarna S" - should return "AS"
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return parts[0].substring(0, 1).toUpperCase() +
+          parts[1].substring(0, 1).toUpperCase();
+    } else if (parts.length == 1) {
+      return parts[0].substring(0, 1).toUpperCase();
+    }
+
+    return 'U';
   }
 
   // ================= DRAWER ITEM =================
@@ -835,7 +867,8 @@ class UserDrawer extends StatelessWidget {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: const Color(0xFF00B14F),
+              foregroundColor: Colors.white,
             ),
             child: const Text('Logout'),
           ),

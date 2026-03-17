@@ -50,8 +50,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
 
   // ================ UI STATE ================
   int _currentIndex = 0;
-  List<int> _tabHistory = [0]; // Track tab navigation history
   String _userName = "";
+  String? _profileImageUrl; // Add profile image URL
   bool _isUserDataLoading = true;
 
   // Responsive variables
@@ -172,11 +172,14 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             final userData = userDoc.data() as Map<String, dynamic>;
             setState(() {
               _userName = userData['fullName'] ?? user.displayName ?? 'User';
+              _profileImageUrl =
+                  userData['profileImageUrl']; // Get profile image URL
               _isUserDataLoading = false;
             });
           } else {
             setState(() {
               _userName = user.displayName ?? 'User';
+              _profileImageUrl = null;
               _isUserDataLoading = false;
             });
           }
@@ -185,6 +188,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
           if (mounted) {
             setState(() {
               _userName = user.displayName ?? 'User';
+              _profileImageUrl = null;
               _isUserDataLoading = false;
             });
           }
@@ -193,6 +197,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         if (mounted) {
           setState(() {
             _userName = 'Guest';
+            _profileImageUrl = null;
             _isUserDataLoading = false;
           });
         }
@@ -202,10 +207,26 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       if (mounted) {
         setState(() {
           _userName = 'User';
+          _profileImageUrl = null;
           _isUserDataLoading = false;
         });
       }
     }
+  }
+
+  // Helper method to get initials from name
+  String _getInitials(String name) {
+    if (name.isEmpty || name == 'Guest' || name == 'User') return 'U';
+
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return parts[0].substring(0, 1).toUpperCase() +
+          parts[1].substring(0, 1).toUpperCase();
+    } else if (parts.length == 1) {
+      return parts[0].substring(0, 1).toUpperCase();
+    }
+
+    return 'U';
   }
 
   // ================ LOCATION METHODS ================
@@ -561,7 +582,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: const Text("Cancel", style: TextStyle(color: Colors.black)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -570,6 +591,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00B14F),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
@@ -613,47 +635,14 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     );
   }
 
-  // ================ NAVIGATION METHODS ================
   void _navigateToBooking() {
     setState(() {
       _currentIndex = 1;
-      _tabHistory.add(1);
+      // _tabHistory.add(1); // Remove this line
     });
   }
 
-  // Handle back button press
-  Future<bool> _onWillPop() async {
-    // If we have more than one tab in history, go back to previous tab
-    if (_tabHistory.length > 1) {
-      setState(() {
-        _tabHistory.removeLast();
-        _currentIndex = _tabHistory.last;
-      });
-      return false; // Don't close the app
-    }
-
-    // If we're on the first tab, show exit confirmation or just close
-    if (_currentIndex == 0) {
-      DateTime now = DateTime.now();
-      if (_lastBackPress == null ||
-          now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
-        _lastBackPress = now;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Press back again to exit'),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Color(0xFF00B14F),
-          ),
-        );
-        return false; // Don't close yet
-      }
-      return true; // Close app on double back press
-    }
-
-    return true; // Default behavior
-  }
-
+ 
   String _getAppBarTitle() {
     switch (_currentIndex) {
       case 0:
@@ -681,13 +670,18 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     super.dispose();
   }
 
-  // ================ BUILD METHODS ================
   @override
   Widget build(BuildContext context) {
     _updateScreenSize();
 
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false, // Default back behavior-ஐ block பண்ணு
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // ஏற்கனவே pop ஆயிருந்தா ignore பண்ணு
+
+        // Back button press ஆனதும் இது run ஆகும்
+        _handleBackPress();
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F9FA),
         appBar: _buildAppBar(),
@@ -698,7 +692,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             if (mounted) {
               setState(() {
                 _currentIndex = i;
-                _tabHistory.add(i);
+                // இனி tab history வேண்டாம் - remove பண்ணலாம்
+                // _tabHistory.add(i);
               });
             }
           },
@@ -707,6 +702,41 @@ class _UserHomeScreenState extends State<UserHomeScreen>
         bottomNavigationBar: _buildBottomNavigationBar(),
       ),
     );
+  }
+
+// The _handleBackPress() method is perfect - no changes needed
+  void _handleBackPress() {
+    if (_currentIndex != 0) {
+      setState(() {
+        _currentIndex = 0;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Returning to Home'),
+          duration: Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Color(0xFF00B14F),
+        ),
+      );
+    } else {
+      DateTime now = DateTime.now();
+      if (_lastBackPress == null ||
+          now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
+        _lastBackPress = now;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Press back again to exit'),
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Color(0xFF00B14F),
+          ),
+        );
+      } else {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+    }
   }
 
   Widget _buildBody() {
@@ -802,7 +832,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: _buildWelcomeBanner(),
+            child: _buildWelcomeBanner(), // Updated with profile image
           ),
           SliverToBoxAdapter(
             child: _buildSSABranding(), // Updated with light green background
@@ -989,6 +1019,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     );
   }
 
+  // Updated Welcome Banner with Profile Image
   Widget _buildWelcomeBanner() {
     return Container(
       width: double.infinity,
@@ -1009,20 +1040,66 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       ),
       child: Row(
         children: [
-          Container(
-            width: _isSmallScreen ? 45 : 55,
-            height: _isSmallScreen ? 45 : 55,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: Icon(
-              Icons.person,
-              color: Colors.white,
-              size: _isSmallScreen ? 22 : 28,
-            ),
-          ),
+          // Profile Image with loading state
+          _isUserDataLoading
+              ? Container(
+                  width: _isSmallScreen ? 45 : 55,
+                  height: _isSmallScreen ? 45 : 55,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                )
+              : _profileImageUrl != null && _profileImageUrl!.isNotEmpty
+                  ? Container(
+                      width: _isSmallScreen ? 45 : 55,
+                      height: _isSmallScreen ? 45 : 55,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                        image: DecorationImage(
+                          image: NetworkImage(_profileImageUrl!),
+                          fit: BoxFit.cover,
+                          onError: (exception, stackTrace) {
+                            debugPrint(
+                                'Error loading profile image: $exception');
+                          },
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: _isSmallScreen ? 45 : 55,
+                      height: _isSmallScreen ? 45 : 55,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _getInitials(_userName),
+                          style: TextStyle(
+                            fontSize: _isSmallScreen ? 18 : 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
           SizedBox(width: _isSmallScreen ? 12 : 16),
           Expanded(
             child: Column(
@@ -1138,7 +1215,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       style: TextStyle(
                         fontSize: getResponsiveFontSize(20),
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF004D40), // Dark teal for contrast
+                        color:
+                            const Color(0xFF004D40), // Dark teal for contrast
                         letterSpacing: 1,
                       ),
                     ),
@@ -1366,7 +1444,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             if (mounted) {
               setState(() {
                 _currentIndex = action['tab'];
-                _tabHistory.add(action['tab']);
+                // இனி tab history வேண்டாம் - இந்த line-ஐ remove பண்ணுங்க
+                // _tabHistory.add(action['tab']);
               });
             }
           },
@@ -1622,7 +1701,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             if (mounted) {
               setState(() {
                 _currentIndex = index;
-                _tabHistory.add(index);
+                // இனி tab history வேண்டாம் - இந்த line-ஐ remove பண்ணுங்க
+                // _tabHistory.add(index);
               });
             }
           },
@@ -1677,7 +1757,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                 Icons.history,
                 size: _isSmallScreen ? 22 : 24,
               ),
-              label: 'Ride History',
+              label: 'History',
             ),
             BottomNavigationBarItem(
               icon: Icon(

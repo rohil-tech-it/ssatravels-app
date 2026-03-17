@@ -1,4 +1,6 @@
 // lib/services/booking_service.dart
+// ignore_for_file: unused_element, avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/booking_model.dart';
 import 'toll_service.dart';
@@ -11,24 +13,20 @@ class BookingService {
   final TollService _tollService = TollService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Collection references
   CollectionReference get _bookings => _firestore.collection('bookings');
   CollectionReference get _tollCalculations =>
       _firestore.collection('toll_calculations');
 
-  // 🔥 Generate SSA Travels Booking ID
   // Format: SSA + YYMMDD + 4-digit sequence (e.g., SSA2403070001)
   Future<String> _generateSSABookingId() async {
     try {
       final now = DateTime.now();
       
-      // Get year, month, day
-      final year = now.year.toString().substring(2); // 2024 -> 24
-      final month = now.month.toString().padLeft(2, '0'); // 3 -> 03
-      final day = now.day.toString().padLeft(2, '0'); // 7 -> 07
-      final dateStr = '$year$month$day'; // 240307
+      final year = now.year.toString().substring(2); 
+      final month = now.month.toString().padLeft(2, '0'); 
+      final day = now.day.toString().padLeft(2, '0'); 
+      final dateStr = '$year$month$day'; 
       
-      // Get today's bookings count
       final startOfDay = DateTime(now.year, now.month, now.day);
       final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
       
@@ -44,42 +42,39 @@ class BookingService {
       return 'SSA$dateStr$sequence';
       
     } catch (e) {
-      // Fallback 1: SSA + random numbers (like your existing format)
       final random = Random();
-      final randomNum = random.nextInt(900000) + 100000; // 6-digit random
+      final randomNum = random.nextInt(900000) + 100000; 
       final randomChars = String.fromCharCodes(
         List.generate(3, (_) => 65 + random.nextInt(26))
       ); // 3 random letters
       
-      return 'SSA$randomNum$randomChars'; // Example: SSA083814K8L
+      return 'SSA$randomNum$randomChars'; 
     }
   }
 
-  // Alternative: Generate SSA ID with random string (like your existing data)
   Future<String> _generateRandomSSAId() async {
     final random = Random();
-    final randomNum = random.nextInt(900000) + 100000; // 6-digit random
+    final randomNum = random.nextInt(900000) + 100000; 
     final randomChars = String.fromCharCodes(
       List.generate(3, (_) => 65 + random.nextInt(26))
-    ); // 3 random letters
+    ); 
     
-    return 'SSA$randomNum$randomChars'; // Example: SSA177130K8L
+    return 'SSA$randomNum$randomChars'; 
   }
 
-  // Create booking with toll calculation
   Future<Map<String, dynamic>> createBookingWithToll({
     required String fromLocation,
     required String toLocation,
     required DateTime travelDate,
     required String vehicleType,
     required String vehicleNumber,
-    required int passengers,
+    required int passengers,        
     required double baseFare,
     required String paymentMethod,
     DateTime? returnDate,
-    int adults = 1,
-    int children = 0,
-    int luggage = 0,
+    required int adults,            
+    required int children,         
+    required int luggage,           
     String specialInstructions = '',
     String tripType = 'DROP TRIP',
   }) async {
@@ -88,8 +83,6 @@ class BookingService {
       if (user == null) {
         return {'success': false, 'message': 'User not logged in'};
       }
-
-      print('🔍 Creating booking for user: ${user.uid}');
 
       // Calculate toll
       final tollResult = await _tollService.calculateToll(
@@ -117,38 +110,26 @@ class BookingService {
 
       double totalAmount = baseFare + tollAmount;
 
-      // 🔥 Generate SSA Travels booking ID
       String customBookingId = await _generateSSABookingId();
-      
-      // Also generate a random one as backup
-      // String customBookingId = await _generateRandomSSAId();
 
-      print('✅ Generated Booking ID: $customBookingId');
 
-      // Create timestamp for booking
       final now = FieldValue.serverTimestamp();
       
-      // Format dates for display
       final formattedDate = DateFormat('dd MMM yyyy').format(travelDate);
       final formattedTime = DateFormat('hh:mm a').format(travelDate);
 
-      // 🔥 Complete booking data with ALL fields from your Firestore
       Map<String, dynamic> bookingData = {
-        // 🔥 Booking ID fields
         'bookingId': customBookingId,
         'documentId': customBookingId,
         'id': customBookingId,
         
-        // 🔥 User ID fields (for queries)
-        'userId': user.uid,                    // lowercase (for your current query)
-        'userID': user.uid,                     // capital D (for compatibility)
+        'userId': user.uid,                   
+        'userID': user.uid,                  
         
-        // 🔥 Customer information
         'customerName': user.displayName ?? 'User',
         'customerEmail': user.email ?? '',
         'customerPhone': user.phoneNumber ?? '',
         
-        // 🔥 Trip details
         'fromLocation': fromLocation,
         'toLocation': toLocation,
         'pickupLocation': fromLocation,
@@ -157,50 +138,44 @@ class BookingService {
         'returnDate': returnDate,
         'tripType': tripType,
         
-        // 🔥 Vehicle details
         'vehicleType': vehicleType,
         'vehicleNumber': vehicleNumber,
         'vehicleModel': 'Not specified',
         
-        // 🔥 Passenger details
-        'passengers': passengers,
-        'adults': adults,
-        'children': children,
-        'luggage': luggage,
+        'passengers': passengers,        
+        'adults': adults,                
+        'children': children,            
+        'luggage': luggage,              
         
         // 🔥 Fare details
-        'baseFare': baseFare,
-        'tollAmount': tollAmount,
-        'tollCharges': tollAmount,
-        'totalAmount': totalAmount,
-        'totalFare': totalAmount,
-        'kmCharges': baseFare,
+        'baseFare': baseFare,            
+        'tollAmount': tollAmount,         
+        'tollCharges': tollAmount,        
+        'totalAmount': totalAmount,      
+        'totalFare': totalAmount,         
+        'kmCharges': baseFare,            
         
-        // 🔥 Additional charges
-        'driverAllowance': 0,
-        'driverFoodCharges': 100,
-        'extraHourCharges': 0,
-        'extraKmCharges': 0,
-        'nightHaltCharges': 0,
-        'waitingCharges': 0,
+        'driverAllowance': 0,             
+        'driverFoodCharges': 100,        
+        'extraHourCharges': 0,            
+        'extraKmCharges': 0,              
+        'nightHaltCharges': 0,            
+        'waitingCharges': 0,               
         
-        // 🔥 Distance & Duration
-        'distance': distance,
-        'distanceText': distanceText,
-        'duration': duration,
-        'durationHours': durationHours,
-        'durationMinutes': durationMinutes,
-        'selectedHours': durationHours,
-        'selectedMinutes': durationMinutes,
-        'selectedDuration': '${durationHours}h ${durationMinutes}m',
+        'distance': distance,              
+        'distanceText': distanceText,      
+        'duration': duration,              
+        'durationHours': durationHours,    
+        'durationMinutes': durationMinutes, 
+        'selectedHours': durationHours,    
+        'selectedMinutes': durationMinutes, 
+        'selectedDuration': '${durationHours}h ${durationMinutes}m', 
         
-        // 🔥 Status fields
         'bookingStatus': 'Pending',
         'status': 'Pending',
         'paymentStatus': 'Pending',
         'paymentMethod': paymentMethod,
         
-        // 🔥 Timestamps
         'bookingDate': now,
         'createdAt': now,
         'updatedAt': now,
@@ -208,36 +183,18 @@ class BookingService {
         'formattedDate': formattedDate,
         'formattedTime': formattedTime,
         
-        // 🔥 Toll related
         'tollPlazas': tollPlazas,
         'routeKey': tollResult['routeKey'] ?? '',
         'totalTollPlazas': tollResult['totalPlazas'] ?? 0,
-        
-        // 🔥 Location coordinates (if available)
-        // You'll need to get these from your map/location picker
+      
         'pickupLatLng': null,
         'dropLatLng': null,
         
-        // 🔥 Additional info
         'specialInstructions': specialInstructions,
-        
-        // 🔥 Duration selection (if applicable)
-        'selectedHours': durationHours,
-        'selectedMinutes': durationMinutes,
       };
 
-      // 🔥 Debug: Print what we're saving
-      print('📦 Saving booking with data:');
-      print('  - Booking ID: $customBookingId');
-      print('  - User ID: ${user.uid}');
-      print('  - From: $fromLocation');
-      print('  - To: $toLocation');
-      print('  - Total: ₹$totalAmount');
-
-      // Save with custom ID
       await _bookings.doc(customBookingId).set(bookingData);
 
-      // Save toll calculation separately
       await _tollCalculations.doc(customBookingId).set({
         'bookingId': customBookingId,
         'userId': user.uid,
@@ -254,8 +211,6 @@ class BookingService {
         'status': 'pending',
       });
 
-      print('✅ Booking saved successfully!');
-
       return {
         'success': true,
         'bookingId': customBookingId,
@@ -266,7 +221,6 @@ class BookingService {
       };
       
     } catch (e) {
-      print('❌ Error creating booking: $e');
       return {
         'success': false,
         'message': e.toString(),
@@ -274,22 +228,18 @@ class BookingService {
     }
   }
 
-  // Get user bookings
   Stream<List<BookingModel>> getUserBookings() {
     User? user = _auth.currentUser;
     if (user == null) {
-      print('⚠️ No user logged in');
       return Stream.value([]);
     }
 
-    print('📊 Fetching bookings for user: ${user.uid}');
 
     return _bookings
         .where('userId', isEqualTo: user.uid)
         .orderBy('bookingDate', descending: true)
         .snapshots()
         .map((snapshot) {
-          print('✅ Found ${snapshot.docs.length} bookings');
           return snapshot.docs.map((doc) {
             return BookingModel.fromMap(
               doc.id, 
@@ -302,10 +252,8 @@ class BookingService {
   // Get booking by ID
   Future<BookingModel?> getBookingById(String bookingId) async {
     try {
-      print('🔍 Fetching booking: $bookingId');
       DocumentSnapshot doc = await _bookings.doc(bookingId).get();
       if (doc.exists) {
-        print('✅ Booking found');
         return BookingModel.fromMap(
           doc.id, 
           doc.data() as Map<String, dynamic>
@@ -314,7 +262,6 @@ class BookingService {
         print('❌ Booking not found');
       }
     } catch (e) {
-      print('❌ Error fetching booking: $e');
       return null;
     }
     return null;
@@ -326,7 +273,6 @@ class BookingService {
     required String status,
   }) async {
     try {
-      print('💳 Updating payment status for $bookingId to $status');
       
       await _bookings.doc(bookingId).update({
         'paymentStatus': status,
@@ -338,9 +284,7 @@ class BookingService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      print('✅ Payment status updated');
     } catch (e) {
-      print('❌ Error updating payment: $e');
       return;
     }
   }
@@ -348,7 +292,6 @@ class BookingService {
   // Cancel booking
   Future<void> cancelBooking(String bookingId) async {
     try {
-      print('❌ Cancelling booking: $bookingId');
       
       await _bookings.doc(bookingId).update({
         'bookingStatus': 'cancelled',
@@ -361,9 +304,7 @@ class BookingService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      print('✅ Booking cancelled');
     } catch (e) {
-      print('❌ Error cancelling booking: $e');
       return;
     }
   }
@@ -371,17 +312,13 @@ class BookingService {
   // Update ride status
   Future<void> updateRideStatus(String bookingId, String newStatus) async {
     try {
-      print('🔄 Updating ride status for $bookingId to $newStatus');
       
       await _bookings.doc(bookingId).update({
         'bookingStatus': newStatus,
         'status': newStatus,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-
-      print('✅ Ride status updated');
     } catch (e) {
-      print('❌ Error updating ride status: $e');
       throw Exception('Failed to update ride status: $e');
     }
   }
@@ -389,13 +326,11 @@ class BookingService {
   // Get toll calculation for booking
   Future<Map<String, dynamic>?> getTollCalculation(String bookingId) async {
     try {
-      print('🔍 Fetching toll calculation for: $bookingId');
       DocumentSnapshot doc = await _tollCalculations.doc(bookingId).get();
       if (doc.exists) {
         return doc.data() as Map<String, dynamic>;
       }
     } catch (e) {
-      print('❌ Error fetching toll calculation: $e');
       return null;
     }
     return null;
@@ -403,7 +338,6 @@ class BookingService {
 
   // Get all bookings (for admin)
   Stream<List<BookingModel>> getAllBookings() {
-    print('📊 Fetching all bookings for admin');
     return _bookings
         .orderBy('bookingDate', descending: true)
         .snapshots()
@@ -422,7 +356,6 @@ class BookingService {
     required DateTime startDate,
     required DateTime endDate,
   }) {
-    print('📊 Fetching bookings from $startDate to $endDate');
     return _bookings
         .where('travelDate',
             isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -454,7 +387,6 @@ class BookingService {
       
       return todayBookings.count ?? 0;
     } catch (e) {
-      print('❌ Error getting today\'s count: $e');
       return 0;
     }
   }
@@ -495,7 +427,6 @@ class BookingService {
         'totalSpent': totalSpent,
       };
     } catch (e) {
-      print('❌ Error getting user stats: $e');
       return {
         'totalBookings': 0,
         'completedBookings': 0,

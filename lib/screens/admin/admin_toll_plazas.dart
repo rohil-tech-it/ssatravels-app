@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, duplicate_ignore
+
 import 'package:flutter/material.dart';
 import '../../services/toll_service.dart';
 import '../../models/toll_plaza_model.dart';
@@ -525,6 +527,7 @@ class AdminTollPlazasState extends State<AdminTollPlazas> {
     try {
       await _tollService.initializeTollPlazasToFirestore();
 
+      // ignore: use_build_context_synchronously
       if (mounted && loadingContext != null && Navigator.canPop(loadingContext!)) {
         Navigator.pop(loadingContext!);
       }

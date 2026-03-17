@@ -1,11 +1,15 @@
 // lib/screens/admin/admin_main_screen.dart
+// ignore_for_file: sort_child_properties_last
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'admin_price_screen.dart';
 import 'admin_booking_screen.dart';
 import 'admin_dashboard.dart';
 import 'admin_profile.dart';
 import 'admin_toll_plazas.dart';
 import 'admin_toll_routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
@@ -14,10 +18,15 @@ class AdminMainScreen extends StatefulWidget {
   State<AdminMainScreen> createState() => _AdminMainScreenState();
 }
 
-class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProviderStateMixin {
+class _AdminMainScreenState extends State<AdminMainScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
-  
+
+  // For back button handling
+  DateTime? _lastPressedTime;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   // For toll sub-navigation
   late TabController _tollTabController;
   int _tollSubIndex = 0;
@@ -36,7 +45,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize toll tab controller
     _tollTabController = TabController(length: 2, vsync: this);
     _tollTabController.addListener(() {
@@ -74,7 +83,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
     super.dispose();
   }
 
-  // Build Toll Management screen with tabs (Vehicles tab removed)
+  // Build Toll Management screen with tabs
   Widget _buildTollManagementScreen() {
     return Column(
       children: [
@@ -143,141 +152,174 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
     _switchToTabWithSubIndex(3, 1);
   }
 
-  // Navigation methods for other sections
-  void _navigateToDrivers() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Drivers screen coming soon!')),
-    );
+  // FIXED: Back button handling with PopScope
+  void _onPopInvoked(bool didPop) {
+    if (didPop) return; // Pop already happened, nothing to do
+
+    // If drawer is open, close it first
+    if (_scaffoldKey.currentState?.isDrawerOpen == true) {
+      Navigator.pop(context); // Close the drawer
+      return;
+    }
+
+    // If not on Dashboard, go to Dashboard first
+    if (_currentIndex != 0) {
+      _switchToTab(0);
+      _showExitSnackBar('Press back again to exit app');
+      return;
+    }
+
+    // On Dashboard: double back to exit
+    if (_lastPressedTime == null ||
+        DateTime.now().difference(_lastPressedTime!) >
+            const Duration(seconds: 2)) {
+      _lastPressedTime = DateTime.now();
+      _showExitSnackBar('Press back again to exit app');
+      return;
+    }
+
+    // Second press within 2 seconds → exit app
+    SystemNavigator.pop();
   }
 
-  void _navigateToReports() {
+  void _showExitSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reports screen coming soon!')),
-    );
-  }
-
-  void _navigateToSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Settings screen coming soon!')),
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF00B14F),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          children: [
-            Text(
-              _appBarTitles[_currentIndex],
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            if (_currentIndex == 3)
+    return PopScope(
+      canPop: false, // We handle all pops manually
+      onPopInvoked: _onPopInvoked,
+      child: Scaffold(
+        key: _scaffoldKey, // Added key to access drawer state
+        appBar: AppBar(
+          title: Column(
+            children: [
               Text(
-                _getTollSubTitle(),
+                _appBarTitles[_currentIndex],
                 style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.white70,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
+              ),
+              if (_currentIndex == 3 && _getTollSubTitle().isNotEmpty)
+                Text(
+                  _getTollSubTitle(),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
+                ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF00B14F),
+          elevation: 2,
+          centerTitle: true,
+          iconTheme: const IconThemeData(color: Colors.white),
+          actions: [
+            if (_currentIndex == 3)
+              PopupMenuButton<int>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) {
+                  switch (value) {
+                    case 0:
+                      _navigateToTollPlazas();
+                      break;
+                    case 1:
+                      _navigateToTollRoutes();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 0,
+                    child: Row(
+                      children: [
+                        Icon(Icons.location_on,
+                            color: _tollSubIndex == 0
+                                ? const Color(0xFF00B14F)
+                                : Colors.grey),
+                        const SizedBox(width: 8),
+                        const Text('Toll Plazas'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 1,
+                    child: Row(
+                      children: [
+                        Icon(Icons.route,
+                            color: _tollSubIndex == 1
+                                ? const Color(0xFF00B14F)
+                                : Colors.grey),
+                        const SizedBox(width: 8),
+                        const Text('Toll Routes'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
           ],
         ),
-        backgroundColor: const Color(0xFF00B14F),
-        elevation: 2,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          if (_currentIndex == 3)
-            PopupMenuButton<int>(
-              icon: const Icon(Icons.more_vert),
-              onSelected: (value) {
-                switch (value) {
-                  case 0:
-                    _navigateToTollPlazas();
-                    break;
-                  case 1:
-                    _navigateToTollRoutes();
-                    break;
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 0,
-                  child: Row(
-                    children: [
-                      Icon(Icons.location_on, color: _tollSubIndex == 0 ? const Color(0xFF00B14F) : Colors.grey),
-                      const SizedBox(width: 8),
-                      const Text('Toll Plazas'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 1,
-                  child: Row(
-                    children: [
-                      Icon(Icons.route, color: _tollSubIndex == 1 ? const Color(0xFF00B14F) : Colors.grey),
-                      const SizedBox(width: 8),
-                      const Text('Toll Routes'),
-                    ],
-                  ),
-                ),
-              ],
+        drawer: _buildDrawer(context),
+        body: PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          onPageChanged: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          children: _screens,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            _switchToTab(index);
+          },
+          backgroundColor: Colors.white,
+          selectedItemColor: const Color(0xFF00B14F),
+          unselectedItemColor: Colors.grey[600],
+          selectedLabelStyle: const TextStyle(fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontSize: 12),
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_outlined),
+              activeIcon: Icon(Icons.dashboard),
+              label: 'Dashboard',
             ),
-        ],
-      ),
-      drawer: _buildDrawer(context),
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          _switchToTab(index);
-        },
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF00B14F),
-        unselectedItemColor: Colors.grey[600],
-        selectedLabelStyle: const TextStyle(fontSize: 12),
-        unselectedLabelStyle: const TextStyle(fontSize: 12),
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.price_change_outlined),
-            activeIcon: Icon(Icons.price_change),
-            label: 'Prices',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_outlined),
-            activeIcon: Icon(Icons.book),
-            label: 'Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.toll_outlined),
-            activeIcon: Icon(Icons.toll),
-            label: 'Toll',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+            BottomNavigationBarItem(
+              icon: Icon(Icons.price_change_outlined),
+              activeIcon: Icon(Icons.price_change),
+              label: 'Prices',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.book_outlined),
+              activeIcon: Icon(Icons.book),
+              label: 'Bookings',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.toll_outlined),
+              activeIcon: Icon(Icons.toll),
+              label: 'Toll',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -337,7 +379,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
                   Text(
                     'SSA Travels',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9), // Fixed deprecated withOpacity
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14,
                     ),
                   ),
@@ -399,37 +441,14 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
             title: 'Toll Routes',
             onTap: _navigateToTollRoutes,
           ),
-
-          const Divider(height: 20, thickness: 1),
-
-          // Other Management Items
-          _buildDrawerItem(
-            icon: Icons.people,
-            title: 'Drivers',
-            onTap: _navigateToDrivers,
-          ),
-          _buildDrawerItem(
-            icon: Icons.bar_chart,
-            title: 'Reports',
-            onTap: _navigateToReports,
-          ),
-          _buildDrawerItem(
-            icon: Icons.settings,
-            title: 'Settings',
-            onTap: _navigateToSettings,
-          ),
-
-          const Divider(height: 20, thickness: 1),
-
           _buildDrawerItem(
             icon: Icons.exit_to_app,
             title: 'Logout',
+            color: Colors.red, // This will make both icon and text red
             onTap: () {
               _confirmLogout(context);
             },
-            color: Colors.red,
           ),
-
           _buildFooter(context),
         ],
       ),
@@ -516,13 +535,28 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
   }
 
   Widget _buildDrawerItem({
+    Color? iconColor,
+    Color? textColor,
     required IconData icon,
     required String title,
     int? index,
-    Color? color,
+    Color? color, // This overrides both colors if provided
     VoidCallback? onTap,
   }) {
     bool isSelected = index != null && index == _currentIndex;
+
+    // Determine the colors to use
+    Color getIconColor() {
+      if (color != null) return color;
+      if (iconColor != null) return iconColor;
+      return isSelected ? const Color(0xFF00B14F) : Colors.grey[700]!;
+    }
+
+    Color getTextColor() {
+      if (color != null) return color;
+      if (textColor != null) return textColor;
+      return isSelected ? const Color(0xFF00B14F) : Colors.grey[800]!;
+    }
 
     return InkWell(
       onTap: () {
@@ -537,7 +571,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF00B14F).withValues(alpha: 0.08) // Fixed deprecated withOpacity
+              ? const Color(0xFF00B14F).withValues(alpha: 0.08)
               : Colors.transparent,
           border: Border(
             left: BorderSide(
@@ -549,14 +583,12 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
         child: ListTile(
           leading: Icon(
             icon,
-            color: color ??
-                (isSelected ? const Color(0xFF00B14F) : Colors.grey[700]),
+            color: getIconColor(),
           ),
           title: Text(
             title,
             style: TextStyle(
-              color: color ??
-                  (isSelected ? const Color(0xFF00B14F) : Colors.grey[800]),
+              color: getTextColor(),
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -570,20 +602,33 @@ class _AdminMainScreenState extends State<AdminMainScreen> with SingleTickerProv
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Logout'),
-        content: const Text('Are you sure you want to logout from admin panel?'),
+        content:
+            const Text('Are you sure you want to logout from admin panel?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF00B14F),
+            ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/login');
+
+              await FirebaseAuth.instance.signOut();
+
+              if (!mounted) return;
+
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+                backgroundColor: Color(0xFF00B14F),
+                foregroundColor: Colors.white),
             child: const Text('Logout'),
           ),
         ],

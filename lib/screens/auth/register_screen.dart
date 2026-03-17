@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -20,33 +22,63 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
 
-  Future<void> _register(BuildContext context) async {
-    if (_formKey.currentState!.validate()) {
-      if (!_acceptTerms) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please accept Terms of Service and Privacy Policy'),
-            backgroundColor: Color(0xFFFF3B30),
-          ),
-        );
-        return;
+  @override
+  void initState() {
+    super.initState();
+    // Clear any previous errors when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Provider.of<AuthProvider>(context, listen: false).clearError();
       }
+    });
+  }
 
-      FocusScope.of(context).unfocus();
+  Future<void> _register(BuildContext context) async {
+    // Validate form first
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    // Check terms acceptance
+    if (!_acceptTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please accept Terms of Service and Privacy Policy'),
+          backgroundColor: Color(0xFFFF3B30),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
 
-      final success = await authProvider.register(
-        phoneNumber: _phoneController.text,
-        password: _passwordController.text,
-        confirmPassword: _confirmPasswordController.text,
-        fullName: _fullNameController.text,
-        email: _emailController.text,
+    // Hide keyboard
+    FocusScope.of(context).unfocus();
+
+    // Get auth provider
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Call register method
+    final success = await authProvider.register(
+      phoneNumber: _phoneController.text.trim(),
+      password: _passwordController.text,
+      confirmPassword: _confirmPasswordController.text,
+      fullName: _fullNameController.text.trim(),
+      email: _emailController.text.trim(),
+    );
+
+    // Check if widget is still mounted before navigating
+    if (success && mounted) {
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registration successful! Please login.'),
+          backgroundColor: Color(0xFF00B14F),
+          duration: Duration(seconds: 2),
+        ),
       );
 
-      if (success && context.mounted) {
-        Navigator.pushReplacementNamed(context, '/user-home');
-      }
+      // Navigate to login screen
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
@@ -63,7 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             // Header Section
             SliverToBoxAdapter(
               child: Container(
-                height: size.height * 0.3,
+                height: size.height * 0.28,
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -97,8 +129,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Image.asset(
                         'assets/ssa-logo.png',
-                        width: 60, // set width
-                        height: 60, // set height
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -117,7 +147,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       'Join SSA Travels Virudhunagar',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
                         color: Colors.white70,
                         fontFamily: 'Poppins',
                       ),
@@ -149,6 +178,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _fullNameController,
+                        textCapitalization: TextCapitalization.words,
                         decoration: InputDecoration(
                           hintText: 'Enter your full name',
                           hintStyle: const TextStyle(
@@ -179,8 +209,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         style: const TextStyle(fontFamily: 'Poppins'),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Please enter your full name';
+                          }
+                          if (value.trim().length < 3) {
+                            return 'Name must be at least 3 characters';
                           }
                           return null;
                         },
@@ -231,10 +264,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         style: const TextStyle(fontFamily: 'Poppins'),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Please enter your email';
                           }
-                          if (!value.contains('@')) {
+                          // Simple email validation
+                          final emailRegex =
+                              RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                          if (!emailRegex.hasMatch(value.trim())) {
                             return 'Please enter a valid email';
                           }
                           return null;
@@ -242,7 +278,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Phone Number Field
+                      // Phone Number Field - FIXED
                       const Text(
                         'Phone Number',
                         style: TextStyle(
@@ -256,7 +292,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
+                        maxLength: 10,
                         decoration: InputDecoration(
+                          counterText: "",
                           hintText: 'Enter 10-digit phone number',
                           hintStyle: const TextStyle(
                             color: Color(0xFF999999),
@@ -310,10 +348,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           if (value.length != 10) {
                             return 'Please enter 10-digit phone number';
                           }
-                          // Check if admin phone
-                          if (authProvider.isAdminPhone('+91$value')) {
-                            return 'This phone number is reserved for admin';
+                          // Indian phone number validation (starts with 6-9)
+                          if (!RegExp(r'^[6-9]\d{9}$').hasMatch(value)) {
+                            return 'Please enter valid Indian phone number';
                           }
+                          // ✅ FIX: Removed admin phone check - users can register with any number
                           return null;
                         },
                       ),
@@ -381,6 +420,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           }
                           if (value.length < 6) {
                             return 'Password must be at least 6 characters';
+                          }
+                          // Optional: Add strong password validation
+                          if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)')
+                              .hasMatch(value)) {
+                            return 'Password must contain at least one letter and one number';
                           }
                           return null;
                         },
@@ -458,6 +502,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       // Terms and Conditions
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Checkbox(
                             value: _acceptTerms,
@@ -472,31 +517,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                           Expanded(
-                            child: RichText(
-                              text: const TextSpan(
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF666666),
-                                  fontFamily: 'Poppins',
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: RichText(
+                                text: const TextSpan(
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF666666),
+                                    fontFamily: 'Poppins',
+                                  ),
+                                  children: [
+                                    TextSpan(text: 'I agree to the '),
+                                    TextSpan(
+                                      text: 'Terms of Service',
+                                      style: TextStyle(
+                                        color: Color(0xFF00B14F),
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                    TextSpan(text: ' and '),
+                                    TextSpan(
+                                      text: 'Privacy Policy',
+                                      style: TextStyle(
+                                        color: Color(0xFF00B14F),
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                children: [
-                                  TextSpan(text: 'I agree to the '),
-                                  TextSpan(
-                                    text: 'Terms of Service',
-                                    style: TextStyle(
-                                      color: Color(0xFF00B14F),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  TextSpan(text: ' and '),
-                                  TextSpan(
-                                    text: 'Privacy Policy',
-                                    style: TextStyle(
-                                      color: Color(0xFF00B14F),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ),
                           ),
@@ -539,7 +589,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
                         ),
-                      SizedBox(height: authProvider.error != null ? 16 : 0),
+                      if (authProvider.error != null)
+                        const SizedBox(height: 16),
 
                       // Register Button
                       SizedBox(
@@ -626,19 +677,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'ALREADY HAVE AN ACCOUNT? SIGN IN',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF00B14F),
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                            ],
+                          child: const Text(
+                            'ALREADY HAVE AN ACCOUNT? SIGN IN',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF00B14F),
+                              fontFamily: 'Poppins',
+                            ),
                           ),
                         ),
                       ),

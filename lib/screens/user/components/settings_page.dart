@@ -4,8 +4,6 @@ import 'package:ssatravels_app/screens/user/components/terms_conditions_page.dar
 import 'package:ssatravels_app/screens/user/components/help_support_page.dart';
 import 'package:ssatravels_app/screens/user/components/payment_tab.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:ssatravels_app/screens/auth/login_screen.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -18,6 +16,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Explicit white background
       appBar: AppBar(
         title: const Text(
           'Settings',
@@ -130,12 +129,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: 'Contact Us',
                   subtitle: 'Reach out to our team',
                   onTap: () async {
-                    final Uri phoneUri = Uri(scheme: 'tel', path: '9751867879');
+                    final Uri phoneUri = Uri(scheme: 'tel', path: '6374049582');
 
                     if (await canLaunchUrl(phoneUri)) {
                       await launchUrl(phoneUri);
                     } else {
-                      if (mounted) {
+                      if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Could not launch phone dialer'),
@@ -147,31 +146,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ],
             ),
-
-            const SizedBox(height: 40),
-
-            // Logout Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  _showLogoutDialog();
-                },
-                icon: const Icon(Icons.logout_outlined, size: 20),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00B14F).withValues(alpha: 0.1),
-                  foregroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: Colors.red.withValues(alpha: 0.3),
-                    ),
-                  ),
-                ),
-                label: const Text('Logout'),
-              ),
-            ),
+            const SizedBox(height: 40),          
           ],
         ),
       ),
@@ -206,6 +181,21 @@ class _SettingsPageState extends State<SettingsPage> {
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF00B14F), // Green border
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: ListTile(
         leading: Container(
           width: 44,
@@ -227,35 +217,4 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-
-              await FirebaseAuth.instance.signOut();
-
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-  }
 }

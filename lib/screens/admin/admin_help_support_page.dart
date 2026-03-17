@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class AdminHelpSupportPage extends StatelessWidget {
   const AdminHelpSupportPage({super.key});
@@ -30,29 +29,34 @@ class AdminHelpSupportPage extends StatelessWidget {
               title: 'Admin FAQs',
               children: [
                 _buildFAQItem(
-                  question: 'How to add new driver?',
+                  question: 'How to view all bookings?',
                   answer:
-                      'Go to Driver Management > Add New Driver. Fill driver details, vehicle info and upload documents.',
+                      'Go to the Bookings section in the admin panel. You can see all trip bookings with customer and driver details.',
                 ),
                 _buildFAQItem(
-                  question: 'How to check daily earnings?',
+                  question: 'How to view trip history?',
                   answer:
-                      'Go to Reports section. You can see daily, weekly and monthly earnings with trip details.',
+                      'Go to the Trips or Reports section in the admin panel. Here you can view all completed trips with customer details, driver information and trip earnings.',
                 ),
                 _buildFAQItem(
-                  question: 'How to handle customer complaints?',
+                  question: 'How to check toll charges?',
                   answer:
-                      'Check Complaints section, view trip details and contact customer directly through app.',
+                      'Go to the Toll Management section where you can view toll routes, toll plazas and their charges stored in the database.',
                 ),
                 _buildFAQItem(
-                  question: 'How to update fare rates?',
+                  question: 'How to manage vehicles?',
                   answer:
-                      'Go to Settings > Fare Management. Update base fare and per km rates.',
+                      'Navigate to Vehicle Management. Here you can add new vehicles, edit vehicle details or remove inactive vehicles.',
                 ),
                 _buildFAQItem(
-                  question: 'How to block user?',
+                  question: 'How to update vehicle details?',
                   answer:
-                      'Go to User Management, search user and click block option.',
+                      'Go to Vehicle Management, select the vehicle you want to update and edit the required details such as vehicle number, type or status.',
+                ),
+                _buildFAQItem(
+                  question: 'How to view customer details?',
+                  answer:
+                      'Go to the Users section and select the customer profile to view their booking history and contact information.',
                 ),
               ],
             ),
@@ -74,13 +78,24 @@ class AdminHelpSupportPage extends StatelessWidget {
                 _buildSafetyTip(
                   tip: 'Update fare rates during festival seasons',
                 ),
+                _buildSafetyTip(
+                  tip: 'Regularly monitor driver availability and trip status',
+                ),
+                _buildSafetyTip(
+                  tip: 'Ensure toll charges are updated in the database',
+                ),
+                _buildSafetyTip(
+                  tip: 'Review cancelled trips to identify possible issues',
+                ),
+                _buildSafetyTip(
+                  tip: 'Check payment status and resolve pending transactions',
+                ),
+                _buildSafetyTip(
+                  tip: 'Keep vehicle details updated in the system',
+                ),
               ],
             ),
-
             const SizedBox(height: 30),
-            
-            // Contact Support Section
-            _buildContactSection(context),
           ],
         ),
       ),
@@ -141,7 +156,8 @@ class AdminHelpSupportPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF00B14F).withValues(alpha: 0.1), // Fixed deprecated withOpacity
+        color: const Color(0xFF00B14F)
+            .withValues(alpha: 0.1), // Fixed deprecated withOpacity
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -159,142 +175,4 @@ class AdminHelpSupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Contact Support',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Call Support Card
-        _buildContactCard(
-          icon: Icons.phone,
-          title: 'Call Support',
-          description: 'Talk to our support team',
-          onTap: () => _makePhoneCall(context, '18001234567'),
-        ),
-        
-        // WhatsApp Support Card
-        _buildContactCard(
-          icon: Icons.chat,
-          title: 'WhatsApp',
-          description: 'Chat with support team',
-          onTap: () => _openWhatsApp(context, '9876543210'),
-        ),
-        
-        // Email Support Card
-        _buildContactCard(
-          icon: Icons.email,
-          title: 'Email Support',
-          description: 'Send us an email',
-          onTap: () => _sendEmail(context, 'support@ssatravels.com'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildContactCard({
-    required IconData icon,
-    required String title,
-    required String description,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: const Color(0xFF00B14F).withValues(alpha: 0.1), // Fixed deprecated withOpacity
-          child: Icon(icon, color: const Color(0xFF00B14F)),
-        ),
-        title: Text(title),
-        subtitle: Text(description),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onTap,
-      ),
-    );
-  }
-
-  Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
-    );
-
-    try {
-      if (await canLaunchUrl(launchUri)) {
-        await launchUrl(launchUri);
-      } else {
-        if (context.mounted) { // Added mounted check
-          _showSnackBar(context, 'Could not launch phone app');
-        }
-      }
-    } catch (e) {
-      if (context.mounted) { // Added mounted check
-        _showSnackBar(context, 'Error launching phone app');
-      }
-    }
-  }
-
-  Future<void> _openWhatsApp(BuildContext context, String phoneNumber) async {
-    String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
-
-    if (!cleanNumber.startsWith('91') && cleanNumber.length == 10) {
-      cleanNumber = '91$cleanNumber';
-    }
-
-    final url =
-        'https://wa.me/$cleanNumber?text=Hello%20Admin%20Team,%20I%20need%20help';
-    final Uri launchUri = Uri.parse(url);
-
-    try {
-      if (await canLaunchUrl(launchUri)) {
-        await launchUrl(launchUri);
-      } else {
-        if (context.mounted) { // Added mounted check
-          _showSnackBar(context, 'Could not launch WhatsApp');
-        }
-      }
-    } catch (e) {
-      if (context.mounted) { // Added mounted check
-        _showSnackBar(context, 'Error launching WhatsApp');
-      }
-    }
-  }
-
-  Future<void> _sendEmail(BuildContext context, String email) async {
-    final Uri launchUri = Uri(
-      scheme: 'mailto',
-      path: email,
-      query: 'subject=Support Request&body=Hello Support Team,',
-    );
-
-    try {
-      if (await canLaunchUrl(launchUri)) {
-        await launchUrl(launchUri);
-      } else {
-        if (context.mounted) { // Added mounted check
-          _showSnackBar(context, 'Could not launch email app');
-        }
-      }
-    } catch (e) {
-      if (context.mounted) { // Added mounted check
-        _showSnackBar(context, 'Error launching email app');
-      }
-    }
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: const Color(0xFF00B14F),
-      ),
-    );
-  }
 }

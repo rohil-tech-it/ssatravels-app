@@ -23,15 +23,12 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
       return _buildNotLoggedInScreen();
     }
 
-    // Debug: Print current user ID to verify
-    print('Current user UID: ${user.uid}');
-
     return Scaffold(
-          body: StreamBuilder<QuerySnapshot>(
+      body: StreamBuilder<QuerySnapshot>(
         // 🔥 FIXED: Using 'userId' (lowercase) to match your Firestore document
         stream: _firestore
             .collection('bookings')
-            .where('userId', isEqualTo: user.uid)  // ✅ Correct field name
+            .where('userId', isEqualTo: user.uid) // ✅ Correct field name
             .orderBy('bookingDate', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
@@ -46,7 +43,6 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
 
           // Error state
           if (snapshot.hasError) {
-            print('Error loading bookings: ${snapshot.error}');
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -83,13 +79,11 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
 
           // No bookings state
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            print('No bookings found for user: ${user.uid}');
             return _buildEmptyState();
           }
 
           // Show bookings
           final bookings = snapshot.data!.docs;
-          print('Found ${bookings.length} bookings for user ${user.uid}');
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -121,8 +115,8 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
     final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(date);
 
     // Get fare
-    final totalAmount = _getDoubleValue(
-        booking['totalAmount'] ?? booking['totalFare'] ?? 0);
+    final totalAmount =
+        _getDoubleValue(booking['totalAmount'] ?? booking['totalFare'] ?? 0);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -134,7 +128,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: (statusConfig['color'] as Color).withOpacity(0.1),
+              color: (statusConfig['color'] as Color).withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
@@ -145,7 +139,8 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: (statusConfig['color'] as Color).withOpacity(0.2),
+                    color:
+                        (statusConfig['color'] as Color).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -168,7 +163,8 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: (statusConfig['color'] as Color).withOpacity(0.2),
+                    color:
+                        (statusConfig['color'] as Color).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -370,23 +366,28 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                _buildDetailRow('Booking ID', booking['bookingId'] ?? booking['id']),
+                _buildDetailRow(
+                    'Booking ID', booking['bookingId'] ?? booking['id']),
                 _buildDetailRow('Customer', booking['customerName'] ?? 'N/A'),
                 _buildDetailRow('Phone', booking['customerPhone'] ?? 'N/A'),
                 _buildDetailRow('From', booking['fromLocation'] ?? 'N/A'),
                 _buildDetailRow('To', booking['toLocation'] ?? 'N/A'),
                 _buildDetailRow('Trip Type', booking['tripType'] ?? 'N/A'),
-                _buildDetailRow('Date',
-                    _formatDate(booking['bookingDate'] ?? booking['travelDate'])),
+                _buildDetailRow(
+                    'Date',
+                    _formatDate(
+                        booking['bookingDate'] ?? booking['travelDate'])),
                 _buildDetailRow('Vehicle', booking['vehicleType'] ?? 'N/A'),
-                _buildDetailRow('Vehicle No', booking['vehicleNumber'] ?? 'N/A'),
-                _buildDetailRow('Passengers', 
+                _buildDetailRow(
+                    'Vehicle No', booking['vehicleNumber'] ?? 'N/A'),
+                _buildDetailRow('Passengers',
                     'Adults: ${booking['adults'] ?? 0}, Children: ${booking['children'] ?? 0}'),
                 _buildDetailRow('Distance', booking['distanceText'] ?? 'N/A'),
                 _buildDetailRow('Duration', booking['duration'] ?? 'N/A'),
                 _buildDetailRow('Base Fare',
                     '₹${_getDoubleValue(booking['baseFare']).toStringAsFixed(2)}'),
-                if (booking['tollCharges'] != null && _getDoubleValue(booking['tollCharges']) > 0)
+                if (booking['tollCharges'] != null &&
+                    _getDoubleValue(booking['tollCharges']) > 0)
                   _buildDetailRow('Toll Charges',
                       '₹${_getDoubleValue(booking['tollCharges']).toStringAsFixed(2)}'),
                 const Divider(),
@@ -402,6 +403,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00B14F),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: const Text('Close'),
@@ -473,22 +475,6 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/book-ride');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00B14F),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: const Text(
-                'Book a Ride',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
           ],
         ),
       ),
@@ -517,7 +503,8 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00B14F),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),

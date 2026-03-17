@@ -12,7 +12,28 @@
           "package_name": "com.ssatravels.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "657612328394-14o5nmh18m7mo4scfaj9u0o80ug4opo7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ssatravels.app",
+            "certificate_hash": "76f3f2d5236f64fec0126d5ddd95c74343b81490"
+          }
+        },
+        {
+          "client_id": "657612328394-1rmvlv2fhddjss6al469scejjh4akl60.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ssatravels.app",
+            "certificate_hash": "6587dc797908096924b15f05cf8d32a035c47933"
+          }
+        },
+        {
+          "client_id": "657612328394-d6pgb73b5q26vvh8hp8n1g14f73db64g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBgYsIP6NTtMDiQ2tFMJLj3iXzWDQ8o94M"
@@ -20,7 +41,20 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "657612328394-d6pgb73b5q26vvh8hp8n1g14f73db64g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "657612328394-hvqrjsb5e2o3gmin3lld2n4gchl7v12l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.companyname.ssatravels",
+                "app_store_id": "120609055"
+              }
+            }
+          ]
         }
       }
     }

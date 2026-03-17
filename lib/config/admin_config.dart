@@ -1,7 +1,7 @@
 class AdminConfig {
   // Admin credentials (NO OTP, NO FIREBASE)
     // Firebase Admin Credentials
-  static const String adminEmail = 'admin@sastravels.com';
+  static const String adminEmail = 'ssasahinaabideen@gmail.com';
   static const String adminPhone = '9751867879';
   static const String adminPassword = 'Admin@ssa!1';
   

@@ -72,19 +72,19 @@ class HelpSupportPage extends StatelessWidget {
                   icon: Icons.call,
                   title: 'Call Us',
                   subtitle: 'Available 24/7',
-                  onTap: () => _makePhoneCall(context, '9751867879'),
+                  onTap: () => _makePhoneCall(context, '6374049582'),
                 ),
                 _buildContactOption(
                   icon: Icons.email,
                   title: 'Email Support',
-                  subtitle: 'support@ssatravels.com',
-                  onTap: () => _sendEmail(context, 'support@ssatravels.com'),
+                  subtitle: 'ssasahinaabideen@gmail.com',
+                  onTap: () => _sendEmail(context, 'ssasahinaabideen@gmail.com'),
                 ),
                 _buildContactOption(
                   icon: Icons.chat,
                   title: 'Live Chat',
                   subtitle: 'Chat with our support team',
-                  onTap: () => _openWhatsApp(context, '9751867879'),
+                  onTap: () => _openWhatsApp(context, '6374049582'),
                 ),
               ],
             ),
@@ -255,7 +255,7 @@ class HelpSupportPage extends StatelessWidget {
       path: email,
       queryParameters: {
         'subject': 'SSA Travels Support Request',
-        'body': 'Hello SSA Travels Team,\n\nI need assistance with:',
+        'body': 'Hello SSA Travels Team,',
       },
     );
 

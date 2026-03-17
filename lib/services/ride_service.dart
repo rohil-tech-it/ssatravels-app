@@ -332,10 +332,8 @@ class RideService {
   /// Check if a ride exists by ID
   Future<bool> rideExists(String rideId) async {
     try {
-      final docSnapshot = await _firestore
-          .collection(_ridesCollection)
-          .doc(rideId)
-          .get();
+      final docSnapshot =
+          await _firestore.collection(_ridesCollection).doc(rideId).get();
       return docSnapshot.exists;
     } catch (e) {
       // Using debugPrint instead of print for production code

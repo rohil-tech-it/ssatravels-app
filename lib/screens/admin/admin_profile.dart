@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,7 +18,7 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Design colors - Green theme for all
-  final Color _primaryColor = const Color(0xFF00C853); // Green color for all items
+  final Color _primaryColor = const Color(0xFF00C853);
   final Color _backgroundColor = const Color(0xFFF5F5F5);
   final Color _cardColor = Colors.white;
   final Color _textColor = const Color(0xFF333333);
@@ -36,6 +38,7 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
   Map<String, dynamic> _adminData = {};
   bool _isLoading = true;
   bool _showPassword = false;
+  bool _isLoggingOut = false;
 
   // Responsive variables
   late double _screenWidth;
@@ -63,73 +66,70 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
   void _updateResponsiveValues() {
     _screenWidth = MediaQuery.of(context).size.width;
     _screenHeight = MediaQuery.of(context).size.height;
-    
-    // Calculate responsive values
-    _paddingHorizontal = _screenWidth * 0.04; // 4% of screen width
-    _avatarRadius = _screenWidth * 0.12; // 12% of screen width (min 45, max 60)
+
+    _paddingHorizontal = _screenWidth * 0.04;
+    _avatarRadius = _screenWidth * 0.12;
     if (_avatarRadius < 45) _avatarRadius = 45;
     if (_avatarRadius > 60) _avatarRadius = 60;
-    
-    _fontSizeTitle = _screenWidth * 0.06; // 6% of screen width
+
+    _fontSizeTitle = _screenWidth * 0.06;
     if (_fontSizeTitle < 20) _fontSizeTitle = 20;
     if (_fontSizeTitle > 26) _fontSizeTitle = 26;
-    
-    _fontSizeSubtitle = _screenWidth * 0.04; // 4% of screen width
+
+    _fontSizeSubtitle = _screenWidth * 0.04;
     if (_fontSizeSubtitle < 14) _fontSizeSubtitle = 14;
     if (_fontSizeSubtitle > 18) _fontSizeSubtitle = 18;
-    
-    _fontSizeSmall = _screenWidth * 0.035; // 3.5% of screen width
+
+    _fontSizeSmall = _screenWidth * 0.035;
     if (_fontSizeSmall < 12) _fontSizeSmall = 12;
     if (_fontSizeSmall > 14) _fontSizeSmall = 14;
-    
-    _iconSize = _screenWidth * 0.06; // 6% of screen width
+
+    _iconSize = _screenWidth * 0.06;
     if (_iconSize < 20) _iconSize = 20;
     if (_iconSize > 30) _iconSize = 30;
-    
-    _containerHeight = _screenHeight * 0.07; // 7% of screen height
+
+    _containerHeight = _screenHeight * 0.07;
     if (_containerHeight < 50) _containerHeight = 50;
     if (_containerHeight > 70) _containerHeight = 70;
   }
 
   Future<void> _loadAdminData() async {
+    if (!mounted) return;
+    
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        // Get admin data from Firestore
         var adminDoc = await _firestore.collection('admins').doc(user.uid).get();
+        
         if (adminDoc.exists) {
-          setState(() {
-            _adminData = adminDoc.data()!;
-          });
+          _adminData = adminDoc.data()!;
         } else {
-          // Create default admin data if not exists
-          setState(() {
-            _adminData = {
-              'name': 'SSA Admin',
-              'email': user.email ?? 'admin@ssatravels.com',
-              'phone': '6379226432',
-              'role': 'Administrator',
-              'createdAt': Timestamp.now(),
-            };
-          });
-
-          // Save to Firestore
+          _adminData = {
+            'name': 'SSA Admin',
+            'email': user.email ?? 'ssasahinaabideen@gmail.com',
+            'phone': '6379226432',
+            'role': 'Administrator',
+            'createdAt': Timestamp.now(),
+          };
           await _firestore.collection('admins').doc(user.uid).set(_adminData);
         }
       }
 
-      // Update form controllers
-      _nameController.text = _adminData['name'] ?? 'SSA Admin';
-      _emailController.text = _adminData['email'] ?? 'admin@ssatravels.com';
-      _phoneController.text = _adminData['phone'] ?? '6379226432';
-
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _nameController.text = _adminData['name'] ?? 'SSA Admin';
+          _emailController.text = _adminData['email'] ?? 'ssasahinaabideen@gmail.com';
+          _phoneController.text = _adminData['phone'] ?? '6379226432';
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showSnackbar('Error loading profile: ${e.toString()}', isError: true);
+      }
     }
   }
 
@@ -137,7 +137,6 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        // Update profile in Firestore
         await _firestore.collection('admins').doc(user.uid).set({
           'name': _nameController.text,
           'email': _emailController.text,
@@ -148,7 +147,7 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
         if (mounted) {
           _showSnackbar('Profile updated successfully!', isError: false);
         }
-        await _loadAdminData(); // Reload updated data
+        await _loadAdminData();
       }
     } catch (e) {
       if (mounted) {
@@ -158,7 +157,6 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
   }
 
   Future<void> _changePassword() async {
-    // Validation
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
@@ -184,19 +182,15 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
 
     try {
       final user = _auth.currentUser;
-      if (user != null) {
-        // Re-authenticate user before changing password
+      if (user != null && user.email != null) {
         AuthCredential credential = EmailAuthProvider.credential(
           email: user.email!,
           password: _currentPasswordController.text,
         );
 
         await user.reauthenticateWithCredential(credential);
-
-        // Update password
         await user.updatePassword(_newPasswordController.text);
 
-        // Clear password fields
         _currentPasswordController.clear();
         _newPasswordController.clear();
         _confirmPasswordController.clear();
@@ -224,39 +218,194 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
     }
   }
 
+  // UPDATED LOGOUT FUNCTION - Navigates to normal login screen
   Future<void> _logout() async {
-    final scaffoldContext = context; // capture context before showing dialog
+    // Prevent multiple logout attempts
+    if (_isLoggingOut) return;
+    
+    setState(() {
+      _isLoggingOut = true;
+    });
 
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Confirm Logout'),
-        content: const Text('Are you sure you want to logout from admin panel?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+    try {
+      // Show confirmation dialog
+      final bool? shouldLogout = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: const Text(
+              'Confirm Logout',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
+            content: const Text(
+              'Are you sure you want to logout?',
+              style: TextStyle(fontSize: 16),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(false);
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey[700],
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                ),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(true);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          );
+        },
+      );
 
-    if (shouldLogout == true) {
-      await _auth.signOut();
-      if (scaffoldContext.mounted) {
-        Navigator.pushReplacementNamed(scaffoldContext, '/admin-login');
+      // If user confirmed logout
+      if (shouldLogout == true) {
+        // Clear all controllers
+        _nameController.clear();
+        _emailController.clear();
+        _phoneController.clear();
+        _currentPasswordController.clear();
+        _newPasswordController.clear();
+        _confirmPasswordController.clear();
+
+        // Show loading indicator
+        if (!mounted) return;
+        
+        // Show loading dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext loadingContext) {
+            return PopScope(
+              canPop: false,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(
+                        color: _primaryColor,
+                        strokeWidth: 3,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Logging out...',
+                        style: TextStyle(
+                          color: _textColor,
+                          fontSize: _fontSizeSubtitle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+
+        // Sign out from Firebase
+        await _auth.signOut();
+
+        // Close loading dialog if still mounted
+        if (mounted) {
+          // First, close the loading dialog
+          Navigator.of(context, rootNavigator: true).pop();
+          
+          // Add a small delay to ensure smooth transition
+          await Future.delayed(const Duration(milliseconds: 100));
+          
+          if (mounted) {
+            // Navigate to normal login screen (not admin login)
+            // Try different common login route names
+            try {
+              // Try to navigate to '/login' first (most common)
+              await Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+            } catch (e) {
+              try {
+                // If '/login' doesn't exist, try '/'
+                await Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/',
+                  (route) => false,
+                );
+              } catch (e) {
+                // If all else fails, just pop everything and show a simple login screen
+                // This is a fallback - you should replace this with your actual login page widget
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const Scaffold(
+                      body: Center(
+                        child: Text('Please login again'),
+                      ),
+                    ),
+                  ),
+                  (route) => false,
+                );
+              }
+            }
+          }
+        }
+      } else {
+        // User cancelled logout
+        if (mounted) {
+          setState(() {
+            _isLoggingOut = false;
+          });
+        }
+      }
+    } catch (e) {
+      // Handle logout error
+      if (mounted) {
+        // Close any open dialogs
+        try {
+          Navigator.of(context, rootNavigator: true).pop();
+        } catch (_) {}
+
+        _showSnackbar('Logout failed: ${e.toString()}', isError: true);
+        
+        setState(() {
+          _isLoggingOut = false;
+        });
       }
     }
   }
 
   void _showSnackbar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -275,9 +424,7 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        vertical: _screenHeight * 0.03, 
-        horizontal: _paddingHorizontal
-      ),
+          vertical: _screenHeight * 0.03, horizontal: _paddingHorizontal),
       decoration: BoxDecoration(
         color: _primaryColor,
         borderRadius: const BorderRadius.only(
@@ -315,7 +462,7 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
           ),
           SizedBox(height: _screenHeight * 0.01),
           Text(
-            _adminData['email'] ?? 'admin@ssatravels.com',
+            _adminData['email'] ?? 'ssasahinaabideen@gmail.com',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.9),
               fontSize: _fontSizeSubtitle,
@@ -336,8 +483,8 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.shield, 
-                  color: Colors.white, 
+                  Icons.shield,
+                  color: Colors.white,
                   size: _fontSizeSubtitle,
                 ),
                 SizedBox(width: _screenWidth * 0.02),
@@ -360,9 +507,7 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
   Widget _buildProfileOptionsList() {
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: _paddingHorizontal, 
-        vertical: _screenHeight * 0.01
-      ),
+          horizontal: _paddingHorizontal, vertical: _screenHeight * 0.01),
       decoration: BoxDecoration(
         color: _cardColor,
         borderRadius: BorderRadius.circular(15),
@@ -376,7 +521,6 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
       ),
       child: Column(
         children: [
-          // Edit Profile (Now includes Change Password)
           _buildProfileOptionItem(
             title: 'Edit Profile & Password',
             subtitle: 'Update your profile and change password',
@@ -384,8 +528,6 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
             onTap: _showEditProfileDialog,
           ),
           Divider(color: _dividerColor, height: 1, indent: 72),
-         
-          // Help & Support
           _buildProfileOptionItem(
             title: 'Help & Support',
             subtitle: 'Get help and support',
@@ -398,8 +540,6 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
             },
           ),
           Divider(color: _dividerColor, height: 1, indent: 72),
-
-          // About App
           _buildProfileOptionItem(
             title: 'About App',
             subtitle: 'App version 1.0.0',
@@ -480,334 +620,10 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
     );
   }
 
-  void _showEditProfileDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return Dialog(
-            insetPadding: EdgeInsets.all(_paddingHorizontal),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Container(
-              width: _screenWidth * 0.95,
-              constraints: BoxConstraints(
-                maxHeight: _screenHeight * 0.9,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(_paddingHorizontal),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.edit,
-                            color: _primaryColor,
-                            size: _iconSize * 1.2,
-                          ),
-                          SizedBox(width: _screenWidth * 0.03),
-                          Expanded(
-                            child: Text(
-                              'Edit Profile & Password',
-                              style: TextStyle(
-                                fontSize: _fontSizeTitle * 0.9,
-                                fontWeight: FontWeight.bold,
-                                color: _primaryColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: _screenHeight * 0.02),
-
-                      // Personal Information Section
-                      Text(
-                        'Personal Information',
-                        style: TextStyle(
-                          fontSize: _fontSizeSubtitle,
-                          fontWeight: FontWeight.bold,
-                          color: _textColor,
-                        ),
-                      ),
-                      SizedBox(height: _screenHeight * 0.015),
-
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          labelText: 'Name',
-                          labelStyle: TextStyle(fontSize: _fontSizeSmall),
-                          prefixIcon: Icon(Icons.person, color: _primaryColor, size: _iconSize * 0.8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: _paddingHorizontal,
-                            vertical: _screenHeight * 0.015,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: _screenHeight * 0.015),
-
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          labelStyle: TextStyle(fontSize: _fontSizeSmall),
-                          prefixIcon: Icon(Icons.email, color: _primaryColor, size: _iconSize * 0.8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: _paddingHorizontal,
-                            vertical: _screenHeight * 0.015,
-                          ),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      SizedBox(height: _screenHeight * 0.015),
-
-                      TextFormField(
-                        controller: _phoneController,
-                        decoration: InputDecoration(
-                          labelText: 'Phone Number',
-                          labelStyle: TextStyle(fontSize: _fontSizeSmall),
-                          prefixIcon: Icon(Icons.phone, color: _primaryColor, size: _iconSize * 0.8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: _paddingHorizontal,
-                            vertical: _screenHeight * 0.015,
-                          ),
-                        ),
-                        keyboardType: TextInputType.phone,
-                      ),
-
-                      SizedBox(height: _screenHeight * 0.03),
-
-                      // Change Password Section
-                      Text(
-                        'Change Password',
-                        style: TextStyle(
-                          fontSize: _fontSizeSubtitle,
-                          fontWeight: FontWeight.bold,
-                          color: _textColor,
-                        ),
-                      ),
-                      SizedBox(height: _screenHeight * 0.015),
-
-                      TextFormField(
-                        controller: _currentPasswordController,
-                        obscureText: !_showPassword,
-                        decoration: InputDecoration(
-                          labelText: 'Current Password',
-                          labelStyle: TextStyle(fontSize: _fontSizeSmall),
-                          prefixIcon: Icon(Icons.lock, color: _primaryColor, size: _iconSize * 0.8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: _paddingHorizontal,
-                            vertical: _screenHeight * 0.015,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _showPassword ? Icons.visibility : Icons.visibility_off,
-                              color: _primaryColor,
-                              size: _iconSize * 0.8,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _showPassword = !_showPassword;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: _screenHeight * 0.015),
-
-                      TextFormField(
-                        controller: _newPasswordController,
-                        obscureText: !_showPassword,
-                        decoration: InputDecoration(
-                          labelText: 'New Password',
-                          labelStyle: TextStyle(fontSize: _fontSizeSmall),
-                          prefixIcon: Icon(Icons.lock_outline, color: _primaryColor, size: _iconSize * 0.8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: _paddingHorizontal,
-                            vertical: _screenHeight * 0.015,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _showPassword ? Icons.visibility : Icons.visibility_off,
-                              color: _primaryColor,
-                              size: _iconSize * 0.8,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _showPassword = !_showPassword;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: _screenHeight * 0.015),
-
-                      TextFormField(
-                        controller: _confirmPasswordController,
-                        obscureText: !_showPassword,
-                        decoration: InputDecoration(
-                          labelText: 'Confirm New Password',
-                          labelStyle: TextStyle(fontSize: _fontSizeSmall),
-                          prefixIcon: Icon(Icons.lock_reset, color: _primaryColor, size: _iconSize * 0.8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: _paddingHorizontal,
-                            vertical: _screenHeight * 0.015,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _showPassword ? Icons.visibility : Icons.visibility_off,
-                              color: _primaryColor,
-                              size: _iconSize * 0.8,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _showPassword = !_showPassword;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: _screenHeight * 0.02),
-                      Container(
-                        padding: EdgeInsets.all(_paddingHorizontal * 0.8),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 156, 230, 162),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color.fromARGB(255, 51, 180, 51)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: const Color.fromARGB(255, 43, 179, 47),
-                              size: _fontSizeSubtitle,
-                            ),
-                            SizedBox(width: _screenWidth * 0.02),
-                            Expanded(
-                              child: Text(
-                                'Password must be at least 6 characters long',
-                                style: TextStyle(
-                                  color: const Color.fromARGB(255, 7, 156, 12),
-                                  fontSize: _fontSizeSmall,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: _screenHeight * 0.03),
-
-                      // Action Buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                // Clear password fields when canceling
-                                _currentPasswordController.clear();
-                                _newPasswordController.clear();
-                                _confirmPasswordController.clear();
-                                Navigator.pop(context);
-                              },
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: _primaryColor,
-                                side: const BorderSide(color: Colors.grey),
-                                padding: EdgeInsets.symmetric(
-                                  vertical: _screenHeight * 0.015,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontSize: _fontSizeSubtitle,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: _screenWidth * 0.03),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                // Update profile first
-                                await _updateProfile();
-
-                                // Change password if fields are filled
-                                if (_currentPasswordController.text.isNotEmpty ||
-                                    _newPasswordController.text.isNotEmpty ||
-                                    _confirmPasswordController.text.isNotEmpty) {
-                                  await _changePassword();
-                                }
-
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: _primaryColor,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(
-                                  vertical: _screenHeight * 0.015,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Text(
-                                'Save Changes',
-                                style: TextStyle(fontSize: _fontSizeSubtitle),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildLogoutButton() {
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: _paddingHorizontal, 
-        vertical: _screenHeight * 0.01
-      ),
+          horizontal: _paddingHorizontal, vertical: _screenHeight * 0.01),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -822,55 +638,70 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _logout,
+          onTap: _isLoggingOut ? null : _logout,
           borderRadius: BorderRadius.circular(15),
-          child: Padding(
-            padding: EdgeInsets.all(_paddingHorizontal),
-            child: Row(
-              children: [
-                Container(
-                  width: _containerHeight * 0.8,
-                  height: _containerHeight * 0.8,
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+          child: Opacity(
+            opacity: _isLoggingOut ? 0.5 : 1.0,
+            child: Padding(
+              padding: EdgeInsets.all(_paddingHorizontal),
+              child: Row(
+                children: [
+                  Container(
+                    width: _containerHeight * 0.8,
+                    height: _containerHeight * 0.8,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: _isLoggingOut
+                        ? SizedBox(
+                            width: _iconSize * 0.6,
+                            height: _iconSize * 0.6,
+                            child: CircularProgressIndicator(
+                              color: Colors.red,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Icon(
+                            Icons.logout,
+                            color: Colors.red,
+                            size: _iconSize,
+                          ),
                   ),
-                  child: Icon(
-                    Icons.logout,
-                    color: Colors.red,
-                    size: _iconSize,
-                  ),
-                ),
-                SizedBox(width: _screenWidth * 0.04),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Logout',
-                        style: TextStyle(
-                          fontSize: _fontSizeSubtitle,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.red,
+                  SizedBox(width: _screenWidth * 0.04),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isLoggingOut ? 'Logging out...' : 'Logout',
+                          style: TextStyle(
+                            fontSize: _fontSizeSubtitle,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: _screenHeight * 0.005),
-                      Text(
-                        'Logout from admin panel',
-                        style: TextStyle(
-                          fontSize: _fontSizeSmall,
-                          color: _secondaryTextColor,
+                        SizedBox(height: _screenHeight * 0.005),
+                        Text(
+                          _isLoggingOut 
+                              ? 'Please wait' 
+                              : 'Logout from admin panel',
+                          style: TextStyle(
+                            fontSize: _fontSizeSmall,
+                            color: _secondaryTextColor,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: _secondaryTextColor,
-                  size: _iconSize,
-                ),
-              ],
+                  if (!_isLoggingOut)
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: _secondaryTextColor,
+                      size: _iconSize,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -878,10 +709,344 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
     );
   }
 
+  void _showEditProfileDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return PopScope(
+            canPop: !_isLoggingOut,
+            child: Dialog(
+              insetPadding: EdgeInsets.all(_paddingHorizontal),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Container(
+                width: _screenWidth * 0.95,
+                constraints: BoxConstraints(
+                  maxHeight: _screenHeight * 0.9,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(_paddingHorizontal),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              color: _primaryColor,
+                              size: _iconSize * 1.2,
+                            ),
+                            SizedBox(width: _screenWidth * 0.03),
+                            Expanded(
+                              child: Text(
+                                'Edit Profile & Password',
+                                style: TextStyle(
+                                  fontSize: _fontSizeTitle * 0.9,
+                                  fontWeight: FontWeight.bold,
+                                  color: _primaryColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: _screenHeight * 0.02),
+
+                        // Personal Information Section
+                        Text(
+                          'Personal Information',
+                          style: TextStyle(
+                            fontSize: _fontSizeSubtitle,
+                            fontWeight: FontWeight.bold,
+                            color: _textColor,
+                          ),
+                        ),
+                        SizedBox(height: _screenHeight * 0.015),
+
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: 'Name',
+                            labelStyle: TextStyle(fontSize: _fontSizeSmall),
+                            prefixIcon: Icon(Icons.person,
+                                color: _primaryColor, size: _iconSize * 0.8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: _paddingHorizontal,
+                              vertical: _screenHeight * 0.015,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: _screenHeight * 0.015),
+
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: InputDecoration(
+                            labelText: 'Email',
+                            labelStyle: TextStyle(fontSize: _fontSizeSmall),
+                            prefixIcon: Icon(Icons.email,
+                                color: _primaryColor, size: _iconSize * 0.8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: _paddingHorizontal,
+                              vertical: _screenHeight * 0.015,
+                            ),
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        SizedBox(height: _screenHeight * 0.015),
+
+                        TextFormField(
+                          controller: _phoneController,
+                          decoration: InputDecoration(
+                            labelText: 'Phone Number',
+                            labelStyle: TextStyle(fontSize: _fontSizeSmall),
+                            prefixIcon: Icon(Icons.phone,
+                                color: _primaryColor, size: _iconSize * 0.8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: _paddingHorizontal,
+                              vertical: _screenHeight * 0.015,
+                            ),
+                          ),
+                          keyboardType: TextInputType.phone,
+                        ),
+
+                        SizedBox(height: _screenHeight * 0.03),
+
+                        // Change Password Section
+                        Text(
+                          'Change Password',
+                          style: TextStyle(
+                            fontSize: _fontSizeSubtitle,
+                            fontWeight: FontWeight.bold,
+                            color: _textColor,
+                          ),
+                        ),
+                        SizedBox(height: _screenHeight * 0.015),
+
+                        TextFormField(
+                          controller: _currentPasswordController,
+                          obscureText: !_showPassword,
+                          decoration: InputDecoration(
+                            labelText: 'Current Password',
+                            labelStyle: TextStyle(fontSize: _fontSizeSmall),
+                            prefixIcon: Icon(Icons.lock,
+                                color: _primaryColor, size: _iconSize * 0.8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: _paddingHorizontal,
+                              vertical: _screenHeight * 0.015,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: _primaryColor,
+                                size: _iconSize * 0.8,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: _screenHeight * 0.015),
+
+                        TextFormField(
+                          controller: _newPasswordController,
+                          obscureText: !_showPassword,
+                          decoration: InputDecoration(
+                            labelText: 'New Password',
+                            labelStyle: TextStyle(fontSize: _fontSizeSmall),
+                            prefixIcon: Icon(Icons.lock_outline,
+                                color: _primaryColor, size: _iconSize * 0.8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: _paddingHorizontal,
+                              vertical: _screenHeight * 0.015,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: _primaryColor,
+                                size: _iconSize * 0.8,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: _screenHeight * 0.015),
+
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          obscureText: !_showPassword,
+                          decoration: InputDecoration(
+                            labelText: 'Confirm New Password',
+                            labelStyle: TextStyle(fontSize: _fontSizeSmall),
+                            prefixIcon: Icon(Icons.lock_reset,
+                                color: _primaryColor, size: _iconSize * 0.8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: _paddingHorizontal,
+                              vertical: _screenHeight * 0.015,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: _primaryColor,
+                                size: _iconSize * 0.8,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: _screenHeight * 0.02),
+                        Container(
+                          padding: EdgeInsets.all(_paddingHorizontal * 0.8),
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 255, 255, 255),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: const Color.fromARGB(255, 51, 180, 51)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: const Color.fromARGB(255, 43, 179, 47),
+                                size: _fontSizeSubtitle,
+                              ),
+                              SizedBox(width: _screenWidth * 0.02),
+                              Expanded(
+                                child: Text(
+                                  'Password must be at least 6 characters long',
+                                  style: TextStyle(
+                                    color: const Color.fromARGB(255, 7, 156, 12),
+                                    fontSize: _fontSizeSmall,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        SizedBox(height: _screenHeight * 0.03),
+
+                        // Action Buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  _currentPasswordController.clear();
+                                  _newPasswordController.clear();
+                                  _confirmPasswordController.clear();
+                                  Navigator.pop(context);
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: _primaryColor,
+                                  side: const BorderSide(color: Colors.grey),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: _screenHeight * 0.015,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    fontSize: _fontSizeSubtitle,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: _screenWidth * 0.03),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  await _updateProfile();
+                                  if (_currentPasswordController.text.isNotEmpty ||
+                                      _newPasswordController.text.isNotEmpty ||
+                                      _confirmPasswordController.text.isNotEmpty) {
+                                    await _changePassword();
+                                  }
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _primaryColor,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: _screenHeight * 0.015,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Save Changes',
+                                  style: TextStyle(fontSize: _fontSizeSubtitle),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _updateResponsiveValues();
-    
+
     return Scaffold(
       backgroundColor: _backgroundColor,
       body: _isLoading
@@ -907,21 +1072,13 @@ class _AdminProfileTabState extends State<AdminProfileTab> {
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  // Profile Header
                   _buildProfileHeader(),
-
-                  // Profile Options List
                   _buildProfileOptionsList(),
-
-                  // Logout Button
                   _buildLogoutButton(),
-
-                  // App Version
                   Padding(
                     padding: EdgeInsets.only(
-                      top: _screenHeight * 0.02, 
-                      bottom: _screenHeight * 0.03
-                    ),
+                        top: _screenHeight * 0.02,
+                        bottom: _screenHeight * 0.03),
                     child: Text(
                       'Developed by Rohil Technologies',
                       style: TextStyle(

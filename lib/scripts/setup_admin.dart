@@ -23,10 +23,10 @@ Future<void> setupAdminAccount() async {
     // Admin data
     final adminData = {
       'uid': 'admin_001',
-      'phoneNumber': '+919751867879',
+      'phoneNumber': '+916374049582',
       'password': hashedPassword,
       'fullName': 'SSA Admin',
-      'email': 'admin@ssatravels.com',
+      'email': 'ssasahinaabideen@gmail.com',
       'role': 'super_admin',
       'permissions': ['manage_all'],
       'createdAt': FieldValue.serverTimestamp(),

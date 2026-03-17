@@ -4,8 +4,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../config/admin_config.dart';
 
 class AuthProvider with ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // Make these nullable and initialize them lazily
+  FirebaseAuth? _auth;
+  FirebaseFirestore? _firestore;
+
+  // Use getters that ensure Firebase is initialized
+  FirebaseAuth get auth {
+    _auth ??= FirebaseAuth.instance;
+    return _auth!;
+  }
+
+  FirebaseFirestore get firestore {
+    _firestore ??= FirebaseFirestore.instance;
+    return _firestore!;
+  }
 
   bool _isLoading = false;
   String? _error;
@@ -28,7 +40,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> _initialize() async {
-    _auth.authStateChanges().listen((User? user) async {
+    auth.authStateChanges().listen((User? user) async {
       _firebaseUser = user;
       _isLoggedIn = user != null;
 
@@ -46,7 +58,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _loadUserData(User user) async {
     try {
-      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      final userDoc = await firestore.collection('users').doc(user.uid).get();
 
       if (userDoc.exists) {
         _userData = userDoc.data() as Map<String, dynamic>;
@@ -56,13 +68,12 @@ class AuthProvider with ChangeNotifier {
         await _createUserDocument(user);
       }
     } catch (e) {
-      debugPrint('Auth error: $e');
+      debugPrint('❌ Auth error in _createUserDocument: $e');
     }
   }
 
   Future<void> _createUserDocument(User user) async {
     try {
-      // Extract phone from email (6379226432@ssatravels.com → 6379226432)
       String email = user.email ?? '';
       String phone = email.replaceAll('@ssatravels.com', '');
 
@@ -72,13 +83,14 @@ class AuthProvider with ChangeNotifier {
         'email': '', // Empty initially
         'fullName': user.displayName ?? 'User',
         'isAdmin': false,
+        'role': 'customer',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      await _firestore.collection('users').doc(user.uid).set(_userData!);
+      await firestore.collection('users').doc(user.uid).set(_userData!);
     } catch (e) {
-      debugPrint('Auth error: $e');
+      debugPrint('❌ Auth error in _createUserDocument: $e');
     }
   }
 
@@ -108,7 +120,7 @@ class AuthProvider with ChangeNotifier {
           return false;
         }
 
-        final adminQuery = await _firestore
+        final adminQuery = await firestore
             .collection('users')
             .where('phoneNumber', isEqualTo: AdminConfig.adminPhone)
             .where('isAdmin', isEqualTo: true)
@@ -140,7 +152,7 @@ class AuthProvider with ChangeNotifier {
       // ================================
 
       // Check if phone number is registered
-      final phoneCheck = await _firestore
+      final phoneCheck = await firestore
           .collection('users')
           .where('phoneNumber', isEqualTo: cleanPhone)
           .limit(1)
@@ -157,7 +169,7 @@ class AuthProvider with ChangeNotifier {
       String phoneEmail = '$cleanPhone@ssatravels.com';
 
       try {
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        UserCredential userCredential = await auth.signInWithEmailAndPassword(
           email: phoneEmail,
           password: password,
         );
@@ -264,7 +276,7 @@ class AuthProvider with ChangeNotifier {
       }
 
       // Check if phone already exists
-      final existingPhone = await _firestore
+      final existingPhone = await firestore
           .collection('users')
           .where('phoneNumber', isEqualTo: cleanPhone)
           .limit(1)
@@ -278,7 +290,7 @@ class AuthProvider with ChangeNotifier {
       }
 
       // Check if email already exists in Firestore
-      final existingEmail = await _firestore
+      final existingEmail = await firestore
           .collection('users')
           .where('email', isEqualTo: email.trim())
           .limit(1)
@@ -295,11 +307,38 @@ class AuthProvider with ChangeNotifier {
       String phoneEmail = '$cleanPhone@ssatravels.com';
 
       // Create user in Firebase Auth with PHONE-EMAIL
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: phoneEmail,
-        password: password,
-      );
+      UserCredential userCredential;
+      try {
+        userCredential = await auth.createUserWithEmailAndPassword(
+          email: phoneEmail,
+          password: password,
+        );
+      } on FirebaseAuthException catch (e) {
+        // Handle specific Firebase errors
+        switch (e.code) {
+          case 'email-already-in-use':
+            _error = 'This phone number is already registered. Please login.';
+            break;
+          case 'invalid-email':
+            _error = 'Invalid phone number format';
+            break;
+          case 'operation-not-allowed':
+            _error =
+                'Email/Password sign-in is not enabled. Please:\n1. Go to Firebase Console\n2. Authentication → Sign-in method\n3. Enable Email/Password';
+            break;
+          case 'weak-password':
+            _error = 'Password is too weak. Use at least 6 characters.';
+            break;
+          case 'network-request-failed':
+            _error = 'Network error. Check your internet connection.';
+            break;
+          default:
+            _error = 'Registration failed: ${e.message}';
+        }
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
 
       // Update user profile
       await userCredential.user!.updateDisplayName(fullName);
@@ -311,11 +350,12 @@ class AuthProvider with ChangeNotifier {
         'email': email.trim(),
         'fullName': fullName.trim(),
         'isAdmin': false,
+        'role': 'customer',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      await _firestore
+      await firestore
           .collection('users')
           .doc(userCredential.user!.uid)
           .set(_userData!);
@@ -329,34 +369,17 @@ class AuthProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return true;
-    } on FirebaseAuthException catch (e) {
-      _error = _getRegistrationErrorMessage(e.code);
-      _isLoading = false;
-      notifyListeners();
-      return false;
     } catch (e) {
-      _error = 'Registration failed. Please try again.';
+      _error = 'Registration failed: ${e.toString()}';
       _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  String _getRegistrationErrorMessage(String code) {
-    switch (code) {
-      case 'email-already-in-use':
-        return 'An account already exists with this phone number';
-      case 'invalid-email':
-        return 'Invalid phone number format';
-      case 'operation-not-allowed':
-        return 'Registration is not enabled. Contact admin.';
-      case 'weak-password':
-        return 'Password is too weak';
-      default:
-        return 'Registration failed. Please try again';
-    }
-  }
-
+  // ============================================
+  // PASSWORD RESET
+  // ============================================
   Future<bool> sendPasswordResetEmail({
     required String phoneNumber,
   }) async {
@@ -377,7 +400,7 @@ class AuthProvider with ChangeNotifier {
       }
 
       // 1. Find user in Firestore by phone number
-      final userQuery = await _firestore
+      final userQuery = await firestore
           .collection('users')
           .where('phoneNumber', isEqualTo: cleanPhone)
           .limit(1)
@@ -394,7 +417,7 @@ class AuthProvider with ChangeNotifier {
       String phoneEmail = '$cleanPhone@ssatravels.com';
 
       // 3. Send password reset to phone-email
-      await _auth.sendPasswordResetEmail(email: phoneEmail);
+      await auth.sendPasswordResetEmail(email: phoneEmail);
 
       _isLoading = false;
       _error = null;
@@ -435,7 +458,7 @@ class AuthProvider with ChangeNotifier {
   Future<bool> checkPhoneExists(String phoneNumber) async {
     try {
       String cleanPhone = _cleanPhoneNumber(phoneNumber);
-      final querySnapshot = await _firestore
+      final querySnapshot = await firestore
           .collection('users')
           .where('phoneNumber', isEqualTo: cleanPhone)
           .limit(1)
@@ -454,7 +477,7 @@ class AuthProvider with ChangeNotifier {
   Future<String?> getRealEmailByPhone(String phoneNumber) async {
     try {
       String cleanPhone = _cleanPhoneNumber(phoneNumber);
-      final querySnapshot = await _firestore
+      final querySnapshot = await firestore
           .collection('users')
           .where('phoneNumber', isEqualTo: cleanPhone)
           .limit(1)
@@ -476,7 +499,7 @@ class AuthProvider with ChangeNotifier {
   Future<void> logout() async {
     try {
       if (_firebaseUser != null) {
-        await _auth.signOut();
+        await auth.signOut();
       }
 
       _isLoggedIn = false;
@@ -524,7 +547,7 @@ class AuthProvider with ChangeNotifier {
       }
 
       // Check if email already exists
-      final existingEmail = await _firestore
+      final existingEmail = await firestore
           .collection('users')
           .where('email', isEqualTo: email.trim())
           .where('uid', isNotEqualTo: _firebaseUser!.uid)
@@ -539,7 +562,7 @@ class AuthProvider with ChangeNotifier {
       }
 
       // Update real email in Firestore
-      await _firestore.collection('users').doc(_firebaseUser!.uid).update(
+      await firestore.collection('users').doc(_firebaseUser!.uid).update(
           {'email': email.trim(), 'updatedAt': FieldValue.serverTimestamp()});
 
       _userData!['email'] = email.trim();

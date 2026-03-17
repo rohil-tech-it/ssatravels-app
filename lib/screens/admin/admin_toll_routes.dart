@@ -1,4 +1,6 @@
 // lib/screens/admin/admin_toll_routes.dart
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import '../../services/toll_service.dart';
 import '../../models/toll_route_model.dart';

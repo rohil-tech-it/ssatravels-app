@@ -13,20 +13,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    // Use microtask to ensure first frame renders quickly
+    Future.microtask(() => _navigateToHome());
   }
 
   Future<void> _navigateToHome() async {
-    // ✅ Read context BEFORE async gap
+    // Read context safely
     final authProvider = context.read<AuthProvider>();
-
-    // Wait for auth provider to initialize
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Optional extra wait
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // ✅ Guard context after async
+    
+    // Reduced delay - 2.5 seconds is too long for splash screen
+    // 1.5 seconds is more reasonable
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
     if (!mounted) return;
 
     if (authProvider.isLoggedIn) {
@@ -47,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
+            // Logo with ClipOval for better performance
             Container(
               width: 120,
               height: 120,
@@ -62,15 +60,17 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                 ],
               ),
-              child: Image.asset(
-                'assets/ssa-logo.png',
-                width: 60, // set width
-                height: 60, // set height
-                fit: BoxFit.contain,
+              child: ClipOval( // Added ClipOval for better rendering
+                child: Image.asset(
+                  'assets/ssa-logo.png',
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
             const SizedBox(height: 32),
-            // App Name
+            // App Name - make it const if possible
             const Text(
               'SSA Travels Virudhunagar',
               style: TextStyle(
@@ -81,6 +81,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 8),
+            // Subtitle - withOpacity is expensive, use withValues
             Text(
               'We make it for you',
               style: TextStyle(
@@ -89,12 +90,15 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontFamily: 'Poppins',
               ),
             ),
-
             const SizedBox(height: 60),
-            // Loading Indicator
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              strokeWidth: 2,
+            // Loading Indicator - specify size to avoid layout recalculation
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 2,
+              ),
             ),
           ],
         ),

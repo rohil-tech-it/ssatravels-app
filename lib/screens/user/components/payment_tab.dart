@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:ssatravels_app/screens/user/user_home_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -15,13 +14,14 @@ class PaymentScreen extends StatefulWidget {
   });
 
   @override
-  State<PaymentScreen> createState() => PaymentScreenState(); // State class made public
+  State<PaymentScreen> createState() =>
+      PaymentScreenState(); // State class made public
 }
 
 class PaymentScreenState extends State<PaymentScreen> {
   final String _upiId = "syedsahina18-1@okaxis";
   final String _gpayNumber = "7548880074";
-  final String _whatsappNumber = "9751867879";
+  final String _whatsappNumber = "6374049582";
   final Color _primaryGreen = const Color(0xFF00B14F);
 
   int _selectedIndex = 0;
@@ -53,9 +53,7 @@ class PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _paymentSuccess
-        ? _buildSuccessScreen()
-        : _buildPaymentScreen();
+    return _paymentSuccess ? _buildSuccessScreen() : _buildPaymentScreen();
   }
 
   Widget _buildPaymentScreen() {
@@ -299,59 +297,12 @@ class PaymentScreenState extends State<PaymentScreen> {
               title: 'UPI ID',
               value: _upiId,
               showCopy: true,
-              onCopy: () => _copyToClipboard(_upiId, 'UPI ID copied to clipboard'),
+              onCopy: () =>
+                  _copyToClipboard(_upiId, 'UPI ID copied to clipboard'),
               isSmallScreen: isSmallScreen,
             ),
 
             SizedBox(height: isSmallScreen ? 16 : 20),
-
-            // UPI Circle Option
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
-              decoration: BoxDecoration(
-                color: _primaryGreen.withValues(alpha: 0.05), // Fixed
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: _primaryGreen.withValues(alpha: 0.3), // Fixed
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(isSmallScreen ? 8 : 10),
-                    decoration: BoxDecoration(
-                      color: _primaryGreen.withValues(alpha: 0.2), // Fixed
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.group_add,
-                      color: _primaryGreen,
-                      size: isSmallScreen ? 20 : 24,
-                    ),
-                  ),
-                  SizedBox(width: isSmallScreen ? 12 : 16),
-                  const Expanded(
-                    child: Text(
-                      'Want to join UPI Circle?',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      foregroundColor: _primaryGreen,
-                    ),
-                    child: const Text("Switch QR"),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -366,34 +317,35 @@ class PaymentScreenState extends State<PaymentScreen> {
         padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
         child: Column(
           children: [
-            // GPay Number Card
+            // GPay Number Card - White background with green icon
             Container(
               width: double.infinity,
               padding: EdgeInsets.all(isSmallScreen ? 20 : 30),
               decoration: BoxDecoration(
-                color: _primaryGreen,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: _primaryGreen.withValues(alpha: 0.3), // Fixed
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
                   ),
                 ],
+                border: Border.all(color: Colors.grey[200]!, width: 1.5),
               ),
               child: Column(
                 children: [
                   Container(
                     padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2), // Fixed
+                      color: _primaryGreen.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.phone_android,
                       size: isSmallScreen ? 40 : 50,
-                      color: Colors.white,
+                      color: _primaryGreen,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -401,7 +353,7 @@ class PaymentScreenState extends State<PaymentScreen> {
                     'Google Pay Number',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white70,
+                      color: Colors.grey,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -411,33 +363,43 @@ class PaymentScreenState extends State<PaymentScreen> {
                     style: TextStyle(
                       fontSize: isSmallScreen ? 24 : 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black87,
                       letterSpacing: 1,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Wrap(
-                    spacing: 12,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildActionButton(
-                        icon: Icons.copy,
-                        label: 'Copy',
-                        onTap: () => _copyToClipboard(_gpayNumber, 'Number copied to clipboard'),
-                        isSmallScreen: isSmallScreen,
+                      // Copy Button
+                      Expanded(
+                        child: _buildActionButton(
+                          icon: Icons.copy,
+                          label: 'Copy',
+                          onTap: () => _copyToClipboard(
+                              _gpayNumber, 'Number copied to clipboard'),
+                          isSmallScreen: isSmallScreen,
+                        ),
                       ),
-                      _buildActionButton(
-                        icon: Icons.call,
-                        label: 'Call',
-                        onTap: () async {
-                          final Uri telUri = Uri(scheme: 'tel', path: _gpayNumber);
-                          if (await canLaunchUrl(telUri)) {
-                            await launchUrl(telUri);
-                          } else {
-                            _copyToClipboard(_gpayNumber, 'Number copied to clipboard');
-                          }
-                        },
-                        isOutlined: true,
-                        isSmallScreen: isSmallScreen,
+                      const SizedBox(width: 12),
+                      // Call Button
+                      Expanded(
+                        child: _buildActionButton(
+                          icon: Icons.call,
+                          label: 'Call',
+                          onTap: () async {
+                            final Uri telUri =
+                                Uri(scheme: 'tel', path: _gpayNumber);
+                            if (await canLaunchUrl(telUri)) {
+                              await launchUrl(telUri);
+                            } else {
+                              _copyToClipboard(
+                                  _gpayNumber, 'Number copied to clipboard');
+                            }
+                          },
+                          isOutlined: true,
+                          isSmallScreen: isSmallScreen,
+                        ),
                       ),
                     ],
                   ),
@@ -525,7 +487,8 @@ class PaymentScreenState extends State<PaymentScreen> {
                   _buildActionButton(
                     icon: Icons.copy,
                     label: 'Copy UPI ID',
-                    onTap: () => _copyToClipboard(_upiId, 'UPI ID copied to clipboard'),
+                    onTap: () =>
+                        _copyToClipboard(_upiId, 'UPI ID copied to clipboard'),
                     isSmallScreen: isSmallScreen,
                   ),
                 ],
@@ -654,43 +617,43 @@ class PaymentScreenState extends State<PaymentScreen> {
     bool isOutlined = false,
     required bool isSmallScreen,
   }) {
-    if (isOutlined) {
-      return OutlinedButton.icon(
-        onPressed: onTap,
-        icon: Icon(icon, size: isSmallScreen ? 16 : 18),
-        label: Text(
-          label,
-          style: TextStyle(fontSize: isSmallScreen ? 12 : 14),
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: const BorderSide(color: Colors.white),
-          padding: EdgeInsets.symmetric(
-              horizontal: isSmallScreen ? 16 : 20,
-              vertical: isSmallScreen ? 10 : 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+    return Container(
+      height: 45,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        border: isOutlined
+            ? Border.all(color: Colors.grey.shade300, width: 1.5)
+            : null,
+      ),
+      child: Material(
+        color: isOutlined ? Colors.transparent : _primaryGreen,
+        borderRadius: BorderRadius.circular(25),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(25),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 18,
+                  color: isOutlined ? _primaryGreen : Colors.white,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isOutlined ? _primaryGreen : Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: isSmallScreen ? 13 : 14,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      );
-    }
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: isSmallScreen ? 16 : 18),
-      label: Text(
-        label,
-        style: TextStyle(fontSize: isSmallScreen ? 12 : 14),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: _primaryGreen,
-        padding: EdgeInsets.symmetric(
-            horizontal: isSmallScreen ? 16 : 20,
-            vertical: isSmallScreen ? 10 : 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-        elevation: 0,
       ),
     );
   }
@@ -963,16 +926,16 @@ class PaymentScreenState extends State<PaymentScreen> {
 
                 const SizedBox(height: 16),
 
-                // Back to Home Button
+                // Back to Payment Options Button - FIXED
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => UserHomeScreen()),
-                        (route) => false,
-                      );
+                      // Instead of navigating to a new PaymentScreen,
+                      // we'll pop back to the previous screen and reset the state
+                      setState(() {
+                        _paymentSuccess = false;
+                      });
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: _primaryGreen,
@@ -984,7 +947,7 @@ class PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ),
                     child: Text(
-                      'Back to Home',
+                      'Back to Payment Options',
                       style: TextStyle(
                           fontSize: isSmallScreen ? 15 : 17,
                           fontWeight: FontWeight.w600),
